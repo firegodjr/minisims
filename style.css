@@ -1,0 +1,215 @@
+*
+{
+    font-family: sans-serif;
+}
+
+body
+{
+    margin: 0;
+    display: grid;
+    grid-template-columns: 15em auto 30em;
+    grid-template-rows: 50vh 25vh 25vh;
+    grid-template-areas: "left center right" "left center right" "left center output";
+}
+
+#left-panel
+{   
+    grid-area: left;
+}
+
+#center-panel
+{
+    
+}
+
+#game-area
+{
+    grid-area: game;
+}
+
+#output-panel
+{
+    font-family: monospace;
+    grid-area: output;
+    background-color: black;
+    color: white;
+    border: none;
+    resize: none;
+}
+
+#right-panel
+{
+    grid-area: right;
+}
+
+.edit-pane
+{
+    background-color: #aaa;
+    box-shadow: #777 0 0 0.5em inset;
+    overflow: hidden;
+}
+
+.edit-pane h1
+{
+    font-size: x-large;
+    font-family: sans-serif;
+    background-image: linear-gradient(#aaa, #777);
+    padding: 0.2em;
+    text-align: center;
+    margin: 0;
+}
+
+.edit-pane div.panel-content
+{
+    position: relative;
+    max-height: 100%;
+    overflow: auto;
+    padding: 1em;
+}
+
+.edit-pane ul
+{
+    background-color: transparent;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.edit-pane ul ul
+{
+    margin-left: 1em;
+    background-color: #999;
+}
+
+.edit-pane button
+{
+    width: 100%;
+    padding: 0.3em;
+    font-weight: bold;
+    border: 0.05em solid #777;
+    background-color: #ccc;
+    border-radius: 0.2em;
+}
+
+.edit-pane button.dropdown
+{
+    padding-left: 0;
+}
+
+.edit-pane ul button
+{
+    border: none;
+    background-color: transparent;
+    text-align: left;
+    transition: 0.1s;
+}
+
+.edit-pane button:focus
+{
+    /* Makes tab-navigation possible */
+    text-decoration: underline;
+    outline: 0;
+}
+
+.edit-pane ul
+{
+    margin-top: 1em;
+    margin-bottom: 1em;
+    border-top: 0.05em solid #777;
+}
+.edit-pane ul li
+{
+    border-bottom: 0.05em solid #777;
+}
+
+.edit-pane button:hover
+{
+    box-shadow: 0 0 0.5em #fff inset;
+}
+
+/* ul button contents "pop out" when hovered */
+.edit-pane ul button:hover
+{
+    padding-left: 0.5em;
+}
+
+/* If a dropdown menu is selected, it shouldn't pop out when hovered */
+.edit-pane ul button.dropdown:focus:hover
+{
+    padding: 0.3em;
+}
+
+.edit-pane button:active
+{
+    box-shadow: #444 0 0.2em 0.5em inset;
+    background-color: #777;
+}
+
+.edit-pane button.dropdown:focus
+{
+    box-shadow: #444 0 0.2em 0.5em;
+    background-color: #ccc;
+}
+
+.edit-pane button.dropdown::before
+{
+    background: url(arrow.png);
+    background-size: 1em 1em;
+    background-position: 0.5em;
+    background-repeat: no-repeat;
+    width: 2em;
+    height: 1em;
+    display: inline-block;
+
+    content: "";
+}
+
+.edit-pane button.dropdown:focus::before
+{
+    -moz-transform: rotate(90deg);
+    -webkit-transform: rotate(90deg);
+    transform: rotate(90deg);
+    background-size: 1em 1em;
+}
+
+div.dropdown_content
+{
+    display: none;
+    height: 0;
+}
+
+.submenu
+{
+    display: none;
+    background-color: #ccc;
+}
+
+@media only screen and (max-width: 1600px)
+{
+    body
+    {
+        grid-template-columns: 15em auto 15em;
+        grid-template-rows: 50vh 25vh 25vh;
+        grid-template-areas: "left center right" "left center right" "left output right";
+    }
+}
+
+@media only screen and (max-width: 1000px)
+{
+    body
+    {
+        grid-template-columns: 10em auto;
+        grid-template-rows: 50vh 25vh 25vh;
+        grid-template-areas: "left center" "right center" "right output";
+    }
+
+    #left-panel, #right-panel
+    {
+        min-height: 50vh;
+    }
+
+    .edit-pane h1
+    {
+        font-size: large;
+    }
+}
