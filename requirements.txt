@@ -1,0 +1,26 @@
+game advanced through logic ticks, whether automatic or user-initiated
+game consists of a 2d canvas grid with rendered tiles
+tiles have multiple states, changing their appearance
+tile states are changed by drone interactions and the passing of time
+'drones' are able to stand on, change the state of and traverse tiles
+drones have an inventory of items, a job, an energy bar, and a goal
+drone goals change depending on inventory, available tiles, and energy
+drone goals: eat, give item, harvest tile
+goals can be completed through pathfinding, tile interactions, and item management (such as removing a crop item to fulfil the 'eat' goal)
+a properties panel allows viewing drone inventory and changing the drone's job, this panel should change when a new drone is selected
+a menu panel allows adding and removing drones
+a text output reports when each drone starts/completes a goal
+
+Tasks:
+	1. (Done) Arrange UI elements
+		1a: Add javascript for dropdown menus
+	2. (Done) Set up main loop
+	3. Create tile grid
+	4. (Done) Create drone class and function stubs
+	5. (Done) Add drone functions to main loop
+	6: (Done) Add event-driven UI
+	7: Decouple game data from events
+	8. Add drone selection capability
+	9. Add functionality to drone editor
+	10. Implement basic drone functions
+	11. Implement drone pathfinding

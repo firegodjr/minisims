@@ -1,56 +1,63 @@
 <!DOCTYPE html>
+<!-- 
+    Written by Ethan Schrunk
+    5/2019
+-->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" type="text/css" href="style.css">
-    <title>Document</title>
+    <script src="scripts/util/noise.js"></script>
+    <script src="scripts/zDog/zdog.js"></script>
+    <script src="scripts/main.js" type="module" defer="defer"></script>
+    <title>Drone Sim 2019</title>
 </head>
 <body>
-    <div id="left-panel" class="edit-pane">
+    <div id="left-panel" class="panel">
         <h1>Drones</h1>
 
         <div class="panel-content">
-            <button>Non-ul button</button>
-            <button class="dropdown">Non-ul dropdown</button>
-            <ul>
-                <li>
-                    <button>Button</button>
-                </li>
-                <li>
-                    <button class="dropdown">Dropdown</button>
-                    <div class="dropdown-content"></div>
-                </li>
-                <li>
-                    <button>Button 2</button>
-                </li>
-                <li>
-                    <ul>
-                        <li><button>SubButton</button></li>
-                        <li><button class="dropdown">SubDropdown</button></li>
-                    </ul>
-                </li>
-            </ul>
+            <button id="btn_adddrone">Add a Drone</button>
+            <div class="content-group" title="Selected Drone">
+                <ul>
+                    <li><button id="btn_addwheat">Add Wheat</button></li>
+                    <li><button id="btn_delwheat">Delete Wheat</button></li>
+                    <li><button id="btn_addore">Add Ore</button></li>
+                    <li><button id="btn_delore">Delete Ore</button></li>
+                </ul>
+                <ul>
+                    <li>
+                        <button class="dropdown">Set Job</button>
+                    </li>
+                    <li><button>Clear Job</button></li>
+                    <li><button class="dropdown">Set Goal</button></li>
+                    <li><button>Clear Goal</button></li>
+                </ul>
+            </div>
+            <button id="btn_dotick">Next Turn</button>
         </div>
     </div>
 
     <div id="center-panel">
-        <div id="game-area">
-
-        </div>
+        <canvas id="cvs_viewport" width="240" height="999" />
     </div>
-    <textarea id="output-panel"></textarea>
+    <div id="output-panel">
+        <textarea id="console"></textarea>
+    </div>
+    
 
-    <div id="right-panel" class="edit-pane">
+    <div id="right-panel" class="panel">
         <h1>Properties</h1>
-        <div class="panel-content">Proident exercitation ullamco cupidatat ullamco magna cupidatat ipsum cillum ullamco culpa aliquip. Nulla laboris voluptate voluptate ipsum Lorem esse proident ut reprehenderit amet proident eu. Ea exercitation et culpa nulla. Aute eu enim nostrud culpa commodo cillum quis exercitation. Irure incididunt anim irure aute esse anim qui tempor enim Lorem id tempor esse in. Dolor anim officia cupidatat id labore.
+        <div class="panel-content">
+            <h2 id="lbl_dronename">Drone Name</h2>
+            <h3>Energy</h3>
+            <progress id="prgbar_energy" max="100" value="10" title="Energy"></progress>
+            <h3>Inventory</h3>
+            <div id="inventory-pane" class="flex-menu">
 
-                Qui esse magna veniam sunt incididunt reprehenderit eu dolore. Laboris culpa dolore quis do. Lorem sunt ea ut ea veniam proident voluptate id pariatur. Pariatur nostrud in esse magna aliqua Lorem. Laboris sit ipsum voluptate anim fugiat do veniam commodo officia enim qui. Enim Lorem cupidatat quis nulla aute proident.
-                
-                Mollit adipisicing consectetur duis exercitation mollit ut consequat. Laborum irure commodo occaecat esse exercitation. Consequat ipsum irure aliquip veniam ullamco sunt reprehenderit consequat et in non. Reprehenderit aute non Lorem veniam dolore nostrud et.
-                
-                Commodo tempor quis do ipsum magna reprehenderit sint qui reprehenderit mollit dolor voluptate est proident. Nostrud cupidatat culpa nisi anim deserunt in id adipisicing excepteur sunt ex occaecat amet. In ut cupidatat ut nisi labore. Laborum duis minim irure ipsum qui officia irure id mollit.
+            </div>
         </div>
     </div>
 </body>
