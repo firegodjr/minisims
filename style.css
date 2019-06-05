@@ -72,6 +72,9 @@ body * {
   border: none;
   padding: 1em;
 }
+.dynamic-content {
+  transition: height 0.2s;
+}
 .panel {
   height: auto;
   width: 100%;

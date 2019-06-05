@@ -1,4 +1,5 @@
 import { Goals, Deficits } from "./constants.js";
+import { AddItemEvent, ChangeEnergyEvent } from "./event/events.js";
 
 function InventoryPair(item, count)
 {
@@ -9,11 +10,12 @@ function InventoryPair(item, count)
     return self;
 }
 
-export function Drone(pos_x, pos_y, job)
+export function Drone(index, pos_x, pos_y, job)
 {
     var self = this;
+    self.m_index = index;
     self.m_pos_x = pos_x;
-    self.m_pos_x = pos_y;
+    self.m_pos_y = pos_y;
     self.m_energy = 100;
     self.m_energy_threshold = 30; // Inclusive threshold for when this should create a goal
     self.m_inventory = [];
@@ -136,7 +138,15 @@ export function Dronef()
 
         if(index != -1 && drone.m_inventory[index].m_count == 0)
         {
-            drone.m_inventory.splice(index, 1)
+            drone.m_inventory.splice(index, 1);
         }
+
+        document.dispatchEvent(AddItemEvent(drone.m_index, item, count));
+    }
+
+    this.change_energy = function(drone, change)
+    {
+        drone.m_energy += change;
+        document.dispatchEvent(ChangeEnergyEvent(drone.m_index, change));
     }
 }

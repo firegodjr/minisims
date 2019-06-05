@@ -1,3 +1,5 @@
+import { createTable } from "./util/util.js";
+
 /* Drone Goals */
 export const Goals = {
     NONE: 0,
@@ -52,3 +54,8 @@ export const Deficits = {
     LOW_CROP: 1,
     ENOUGH_CROP: 2
 }
+
+export const TILE_DEGRADE_TABLE = createTable(
+    [Tiles.WHEAT_RIPE, Tiles.ORE_RIPE],
+    [Tiles.WHEAT, Tiles.ORE]
+);

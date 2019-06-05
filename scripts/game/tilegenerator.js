@@ -20,7 +20,6 @@ export function GenerateTiles(game, width, height)
         for(var j = 0; j < height; ++j)
         {
             var water_level = (noise.perlin2((i+1) / 5, (j+1) / 5) + 1) / 2;
-            console.log(water_level);
 
             for(var tl = 0; tl < WATER_LEVEL_RANGES.length; ++tl)
             {
@@ -38,10 +37,6 @@ export function GenerateTiles(game, width, height)
                 if(tiles[i][j] == Tiles.GRASS)
                 {
                     tiles[i][j] = Tiles.WHEAT_RIPE;
-                }
-                else if(tiles[i][j] == Tiles.STONE)
-                {
-                    tiles[i][j] = Tiles.ORE_RIPE
                 }
             }
         }

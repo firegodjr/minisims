@@ -4,14 +4,14 @@ import { Goals, GoalStrings, Tiles, TileStrings, Items, ItemStrings, Deficits } 
 import { Events, AddDroneEvent, AddItemEvent, TickEvent, ChangeEnergyEvent, ChangeSelectedEvent, ChangeGoalEvent, RenderEvent } from "./event/events.js";
 import {GameState} from "./game/game.js";
 import {GenerateTiles} from "./game/tilegenerator.js";
-import {drawBoard} from "./render/render.js";
+import {drawBoard, BoardManager} from "./render/render.js";
 import {createTable} from "./util/util.js";
 import { InputManager, InputManagerf } from "./input/input.js";
+import { JobCitizen } from "./game/jobs.js";
 
 
 (function(/**Window */window){
     const document = window.document;
-
 
     const DRONE_HUNGER = 1; // Amount of food (wheat) each drone eats
     const DRONE_ENERGY_RECOVER = 50; // Amount of energy recovered from eating TODO make random
@@ -22,30 +22,70 @@ import { InputManager, InputManagerf } from "./input/input.js";
         [Tiles.WHEAT_RIPE, Tiles.ORE_RIPE]
     );
 
-    const TILE_DEGRADE_TABLE = createTable(
-        [Tiles.WHEAT_RIPE, Tiles.ORE_RIPE],
-        [Tiles.WHEAT, Tiles.ORE]
-    );
-
     const TILE_REGROW_TABLE = createTable(
         [Tiles.WHEAT, Tiles.ORE],
         [Tiles.WHEAT_RIPE, Tiles.ORE_RIPE]
     );
 
-    function createFarmerGoalTable()
-    {
-        return createTable(
-            [Deficits.ENERGY, Deficits.LOW_CROP, Deficits.ENOUGH_CROP],
-            [Goals.EAT, Goals.HARVEST, Goals.GIVE_ITEM]
-        );
-    }
-
-    function goalHarvestTile(tile)
+    function ViewModel(game)
     {
         var self = this;
-        self.m_tile = tile;
+        self.drone_helper = new Dronef();
+        self.drone = ko.observable(0);
+        self.drone_name = ko.observable("Drone #");
+        self.drone_inventory = ko.observableArray();
+        self.drone_energy = ko.observable(0);
 
-        return self;
+        self.drones = ko.observableArray();
+
+        self.drone.subscribe(function()
+        {
+            self.drone_name("Drone " + self.drone());
+
+            self.drone_inventory.removeAll();
+            for(var i = 0; i < game.m_drones[self.drone()].m_inventory.length; ++i)
+            {
+                self.drone_inventory.push(new ko.observable(game.m_drones[self.drone()].m_inventory[i]))
+            }
+
+            self.drone_energy(game.m_drones[self.drone()].m_energy);
+        });
+
+        self.addItem = function(item, count = 1)
+        {
+            self.drone_helper.add_item(game.m_drones[self.drone()], item, count);
+        };
+
+        self.addWheat = function(count = 1)
+        {
+            self.addItem(Items.WHEAT, count);
+        };
+
+        self.addOre = function(count = 1)
+        {
+            self.addItem(Items.ORE, count);
+        };
+
+        self.addDrone = function()
+        {
+            var pos_x = 0;
+            var pos_y = 0;
+            if(game.m_tiles && game.m_tiles.length > 0)
+            {
+                pos_x = Math.floor(Math.random() * game.m_tiles.length);
+                pos_y = Math.floor(Math.random() * game.m_tiles[0].length);
+            }
+            var drone_index = game.m_drones.length;
+            game.m_drones.push(new Drone(drone_index, pos_x, pos_y, new JobCitizen()));
+            self.drones.push(drone_index);
+        };
+
+        self.selectDrone = function(index)
+        {
+            game.select_drone(index);
+            self.drone(index);
+            document.dispatchEvent(ChangeSelectedEvent(index));
+        };
     }
 
     function update_ai(game, drone_helper)
@@ -80,20 +120,12 @@ import { InputManager, InputManagerf } from "./input/input.js";
     {
         click_helper(document, "btn_adddrone", AddDroneEvent, [0, 0]);
 
-        click_helper(document, "btn_addwheat", AddItemEvent, [game.m_selected_drone, Items.WHEAT, 1]);
-        click_helper(document, "btn_delwheat", AddItemEvent, [game.m_selected_drone, Items.WHEAT, -1]);
-        click_helper(document, "btn_addore", AddItemEvent, [game.m_selected_drone, Items.ORE, 1]);
-        click_helper(document, "btn_delore", AddItemEvent, [game.m_selected_drone, Items.ORE, -1]);
-
         click_helper(document, "btn_dotick", TickEvent);
     }
 
     function init_event_listeners(document, game, epublisher, epublisher_helper, drone_helper)
     {
         epublisher_helper.subscribe(epublisher, "cvs_viewport");
-        epublisher_helper.subscribe(epublisher, "inventory-pane");
-        epublisher_helper.subscribe(epublisher, "lbl_dronename");
-        epublisher_helper.subscribe(epublisher, "prgbar_energy");
         epublisher_helper.subscribe(epublisher, "console");
 
         var viewport = document.getElementById("cvs_viewport");
@@ -109,10 +141,10 @@ import { InputManager, InputManagerf } from "./input/input.js";
             viewport.height = viewport.parentElement.clientHeight;
         });
 
-        viewport.addEventListener(Events.ADD_ITEM, function(e)
-        {
-            drone_helper.add_item(game.m_drones[e.detail.drone], e.detail.item, e.detail.count);
-        });
+        //viewport.addEventListener(Events.ADD_ITEM, function(e)
+        // {
+        //     drone_helper.add_item(game.m_drones[e.detail.drone], e.detail.item, e.detail.count);
+        // });
 
         viewport.addEventListener(Events.ON_TICK, function(e)
         {
@@ -120,16 +152,6 @@ import { InputManager, InputManagerf } from "./input/input.js";
 
             game.m_tiles[0][1] = Tiles.GRASS;
             game.m_dirty_tiles.push({x: 0, y: 1})
-        });
-
-        viewport.addEventListener(Events.CHANGE_SELECTED, function(e)
-        {
-            game.m_selected_drone = e.detail.drone;
-        });
-
-        viewport.addEventListener(Events.CHANGE_ENERGY, function(e)
-        {
-            game.m_drones[e.detail.drone].m_energy += e.detail.amount;
         });
 
         var mousewheel_handler = function(e)
@@ -180,20 +202,13 @@ import { InputManager, InputManagerf } from "./input/input.js";
             }
         });
 
-        var energyBarChange = function(e)
-        {
-            e.target.value = game.m_drones[game.m_selected_drone].m_energy;
-        }
-        var energyBar = document.getElementById("prgbar_energy");
-        energyBar.addEventListener(Events.CHANGE_ENERGY, energyBarChange);
-        energyBar.addEventListener(Events.CHANGE_SELECTED, energyBarChange);
-        energyBar.addEventListener(Events.ON_TICK, energyBarChange);
-
         var console = document.getElementById("console");
 
         console.addEventListener(Events.ADD_ITEM, function(e)
         {
             log("Drone " + e.detail.drone + (e.detail.count > 0 ? " gets " : " loses ") + Math.abs(e.detail.count) + " " + ItemStrings[e.detail.item] + ".");
+            // update viewmodel
+            viewmodel.drone.valueHasMutated();
         });
 
         console.addEventListener(Events.CHANGE_GOAL, function(e)
@@ -201,11 +216,14 @@ import { InputManager, InputManagerf } from "./input/input.js";
             log("Drone " + e.detail.drone + " wants to " + GoalStrings[e.detail.goal] + ".");
         });
 
-        var name_label = document.getElementById("lbl_dronename");
-
-        name_label.addEventListener(Events.CHANGE_SELECTED, function(e)
+        console.addEventListener(Events.CHANGE_ENERGY, function(e)
         {
-            name_label.innerHTML = "Drone " + e.detail.drone;
+            viewmodel.drone.valueHasMutated();
+        });
+
+        console.addEventListener(Events.CHANGE_SELECTED, function(e)
+        {
+            board.selectTile(game.m_drones[e.detail.drone].m_pos_x, game.m_drones[e.detail.drone].m_pos_y);
         });
     }
 
@@ -241,20 +259,25 @@ import { InputManager, InputManagerf } from "./input/input.js";
     function perform_goal(drone, drone_helper, game)
     {
         var drone_index = drone_helper.to_index(drone, game);
-        document.dispatchEvent(ChangeEnergyEvent(drone_index, -10));
+        drone_helper.change_energy(drone, -10);
 
         if(drone.m_goal == Goals.EAT)
         {
             var wheat_index = drone_helper.find_in_inventory(drone, Items.WHEAT);
             if(drone.m_inventory[wheat_index] && drone.m_inventory[wheat_index].m_count >= DRONE_HUNGER)
             {
-                document.dispatchEvent(AddItemEvent(drone_index, Items.WHEAT, -DRONE_HUNGER));
-                document.dispatchEvent(ChangeEnergyEvent(drone_index, DRONE_ENERGY_RECOVER));
+                drone_helper.add_item(drone, Items.WHEAT, -DRONE_HUNGER);
+                drone_helper.change_energy(drone, DRONE_ENERGY_RECOVER);
                 drone.m_goal = Goals.NONE;
             }
         }
         else if(drone.m_goal == Goals.HARVEST)
         {
+            if(game.m_tiles[drone.m_pos_x][drone.m_pos_y] == Tiles.WHEAT)
+            {
+                game.harvest(drone.m_pos_x, drone.m_pos_y);
+                drone_helper.add_item(drone, Items.WHEAT, 1);
+            }
             //TODO: pathfinding
         }
     }
@@ -266,6 +289,10 @@ import { InputManager, InputManagerf } from "./input/input.js";
     var input_mgr = new InputManager();
     var input_mgr_helper = new InputManagerf();
     var game = new GameState();
+    var board = new BoardManager(game);
+    var viewmodel = new ViewModel(game);
+    viewmodel.addDrone();
+    viewmodel.selectDrone(0);
 
     game.m_tiles = [
         [Tiles.GRASS, Tiles.ORE, Tiles.GRASS, Tiles.WHEAT_RIPE],
@@ -282,8 +309,8 @@ import { InputManager, InputManagerf } from "./input/input.js";
     init_event_listeners(document, game, epublisher, epublisher_helper, drone_helper);
     init_log();
 
-    document.dispatchEvent(new ChangeSelectedEvent(0));
+    ko.applyBindings(viewmodel);
     log("Done setting up!");
 
-    drawBoard(game, RenderEvent);
+    drawBoard(game, board, RenderEvent);
 })(window);

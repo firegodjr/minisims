@@ -9,6 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="scripts/knockout.js"></script>
     <script src="scripts/util/noise.js"></script>
     <script src="scripts/zDog/zdog.js"></script>
     <script src="scripts/main.js" type="module" defer="defer"></script>
@@ -19,13 +20,13 @@
         <h1>Drones</h1>
 
         <div class="panel-content">
-            <button id="btn_adddrone">Add a Drone</button>
+            <button id="btn_adddrone" data-bind="click: addDrone">Add a Drone</button>
             <div class="content-group" title="Selected Drone">
                 <ul>
-                    <li><button id="btn_addwheat">Add Wheat</button></li>
-                    <li><button id="btn_delwheat">Delete Wheat</button></li>
-                    <li><button id="btn_addore">Add Ore</button></li>
-                    <li><button id="btn_delore">Delete Ore</button></li>
+                    <li><button id="btn_addwheat" data-bind="click: addWheat.bind($data, 1)">Add Wheat</button></li>
+                    <li><button id="btn_delwheat" data-bind="click: addWheat.bind($data, -1)">Delete Wheat</button></li>
+                    <li><button id="btn_addore" data-bind="click: addOre.bind($data, 1)">Add Ore</button></li>
+                    <li><button id="btn_delore" data-bind="click: addOre.bind($data, -1)">Delete Ore</button></li>
                 </ul>
                 <ul>
                     <li>
@@ -37,6 +38,10 @@
                 </ul>
             </div>
             <button id="btn_dotick">Next Turn</button>
+            <h2>All Drones</h2>
+            <ul class="dynamic-content" data-bind="foreach: drones">
+                <li><button data-bind="click: $parent.selectDrone.bind($data, $data), text: 'Drone: ' + $data"></button></li>
+            </ul>
         </div>
     </div>
 
@@ -51,12 +56,12 @@
     <div id="right-panel" class="panel">
         <h1>Properties</h1>
         <div class="panel-content">
-            <h2 id="lbl_dronename">Drone Name</h2>
+            <h2 id="lbl_dronename" data-bind="text: drone_name">Drone Name</h2>
             <h3>Energy</h3>
-            <progress id="prgbar_energy" max="100" value="10" title="Energy"></progress>
+            <progress data-bind="value: drone_energy" id="prgbar_energy" max="100" value="10" title="Energy"></progress>
             <h3>Inventory</h3>
-            <div id="inventory-pane" class="flex-menu">
-
+            <div data-bind="foreach: drone_inventory" id="inventory-pane" class="flex-menu">
+                <div><span data-bind="text: m_item"></span>: <span data-bind="text: m_count"></span></div>
             </div>
         </div>
     </div>
