@@ -2,7 +2,7 @@ import { Drone } from "../drone.js";
 import { JobCitizen } from "./jobs.js";
 import { InputManager } from "../input/input.js";
 import { Tiles, TILE_DEGRADE_TABLE } from "../constants.js";
-import { ChangeSelectedEvent } from "../event/events.js";
+import { ChangeSelectedEvent, AddDroneEvent } from "../event/events.js";
 
 export function GameState()
 {
@@ -27,6 +27,24 @@ export function GameState()
     {
         self.m_selected_drone = index;
         document.dispatchEvent(ChangeSelectedEvent(index));
+    }
+
+    self.add_drone = function(pos_x = 0, pos_y = 0)
+    {
+        if(self.m_tiles && self.m_tiles.length > 0)
+        {
+            pos_x = Math.floor(Math.random() * self.m_tiles.length);
+            pos_y = Math.floor(Math.random() * self.m_tiles[0].length);
+            
+            while(self.m_tiles[pos_x][pos_y] == Tiles.WATER)
+            {
+                pos_x = Math.floor(Math.random() * self.m_tiles.length);
+                pos_y = Math.floor(Math.random() * self.m_tiles[0].length);
+            }
+        }
+        var drone_index = self.m_drones.length;
+        self.m_drones.push(new Drone(drone_index, pos_x, pos_y, new JobCitizen()));
+        document.dispatchEvent(AddDroneEvent(pos_x, pos_y));
     }
     
     return self;

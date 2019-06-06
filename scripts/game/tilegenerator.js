@@ -19,7 +19,7 @@ export function GenerateTiles(game, width, height)
         tiles.push([]);
         for(var j = 0; j < height; ++j)
         {
-            var water_level = (noise.perlin2((i+1) / 5, (j+1) / 5) + 1) / 2;
+            var water_level = (noise.perlin2((i+1) / 8, (j+1) / 8) + 1) / 2;
 
             for(var tl = 0; tl < WATER_LEVEL_RANGES.length; ++tl)
             {

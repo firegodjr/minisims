@@ -68,15 +68,8 @@ import { JobCitizen } from "./game/jobs.js";
 
         self.addDrone = function()
         {
-            var pos_x = 0;
-            var pos_y = 0;
-            if(game.m_tiles && game.m_tiles.length > 0)
-            {
-                pos_x = Math.floor(Math.random() * game.m_tiles.length);
-                pos_y = Math.floor(Math.random() * game.m_tiles[0].length);
-            }
             var drone_index = game.m_drones.length;
-            game.m_drones.push(new Drone(drone_index, pos_x, pos_y, new JobCitizen()));
+            game.add_drone();
             self.drones.push(drone_index);
         };
 
@@ -140,11 +133,6 @@ import { JobCitizen } from "./game/jobs.js";
             viewport.width = viewport.parentElement.clientWidth;
             viewport.height = viewport.parentElement.clientHeight;
         });
-
-        //viewport.addEventListener(Events.ADD_ITEM, function(e)
-        // {
-        //     drone_helper.add_item(game.m_drones[e.detail.drone], e.detail.item, e.detail.count);
-        // });
 
         viewport.addEventListener(Events.ON_TICK, function(e)
         {

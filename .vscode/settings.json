@@ -1,0 +1,6 @@
+{
+    "easycompile.typescript":
+    {
+        "outfile": "build/compiled.js"
+    }
+}
