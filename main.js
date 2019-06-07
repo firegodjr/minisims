@@ -1,11 +1,12 @@
 System.register("util/util", [], function (exports_1, context_1) {
     "use strict";
+    var Table;
     var __moduleName = context_1 && context_1.id;
     /* Allows creating a goal table more intuitively, rather than using hard code */
     function createTable(inputs, outputs) {
-        var table = {};
+        var table = new Table();
         for (var i = 0; i < inputs.length; ++i) {
-            table[inputs[i]] = outputs[i];
+            table.add(inputs[i], outputs[i]);
         }
         return table;
     }
@@ -13,6 +14,25 @@ System.register("util/util", [], function (exports_1, context_1) {
     return {
         setters: [],
         execute: function () {
+            Table = class Table {
+                add(key, val) {
+                    while (this.arr.length <= key) {
+                        this.arr.push(null);
+                    }
+                    if (!this.keys.includes(key)) {
+                        this.keys.push(key);
+                    }
+                    this.arr[key] = val;
+                }
+                get(key) {
+                    if (key >= 0 && key < this.arr.length) {
+                        return this.arr[key];
+                    }
+                    else
+                        return null;
+                }
+            };
+            exports_1("Table", Table);
         }
     };
 });
@@ -268,7 +288,7 @@ System.register("game/game", ["drone", "game/jobs", "input/input", "constants", 
                     this.m_input_mgr = new input_js_1.InputManager();
                 }
                 harvest(x, y) {
-                    this.m_tiles[x][y] = constants_2.TILE_DEGRADE_TABLE[this.m_tiles[x][y]];
+                    this.m_tiles[x][y] = constants_2.TILE_DEGRADE_TABLE.get(this.m_tiles[x][y]);
                     this.m_dirty_tiles.push(new Coords(x, y));
                 }
                 select_drone(index) {
@@ -366,7 +386,7 @@ System.register("drone", ["constants", "event/events"], function (exports_7, con
                 set_goal_from_deficit(drone, game, deficit, change_event) {
                     let initial_goal = drone.m_goal;
                     if (deficit != constants_3.Deficits.NONE) {
-                        drone.m_goal = drone.m_job.m_goal_table[deficit];
+                        drone.m_goal = drone.m_job.m_goal_table.get(deficit);
                     }
                     else {
                         drone.m_goal = constants_3.Goals.NONE;
@@ -464,7 +484,7 @@ System.register("game/tilegenerator", ["constants", "../util/noise.js"], functio
     var __moduleName = context_9 && context_9.id;
     function GenerateTiles(game, width, height) {
         noise_js_1.Noise.seed(Math.random());
-        var tiles = [];
+        let tiles = [];
         for (var i = 0; i < width; ++i) {
             tiles.push([]);
             for (var j = 0; j < height; ++j) {

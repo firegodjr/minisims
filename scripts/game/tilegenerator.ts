@@ -1,4 +1,6 @@
-import { Tiles } from "../constants.js";
+import { Tiles } from "../constants";
+import { Noise } from "../util/noise.js";
+import { GameState } from "../game/game";
 
 const TILES = [Tiles.GRASS, Tiles.WATER];
 const WATER_LEVEL_RANGES = [
@@ -10,16 +12,16 @@ const WATER_LEVEL_RANGES = [
 
 const WHEAT_MIN = 0.65;
 
-export function GenerateTiles(game, width, height)
+export function GenerateTiles(game: GameState, width: number, height: number)
 {
-    noise.seed(Math.random());
-    var tiles = [];
+    Noise.seed(Math.random());
+    let tiles: Array<Array<Tiles>> = [];
     for(var i = 0; i < width; ++i)
     {
         tiles.push([]);
         for(var j = 0; j < height; ++j)
         {
-            var water_level = (noise.perlin2((i+1) / 8, (j+1) / 8) + 1) / 2;
+            var water_level = (Noise.perlin2((i+1) / 8, (j+1) / 8) + 1) / 2;
 
             for(var tl = 0; tl < WATER_LEVEL_RANGES.length; ++tl)
             {
@@ -30,7 +32,7 @@ export function GenerateTiles(game, width, height)
                 }
             }
             
-            var crop_noise = (noise.perlin2((i+5) / 5, (j+5) / 5) + 1) / 2;
+            var crop_noise = (Noise.perlin2((i+5) / 5, (j+5) / 5) + 1) / 2;
 
             if(crop_noise > WHEAT_MIN)
             {

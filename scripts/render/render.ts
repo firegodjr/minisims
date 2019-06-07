@@ -1,15 +1,24 @@
-import { Tiles } from "../constants.js";
-import { createTable } from "../util/util.js";
+import { Tiles } from "../constants";
+import { createTable } from "../util/util";
+import { Zdog } from '../../node_modules/zdog/dist/zdog.dist.js';
+import { GameState, ICoords } from "../game/game";
+import { Coords } from "../game/game";
 
 const TILE_SIZE = 40;
 const GRASS_THRESHOLD = 0.5;
 
-const colorTable = createTable(
-    [Tiles.GRASS, Tiles.WHEAT, Tiles.WHEAT_RIPE, Tiles.STONE, Tiles.ORE, Tiles.ORE_RIPE, Tiles.WATER], 
-    [[35, 135, 43], [100, 75, 45], [210, 155, 94], [150, 150, 150, 5], [80, 80, 80, 5], [80, 80, 80, 5], [110, 210, 190, 0]]
-);
+interface IVariedColor
+{
+    r: number,
+    g: number,
+    b: number,
+    v?: number
+}
 
-function add_detail(x, y, half_board, anchor, color, stroke = 4, density = 20, height = 20, height_variation = 1, height_offset_x = 0, height_offset_z = 0, random_variation = false, optimize = true)
+const colorTable = createTable(
+    { inputs: [Tiles.GRASS, Tiles.WHEAT, Tiles.WHEAT_RIPE, Tiles.STONE, Tiles.ORE, Tiles.ORE_RIPE, Tiles.WATER], outputs: [{ r: 35, g: 135, b: 43 }, { r: 100, g: 75, b: 45 }, { r: 210, g: 155, b: 94 }, { r: 150, g: 150, b: 150, v: 5 }, { r: 80, g: 80, b: 80, v: 5 }, { r: 80, g: 80, b: 80, v: 5 }, { r: 110, g: 210, b: 190, v: 0 }] });
+
+function add_detail(x: number, y: number, half_board: number, anchor: number, color: string, stroke: number = 4, density: number = 20, height = 20, height_variation = 1, height_offset_x = 0, height_offset_z = 0, random_variation = false, optimize = true)
 {
     var root_pos = get_tile_pos(x, y, half_board);
     root_pos.x -= TILE_SIZE/2;
@@ -73,27 +82,32 @@ function add_detail(x, y, half_board, anchor, color, stroke = 4, density = 20, h
     return grass_container;
 }
 
-function add_grass(x, y, half_board, anchor, color, density = 20, height = 20, variation = 1, optimize = true)
+function add_grass(x: number, y: number, half_board: number, anchor: number, color: string, density: number = 20, height: number = 20, variation: number = 1, optimize: boolean = true)
 {
     return add_detail(x, y, half_board, anchor, color, 4, density, height, variation, 0, 0, false, optimize);
 }
 
-function add_mineral(x, y, half_board, anchor, color, density)
+function add_mineral(x: number, y: number, half_board: number, anchor: Zdog.Anchor, color: string, density: number)
 {
     return add_detail(x, y, half_board, anchor, color, 8, density, 0, 0, 1, 0, true);
 }
 
-function get_tile_pos(x, y, half_board)
+function get_tile_pos(x: number, y: number, half_board: number)
 {
     return {x: x * TILE_SIZE - half_board, z: y * TILE_SIZE - half_board};
 }
 
-function semi_random_color(r, g, b, variation=10)
+function semi_random_color(r: number, g: number, b: number, variation: number = 10)
 {
     return `rgb(${Zdog.lerp(r-variation, r+variation, Math.random())}, ${Zdog.lerp(g-variation, g+variation, Math.random())}, ${Zdog.lerp(b-variation, b+variation, Math.random())}`;
 }
 
-function create_tile(color, x, y, half_board, anchor, tileType = -1, fill = true, stroke = 1)
+function varied_color(color: IVariedColor)
+{
+    return semi_random_color(color.r, color.g, color.b, color.v);
+}
+
+function create_tile(color: string, x: number, y: number, half_board: number, anchor: Zdog.Anchor, tileType: number = -1, fill: boolean = true, stroke: number = 1)
 {
     var tile_surface = new Zdog.Rect({
         tileType: tileType,
@@ -110,7 +124,7 @@ function create_tile(color, x, y, half_board, anchor, tileType = -1, fill = true
     return tile_surface;
 }
 
-function create_drone(x, y, anchor)
+function create_drone(x: number, y: number, anchor: Zdog.Anchor)
 {
     var stroke = TILE_SIZE / 2;
     var drone_group = new Zdog.Group({
@@ -150,63 +164,62 @@ function create_drone(x, y, anchor)
     return drone_group;
 }
 
-function init_tile(game, x, y, half_board, tile, anchor)
+function init_tile(game: GameState, x: number, y: number, half_board: number, tile: Tiles, anchor: Zdog.Anchor)
 {
-    return create_tile(semi_random_color(...colorTable[tile]), x, y, half_board, anchor, tile);
+    return create_tile(varied_color(colorTable.get(tile)), x, y, half_board, anchor, tile);
 }
 
-export function BoardManager(game)
+class BoardManager
 {
-    function BoardCoords(x, y)
-    {
-        var self = this;
-        self.x = x;
-        self.y = y;
+    rot_offset: number;
+    rot_buf: number;
+    pitch_offset = -Zdog.TAU / 12;
+    pitch_buf = 0;
+    selected_tile: ICoords;
+    game: GameState;
 
-        return self;
+    constructor(game: GameState)
+    {
+        this.rot_offset = -Zdog.TAU / 8;
+        this.rot_buf = 0;
+        this.pitch_offset = -Zdog.TAU / 12;
+        this.pitch_buf = 0;
+        this.selected_tile = new Coords(-1, -1);
+        this.game = game;
     }
 
-    self = this;
-    self.rot_offset = -Zdog.TAU / 8;
-    self.rot_buf = 0;
-    self.pitch_offset = -Zdog.TAU / 12;
-    self.pitch_offset_buf = 0;
-    self.selected_tile = new BoardCoords(-1, -1);
-
-    self.dragStart = function(pointer)
+    dragStart(pointer: ICoords)
     {
 
     }
 
-    self.dragMove = function(pointer, moveX, moveY)
+    dragMove(pointer: ICoords, moveX: number, moveY: number)
     {
-        game.m_pitch = Math.max(
+        this.game.m_pitch = Math.max(
             -Zdog.TAU / 4, Math.min(
-                -Zdog.TAU / 20, -Zdog.TAU * moveY / 2000 + self.pitch_offset
+                -Zdog.TAU / 20, -Zdog.TAU * moveY / 2000 + this.pitch_offset
                 ));
-        self.pitch_buf = game.m_pitch;
+        this.pitch_buf = this.game.m_pitch;
 
-        game.m_rotation = -Zdog.TAU * moveX / 1000 + self.rot_offset;
-        self.rot_buf = game.m_rotation;
+        this.game.m_rotation = -Zdog.TAU * moveX / 1000 + this.rot_offset;
+        this.rot_buf = this.game.m_rotation;
     }
 
-    self.dragEnd = function()
+    dragEnd()
     {
-        self.rot_offset = self.rot_buf;
-        self.pitch_offset = self.pitch_buf;
+        this.rot_offset = this.rot_buf;
+        this.pitch_offset = this.pitch_buf;
     }
 
-    self.selectTile = function(x, y)
+    selectTile(x: number, y: number)
     {
-        self.selected_tile = new BoardCoords(x, y);
+        this.selected_tile = new Coords(x, y);
     }
-
-    return self;
 }
 
-export function drawBoard(game, board_mgr, event)
+export function drawBoard(game: GameState, board_mgr: BoardManager)
 {
-    var canvas = document.getElementById("cvs_viewport");
+    var canvas = document.getElementById("cvs_viewport") as HTMLCanvasElement;
     var ctx = canvas.getContext("2d");
     var half_board = ((game.m_tiles.length - 1) * TILE_SIZE / 2);
     var full_board = game.m_tiles.length * TILE_SIZE;
@@ -245,10 +258,10 @@ export function drawBoard(game, board_mgr, event)
     });
 
     // Keeps track of all tiles for later changes
-    var tileArr = [];
-    var highlightArr = [];
-    var grassArr = [];
-    var droneArr = [];
+    var tileArr: Zdog.Anchor = [];
+    var highlightArr: Zdog.Anchor = [];
+    var grassArr: Zdog.Anchor = [];
+    var droneArr: Zdog.Anchor = [];
 
     for(var i = 0; i < game.m_tiles.length; ++i)
     {
@@ -283,7 +296,7 @@ export function drawBoard(game, board_mgr, event)
         }
     }
 
-    function draw(delta)
+    function draw(delta: number)
     {
         if(game.m_zoom < GRASS_THRESHOLD)
         {
@@ -350,9 +363,9 @@ export function drawBoard(game, board_mgr, event)
         game.m_dirty_tiles = [];
 
         // Update selections
-        highlightArr.map((arr) =>
+        highlightArr.map((arr: Array<Zdog.Anchor>) =>
         {
-            arr.map((tile) => 
+            arr.map((tile: Zdog.Anchor) => 
             {
                 tile.visible = false;
             });
@@ -364,7 +377,7 @@ export function drawBoard(game, board_mgr, event)
         }
 
         // Do drawing
-        ctx.fillRect(0, 0, ctx.width, ctx.height);
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         board.zoom = game.m_zoom;
         board.rotate.x = game.m_pitch;
         board.rotate.y = game.m_rotation;
@@ -375,3 +388,5 @@ export function drawBoard(game, board_mgr, event)
 
     requestAnimationFrame(draw);
 }
+
+export { BoardManager };

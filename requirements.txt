@@ -15,12 +15,12 @@ Tasks:
 	1. (Done) Arrange UI elements
 		1a: Add javascript for dropdown menus
 	2. (Done) Set up main loop
-	3. Create tile grid
+	3. (Done) Create tile grid
 	4. (Done) Create drone class and function stubs
 	5. (Done) Add drone functions to main loop
 	6: (Done) Add event-driven UI
-	7: Decouple game data from events
-	8. Add drone selection capability
+	7: (Done) Decouple game data from events
+	8. (Done) Add drone selection capability
 	9. Add functionality to drone editor
 	10. Implement basic drone functions
 	11. Implement drone pathfinding

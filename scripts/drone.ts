@@ -1,43 +1,56 @@
-import { Goals, Deficits } from "./constants.js";
-import { AddItemEvent, ChangeEnergyEvent } from "./event/events.js";
+import { Goals, Deficits } from "./constants";
+import { GameState } from "./game/game";
+import { Job } from "./game/jobs";
+import { Items } from "./constants";
+import { ChangeEnergyEvent, AddItemEvent } from "./event/events";
 
-function InventoryPair(item, count)
+class InventoryPair
 {
-    var self = this;
-    self.m_item = item;
-    self.m_count = count;
-    
-    return self;
+    m_item: number;
+    m_count: number;
+    constructor(item: number, count: number)
+    {
+        this.m_item = item;
+        this.m_count = count;
+    }
 }
 
-export function Drone(index, pos_x, pos_y, job)
+class Drone
 {
-    var self = this;
-    self.m_index = index;
-    self.m_pos_x = pos_x;
-    self.m_pos_y = pos_y;
-    self.m_energy = 100;
-    self.m_energy_threshold = 30; // Inclusive threshold for when this should create a goal
-    self.m_inventory = [];
-    self.m_job = job;
-    self.m_goal = Goals.NONE;
+    m_index: number;
+    m_pos_x: number;
+    m_pos_y: number;
+    m_energy: number;
+    m_energy_threshold: number; // Inclusive threshold for when this should create a goal
+    m_inventory: Array<InventoryPair>;
+    m_job: Job;
+    m_goal: Goals;
 
-    return self;
+    constructor(index: number, pos_x: number, pos_y: number, job: Job)
+    {
+        this.m_index = index;
+        this.m_pos_x = pos_x;
+        this.m_pos_y = pos_y;
+        this.m_energy = 100;
+        this.m_energy_threshold = 30;
+        this.m_inventory = [];
+        this.m_job = job;
+        this.m_goal = Goals.NONE;
+    }
 }
 
-export function Dronef()
+class Dronef
 {
-    var self = this;
     /**
      * Checks the drone for any deficits, and returns the one with highest priority
      */
-    this.get_priority_deficit = function(drone){
-        var energy_deficit = this.has_energy_deficit(drone, drone.m_energy_threshold);
-        var crop_deficit = this.has_crop_deficit(drone, drone.m_crop_threshold);
+    get_priority_deficit(drone: Drone){
+        let energy_deficit = this.has_energy_deficit(drone, drone.m_energy_threshold);
+        let crop_deficit = this.has_crop_deficit(drone, drone.m_job.m_crop_threshold);
 
         if(drone.m_job)
         {
-            for(var i = 0; i < drone.m_job.m_deficit_priority.length; ++i)
+            for(let i = 0; i < drone.m_job.m_deficit_priority.length; ++i)
             {
                 if(drone.m_job.m_deficit_priority[i] === Deficits.ENERGY)
                 {
@@ -68,22 +81,22 @@ export function Dronef()
         return Deficits.NONE;
     }
 
-    this.has_energy_deficit = function(drone, threshold)
+    has_energy_deficit(drone: Drone, threshold: number)
     {
         return drone.m_energy <= drone.m_energy_threshold;
     }
 
-    this.has_crop_deficit = function(drone, threshold)
+    has_crop_deficit(drone: Drone, threshold: number)
     {
         return drone.m_inventory
     }
 
-    this.set_goal_from_deficit = function(drone, game, deficit, change_event)
+    set_goal_from_deficit(drone: Drone, game: GameState, deficit: Deficits, change_event: any)
     {
-        var initial_goal = drone.m_goal;
+        let initial_goal = drone.m_goal;
         if(deficit != Deficits.NONE)
         {
-            drone.m_goal = drone.m_job.m_goal_table[deficit];
+            drone.m_goal = drone.m_job.m_goal_table.get(deficit);
         }
         else
         {
@@ -96,9 +109,9 @@ export function Dronef()
         }
     }
 
-    this.to_index = function(drone, game)
+    to_index(drone: Drone, game: GameState)
     {
-        var comp = function(val)
+        let comp = function(val: Drone)
         {
             return val == drone;
         }
@@ -111,17 +124,17 @@ export function Dronef()
      * @param item the item to search for
      * @returns index of the item
      */
-    this.find_in_inventory = function(drone, item)
+    find_in_inventory(drone: Drone, item: Items)
     {
-        var found_inv_pair = drone.m_inventory.findIndex(function(inv_pair){
+        let found_inv_pair = drone.m_inventory.findIndex(function(inv_pair){
             return inv_pair.m_item == item;
         });
         return found_inv_pair;
     }
 
-    this.add_item = function(drone, item, count = 1)
+    add_item(drone: Drone, item: Items, count = 1)
     {
-        var index = this.find_in_inventory(drone, item);
+        let index = this.find_in_inventory(drone, item);
         if(index == -1)
         {
             // Don't allow adding negative items
@@ -144,9 +157,11 @@ export function Dronef()
         document.dispatchEvent(AddItemEvent(drone.m_index, item, count));
     }
 
-    this.change_energy = function(drone, change)
+    change_energy(drone: Drone, change: number)
     {
         drone.m_energy += change;
         document.dispatchEvent(ChangeEnergyEvent(drone.m_index, change));
     }
 }
+
+export { Drone, Dronef as DroneHelper, InventoryPair };

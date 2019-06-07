@@ -2,5 +2,9 @@
     "easycompile.typescript":
     {
         "outfile": "build/compiled.js"
-    }
+    },
+    "javascript.suggest.autoImports": false,
+    "typescript.format.placeOpenBraceOnNewLineForControlBlocks": true,
+    "typescript.format.placeOpenBraceOnNewLineForFunctions": true,
+    "typescript.referencesCodeLens.enabled": true
 }
