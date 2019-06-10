@@ -86,7 +86,6 @@ import { JobCitizen } from "./game/jobs.js";
         {
             do_tick(game, drone_helper);
 
-            game.m_tiles[0][1] = Tiles.GRASS;
             game.m_dirty_tiles.push({x: 0, y: 1})
         });
 
@@ -210,7 +209,7 @@ import { JobCitizen } from "./game/jobs.js";
         }
         else if(drone.m_goal == Goals.HARVEST)
         {
-            if(game.m_tiles[drone.m_pos_x][drone.m_pos_y] == Tiles.WHEAT)
+            if(game.m_tiles[drone.m_pos_x][drone.m_pos_y].type == Tiles.WHEAT)
             {
                 game.harvest(drone.m_pos_x, drone.m_pos_y);
                 drone_helper.add_item(drone, Items.WHEAT, 1);
@@ -230,13 +229,6 @@ import { JobCitizen } from "./game/jobs.js";
     var viewmodel = new ViewModel(game);
     viewmodel.addDrone();
     viewmodel.selectDrone(0);
-
-    game.m_tiles = [
-        [Tiles.GRASS, Tiles.ORE, Tiles.GRASS, Tiles.WHEAT_RIPE],
-        [Tiles.GRASS, Tiles.ORE, Tiles.ORE, Tiles.WHEAT_RIPE],
-        [Tiles.GRASS, Tiles.GRASS, Tiles.ORE, Tiles.WHEAT_RIPE],
-        [Tiles.WHEAT_RIPE, Tiles.WHEAT_RIPE, Tiles.ORE, Tiles.WHEAT_RIPE]
-    ]
 
     GenerateTiles(game, 16, 16);
 
