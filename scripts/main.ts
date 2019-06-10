@@ -1,15 +1,15 @@
-import { Drone, DroneHelper } from "drone";
-import { EventPublisher, EventPublisherHelper } from 'event/eventpublisher';
+import { Drone, DroneHelper } from "./drone";
+import { EventPublisher, EventPublisherHelper } from './event/eventpublisher';
 import { Events, AddDroneEvent, AddItemEvent, TickEvent, ChangeEnergyEvent, ChangeSelectedEvent, ChangeGoalEvent, RenderEvent } from './event/events';
-import { GameState } from "game/game";
-import { GenerateTiles } from "game/tilegenerator";
-import { drawBoard, BoardManager } from "render/render";
-import { Table } from "util/util";
-import { InputManager, InputManagerHelper } from "input/input";
-import "knockout";
-import { Tiles, Items, Goals, ItemStrings, GoalStrings } from "constants";
-import { ViewModel } from "input/viewmodel";
-import { JobCitizen } from "game/jobs";
+import { GameState } from "./game/game";
+import { GenerateTiles } from "./game/tilegenerator";
+import { drawBoard, BoardManager } from "./render/render";
+import { Table } from "./util/util";
+import { InputManager, InputManagerHelper } from "./input/input";
+import * as ko from "../node_modules/knockout/build/output/knockout-latest.js";
+import { Tiles, Items, Goals, ItemStrings, GoalStrings } from "./constants";
+import { ViewModel } from "./input/viewmodel";
+import { JobCitizen } from "./game/jobs";
 
 (function(/**Window */window){
     const document = window.document;

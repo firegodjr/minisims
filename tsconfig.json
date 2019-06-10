@@ -1,13 +1,15 @@
 {
     "compilerOptions": {
-    "target": "es2017",
-    "lib": [
-        "es2017",
-        "dom"
-    ],
-        "outDir": "./",
-        "module": "es2015",
-        "noImplicitAny": true,
+        "target": "es5",
+        "lib": [
+            "es2017",
+            "dom",
+            "es5"
+        ],
+        "outDir": "./build/",
+        "module": "esnext",
+        "moduleResolution": "node",
+        "noImplicitAny": false,
     },
     "include": [
         "./scripts/*"
