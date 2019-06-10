@@ -1,4 +1,4 @@
-import { createTable } from "./util/util";
+import { Table } from "util/util";
 
 /* Drone Goals */
 enum Goals
@@ -60,8 +60,7 @@ enum Deficits
     ENOUGH_CROP
 }
 
-const TILE_DEGRADE_TABLE = createTable(
-    { inputs: [Tiles.WHEAT_RIPE, Tiles.ORE_RIPE], outputs: [Tiles.WHEAT, Tiles.ORE] });
+const TILE_DEGRADE_TABLE = new Table([Tiles.WHEAT_RIPE, Tiles.ORE_RIPE], [Tiles.WHEAT, Tiles.ORE]);
 
 export { Goals, Tiles, Items, Deficits };
 export { GoalStrings, TileStrings, ItemStrings };

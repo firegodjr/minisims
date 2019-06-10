@@ -1,6 +1,6 @@
 import { Tiles } from "../constants";
-import { createTable } from "../util/util";
-import { Zdog } from '../../node_modules/zdog/dist/zdog.dist.js';
+import { Table } from "../util/util";
+import { Zdog } from '../zDog/zdog.js';
 import { GameState, ICoords } from "../game/game";
 import { Coords } from "../game/game";
 
@@ -15,8 +15,7 @@ interface IVariedColor
     v?: number
 }
 
-const colorTable = createTable(
-    { inputs: [Tiles.GRASS, Tiles.WHEAT, Tiles.WHEAT_RIPE, Tiles.STONE, Tiles.ORE, Tiles.ORE_RIPE, Tiles.WATER], outputs: [{ r: 35, g: 135, b: 43 }, { r: 100, g: 75, b: 45 }, { r: 210, g: 155, b: 94 }, { r: 150, g: 150, b: 150, v: 5 }, { r: 80, g: 80, b: 80, v: 5 }, { r: 80, g: 80, b: 80, v: 5 }, { r: 110, g: 210, b: 190, v: 0 }] });
+const colorTable = new Table([Tiles.GRASS, Tiles.WHEAT, Tiles.WHEAT_RIPE, Tiles.STONE, Tiles.ORE, Tiles.ORE_RIPE, Tiles.WATER], [{ r: 35, g: 135, b: 43 }, { r: 100, g: 75, b: 45 }, { r: 210, g: 155, b: 94 }, { r: 150, g: 150, b: 150, v: 5 }, { r: 80, g: 80, b: 80, v: 5 }, { r: 80, g: 80, b: 80, v: 5 }, { r: 110, g: 210, b: 190, v: 0 }]);
 
 function add_detail(x: number, y: number, half_board: number, anchor: number, color: string, stroke: number = 4, density: number = 20, height = 20, height_variation = 1, height_offset_x = 0, height_offset_z = 0, random_variation = false, optimize = true)
 {

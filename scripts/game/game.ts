@@ -1,9 +1,9 @@
 import { Drone } from "../drone";
-import { JobCitizen } from "./jobs";
+import { JobCitizen } from "jobs";
 import { InputManager } from "../input/input.js";
 import { Tiles, TILE_DEGRADE_TABLE } from "../constants";
 import { ChangeSelectedEvent, AddDroneEvent } from "../event/events.js";
-import { Zdog } from '../../node_modules/zdog/dist/zdog.dist.js';
+import { Zdog } from "../zDog/zdog.js";
 
 interface ICoords
 {

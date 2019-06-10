@@ -1,17 +1,12 @@
 {
     "compilerOptions": {
-    "target": "es2016",
+    "target": "es2017",
     "lib": [
         "es2017",
         "dom"
     ],
-    // ...
-        "baseUrl": "src",
-        "paths": {
-            
-        },
         "outDir": "./",
-        "module": "system",
+        "module": "es2015",
         "noImplicitAny": true,
     },
     "include": [
