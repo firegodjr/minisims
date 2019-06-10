@@ -36,12 +36,13 @@ class Tile
     type: Tiles;
     color: IVariedColor;
     color_offset: IVariedColor; // Added to color before finalizing
+    height: number;
     grass_color: string;
     stroke: number;
-    density: number;
-    height: number;
-    height_variation: number;
-    optimize: boolean;
+    grass_density: number;
+    grass_height: number;
+    grass_height_variation: number;
+    optimize_grass: boolean;
 
     get_color()
     {
@@ -60,15 +61,16 @@ class Tile
         }
     }
 
-    constructor(type: Tiles, color: IVariedColor, stroke: number, density: number, height: number, height_variation: number, optimize: boolean, color_offset?: IVariedColor, grass_color?: string)
+    constructor(type: Tiles, color: IVariedColor, grass_stroke: number, grass_density: number, grass_height: number, height_variation: number, optimize_grass: boolean, height?: number, color_offset?: IVariedColor, grass_color?: string)
     {
         this.type = type;
         this.color = color;
-        this.stroke = stroke;
-        this.density = density;
+        this.stroke = grass_stroke;
         this.height = height;
-        this.height_variation = height_variation;
-        this.optimize = optimize;
+        this.grass_density = grass_density;
+        this.grass_height = grass_height;
+        this.grass_height_variation = height_variation;
+        this.optimize_grass = optimize_grass;
         this.color_offset = color_offset;
         this.grass_color = grass_color;
     }
@@ -114,7 +116,7 @@ class TileCreator
         { key: Tiles.WHEAT_RIPE, value: false }
     ]);
     create(type: Tiles) : Tile
-    {   let tile = new Tile(type, Object.assign({}, this.colorTable.get(type)), 4, this.densityTable.get(type), this.heightTable.get(type), this.variationTable.get(type), this.optimizeTable.get(type), undefined, this.grassColorTable.get(type));
+    {   let tile = new Tile(type, Object.assign({}, this.colorTable.get(type)), 4, this.densityTable.get(type), this.heightTable.get(type), this.variationTable.get(type), this.optimizeTable.get(type), 0, undefined, this.grassColorTable.get(type));
         return tile;
     }
 }

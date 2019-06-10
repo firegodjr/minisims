@@ -103,27 +103,53 @@ function get_tile_pos(x: number, y: number, half_board: number)
 
 function create_tile_from_object(tile: Tile, x: number, y: number, half_board: number, anchor: any)
 {
-    return create_tile(tile.get_color(), x, y, half_board, anchor, tile.type, true, tile.stroke);
+    return create_tile(tile.get_color(), x, y, half_board, anchor, tile.type, true, 1, true);
 }
 
 function create_grass_from_tile(tile: Tile, x: number, y: number, half_board: number, anchor: any)
 {
-    return add_grass(x, y, half_board, anchor, tile.grass_color, tile.density, tile.height, tile.height_variation, tile.optimize);
+    return add_grass(x, y, half_board, anchor, tile.grass_color, tile.grass_density, tile.grass_height, tile.grass_height_variation, tile.optimize_grass);
 }
 
-function create_tile(color: string, x: number, y: number, half_board: number, anchor: any, tileType: number = -1, fill: boolean = true, stroke: number = 1)
+function create_tile(color: string, x: number, y: number, half_board: number, anchor: any, tileType: number = -1, fill: boolean = true, stroke: number = 1, box: boolean = false)
 {
-    var tile_surface = new Zdog.Rect({
-        tileType: tileType,
-        addTo: anchor,
-        color: color,
-        width: TILE_SIZE,
-        height: TILE_SIZE,
-        stroke: stroke,
-        fill: fill,
-        translate: get_tile_pos(x, y, half_board),
-        rotate: { x: Zdog.TAU / 4 }
-    });
+    let tile_surface;
+    if(box)
+    {
+        let box_translation: {x: number, y: number, z: number} = {x: 0, y: 0, z: 0};
+        let tile_location = get_tile_pos(x, y, half_board);
+        box_translation.x = tile_location.x;
+        box_translation.z = tile_location.z;
+        box_translation.y += TILE_SIZE / 4;
+
+        tile_surface = new Zdog.Box({
+            tileType: tileType,
+            addTo: anchor,
+            color: color,
+            topFace: color,
+            width: TILE_SIZE,
+            height: TILE_SIZE,
+            depth: TILE_SIZE/2,
+            stroke: stroke,
+            fill: fill,
+            translate: box_translation,
+            rotate: { x: Zdog.TAU / 4 }
+        });
+    }
+    else
+    {
+        tile_surface = new Zdog.Rect({
+            tileType: tileType,
+            addTo: anchor,
+            color: color,
+            width: TILE_SIZE,
+            height: TILE_SIZE,
+            stroke: stroke,
+            fill: fill,
+            translate: get_tile_pos(x, y, half_board),
+            rotate: { x: Zdog.TAU / 4 }
+        });
+    }
 
     return tile_surface;
 }
@@ -244,7 +270,8 @@ export function drawBoard(game: GameState, board_mgr: BoardManager)
     });
 
     var tiles = new Zdog.Group({
-        addTo: root
+        addTo: root,
+        updateSort: true
     });
 
     var grass = new Zdog.Group({
@@ -269,6 +296,8 @@ export function drawBoard(game: GameState, board_mgr: BoardManager)
 
     for(var i = 0; i < game.m_tiles.length; ++i)
     {
+        const TILE_HEIGHT_AMNT = TILE_SIZE * 5;
+
         tileArr.push([]);
         highlightArr.push([]);
         grassArr.push([]);
@@ -276,13 +305,18 @@ export function drawBoard(game: GameState, board_mgr: BoardManager)
         {
             var tile = game.m_tiles[i][j];
             var tile_surface = create_tile_from_object(game.m_tiles[i][j], i, j, half_board, tiles);
+            tile_surface.translate.y -= tile.height * TILE_HEIGHT_AMNT;
+
             var tile_highlight = create_tile("rgba(255, 0, 0, 0.8)", i, j, half_board, highlights, -1, false, 4);
+            tile_highlight.translate.y -= tile.height * TILE_HEIGHT_AMNT;
             tile_highlight.visible = false;
 
             tileArr[i].push(tile_surface);
             highlightArr[i].push(tile_highlight);
 
-            grassArr[i].push(add_grass(i, j, half_board, grass, tile_surface.color, tile.density, tile.height, tile.height_variation, tile.optimize));
+            var tile_grass = add_grass(i, j, half_board, tiles, tile_surface.color, tile.grass_density, tile.grass_height, tile.grass_height_variation, tile.optimize_grass);
+            tile_grass.translate.y -= tile.height * TILE_HEIGHT_AMNT;
+            grassArr[i].push(tile_grass);
         }
     }
 
@@ -333,7 +367,7 @@ export function drawBoard(game: GameState, board_mgr: BoardManager)
             let newTile = create_tile_from_object(game.m_tiles[pair.x][pair.y], pair.x, pair.y, half_board, tiles);
             tileArr[pair.x][pair.y] = newTile
 
-            grassArr[pair.x][pair.y] = add_grass(i, j, half_board, grass, newTile.color, tile.density, tile.height, tile.height_variation, tile.optimize);
+            grassArr[pair.x][pair.y] = add_grass(i, j, half_board, grass, newTile.color, tile.grass_density, tile.grass_height, tile.grass_height_variation, tile.optimize_grass);
 
             tiles.updateGraph();
             grass.updateGraph();
