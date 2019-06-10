@@ -16,7 +16,12 @@ export function GenerateTiles(game, width, height) {
             var water_level = (noise.perlin2((i + 1) / 8, (j + 1) / 8) + 1) / 2;
             for (var tl = 0; tl < WATER_LEVEL_RANGES.length; ++tl) {
                 if (water_level > WATER_LEVEL_RANGES[tl].min) {
-                    tiles[i].push(game.m_tile_creator.create(WATER_LEVEL_RANGES[tl].tile));
+                    var new_tile = game.m_tile_creator.create(WATER_LEVEL_RANGES[tl].tile);
+                    //new_tile.color.v = 0;
+                    new_tile.color.r += (water_level - WATER_LEVEL_RANGES[tl].min - 0.5) * 80;
+                    new_tile.color.g += (water_level - WATER_LEVEL_RANGES[tl].min - 0.5) * 80;
+                    new_tile.color.b += (water_level - WATER_LEVEL_RANGES[tl].min - 0.5) * 80;
+                    tiles[i].push(new_tile);
                     break;
                 }
             }

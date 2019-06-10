@@ -41,7 +41,7 @@ var Tile = /** @class */ (function () {
 var TileCreator = /** @class */ (function () {
     function TileCreator() {
         this.colorTable = new Table([
-            { key: Tiles.GRASS, value: { r: 35, g: 135, b: 43 } },
+            { key: Tiles.GRASS, value: { r: 35, g: 135, b: 43, v: 7 } },
             { key: Tiles.WHEAT, value: { r: 100, g: 75, b: 45 } },
             { key: Tiles.WHEAT_RIPE, value: { r: 210, g: 155, b: 94 } },
             { key: Tiles.STONE, value: { r: 150, g: 150, b: 150, v: 5 } },
@@ -74,7 +74,7 @@ var TileCreator = /** @class */ (function () {
         ]);
     }
     TileCreator.prototype.create = function (type) {
-        var tile = new Tile(type, this.colorTable.get(type), 4, this.densityTable.get(type), this.heightTable.get(type), this.variationTable.get(type), this.optimizeTable.get(type), undefined, this.grassColorTable.get(type));
+        var tile = new Tile(type, Object.assign({}, this.colorTable.get(type)), 4, this.densityTable.get(type), this.heightTable.get(type), this.variationTable.get(type), this.optimizeTable.get(type), undefined, this.grassColorTable.get(type));
         return tile;
     };
     return TileCreator;
