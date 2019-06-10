@@ -1,6 +1,6 @@
-import { Drone } from "../drone";
-import { Items, Goals } from "../constants";
-import { GameState } from "../game/game";
+import { Drone } from "../drone.js";
+import { Items, Goals } from "../constants.js";
+import { GameState } from "../game/game.js";
 
 export enum Events
 {

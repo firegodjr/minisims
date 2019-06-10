@@ -8,8 +8,8 @@
         ],
         "outDir": "./build/",
         "module": "esnext",
-        "moduleResolution": "node",
-        "noImplicitAny": false,
+        "moduleResolution": "classic",
+        "noImplicitAny": false
     },
     "include": [
         "./scripts/*"

@@ -1,8 +1,8 @@
-import { Goals, Deficits } from "./constants";
-import { GameState } from "./game/game";
-import { Job } from "./game/jobs";
-import { Items } from "./constants";
-import { ChangeEnergyEvent, AddItemEvent } from "./event/events";
+import { Goals, Deficits } from "./constants.js";
+import { GameState } from "./game/game.js";
+import { Job } from "./game/jobs.js";
+import { Items } from "./constants.js";
+import { ChangeEnergyEvent, AddItemEvent } from "./event/events.js";
 
 class InventoryPair
 {

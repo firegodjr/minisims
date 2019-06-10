@@ -1,8 +1,8 @@
-import { Tiles } from "../constants";
-import { Table } from "../util/util";
-import { Zdog } from '../zDog/zdog.js';
-import { GameState, ICoords } from "../game/game";
-import { Coords } from "../game/game";
+import { Tiles } from "../constants.js";
+import { Table } from "../util/util.js";
+import { GameState, ICoords } from "../game/game.js";
+import { Coords } from "../game/game.js";
+declare var Zdog: any;
 
 const TILE_SIZE = 40;
 const GRASS_THRESHOLD = 0.5;
@@ -86,7 +86,7 @@ function add_grass(x: number, y: number, half_board: number, anchor: number, col
     return add_detail(x, y, half_board, anchor, color, 4, density, height, variation, 0, 0, false, optimize);
 }
 
-function add_mineral(x: number, y: number, half_board: number, anchor: Zdog.Anchor, color: string, density: number)
+function add_mineral(x: number, y: number, half_board: number, anchor: any, color: string, density: number)
 {
     return add_detail(x, y, half_board, anchor, color, 8, density, 0, 0, 1, 0, true);
 }
@@ -106,7 +106,7 @@ function varied_color(color: IVariedColor)
     return semi_random_color(color.r, color.g, color.b, color.v);
 }
 
-function create_tile(color: string, x: number, y: number, half_board: number, anchor: Zdog.Anchor, tileType: number = -1, fill: boolean = true, stroke: number = 1)
+function create_tile(color: string, x: number, y: number, half_board: number, anchor: any, tileType: number = -1, fill: boolean = true, stroke: number = 1)
 {
     var tile_surface = new Zdog.Rect({
         tileType: tileType,
@@ -123,7 +123,7 @@ function create_tile(color: string, x: number, y: number, half_board: number, an
     return tile_surface;
 }
 
-function create_drone(x: number, y: number, anchor: Zdog.Anchor)
+function create_drone(x: number, y: number, anchor: any)
 {
     var stroke = TILE_SIZE / 2;
     var drone_group = new Zdog.Group({
@@ -163,7 +163,7 @@ function create_drone(x: number, y: number, anchor: Zdog.Anchor)
     return drone_group;
 }
 
-function init_tile(game: GameState, x: number, y: number, half_board: number, tile: Tiles, anchor: Zdog.Anchor)
+function init_tile(game: GameState, x: number, y: number, half_board: number, tile: Tiles, anchor: any)
 {
     return create_tile(varied_color(colorTable.get(tile)), x, y, half_board, anchor, tile);
 }
@@ -228,9 +228,9 @@ export function drawBoard(game: GameState, board_mgr: BoardManager)
         color: "rgb(110, 210, 190)",
         resize: true,
         dragRotate: true,
-        onDragStart: board_mgr.dragStart,
-        onDragMove: board_mgr.dragMove,
-        onDragEnd: board_mgr.dragEnd,
+        onDragStart: (p) => board_mgr.dragStart(p),
+        onDragMove: (p, mx, my) => board_mgr.dragMove(p, mx, my),
+        onDragEnd: () => board_mgr.dragEnd(),
         rotate: { x: -Zdog.TAU / 12, y: -Zdog.TAU /8}
     });
 
@@ -257,10 +257,10 @@ export function drawBoard(game: GameState, board_mgr: BoardManager)
     });
 
     // Keeps track of all tiles for later changes
-    var tileArr: Zdog.Anchor = [];
-    var highlightArr: Zdog.Anchor = [];
-    var grassArr: Zdog.Anchor = [];
-    var droneArr: Zdog.Anchor = [];
+    var tileArr: any = [];
+    var highlightArr: any = [];
+    var grassArr: any = [];
+    var droneArr: any = [];
 
     for(var i = 0; i < game.m_tiles.length; ++i)
     {
@@ -362,9 +362,9 @@ export function drawBoard(game: GameState, board_mgr: BoardManager)
         game.m_dirty_tiles = [];
 
         // Update selections
-        highlightArr.map((arr: Array<Zdog.Anchor>) =>
+        highlightArr.map((arr: Array<any>) =>
         {
-            arr.map((tile: Zdog.Anchor) => 
+            arr.map((tile: any) => 
             {
                 tile.visible = false;
             });

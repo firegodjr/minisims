@@ -1,5 +1,5 @@
-import { Table } from "../util/util";
-import { Deficits, Goals, Items } from "../constants";
+import { Table } from "../util/util.js";
+import { Deficits, Goals, Items } from "../constants.js";
 
 /**
  * Constructor. A task assigned to a drone.

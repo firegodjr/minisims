@@ -6,6 +6,7 @@
   "dependencies": {
     "express": "^4.17.1",
     "knockout": "^3.5.0",
+    "knockout-es5": "^0.4.5",
     "less": "^3.9.0",
     "zdog": "^1.0.2"
   },

@@ -1,4 +1,4 @@
-import { Table } from "util/util";
+import { Table } from "./util/util.js";
 
 /* Drone Goals */
 enum Goals

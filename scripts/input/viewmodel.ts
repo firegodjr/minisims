@@ -1,10 +1,9 @@
-import "knockout";
-import { Drone, DroneHelper, InventoryPair } from "../drone";
-import { Items } from "../constants";
-import { GameState } from "../game/game";
-import { ChangeSelectedEvent } from '../event/events';
-import { ObservableArray, Observable,  } from "knockout";
-import * as ko from "knockout";
+import { Drone, DroneHelper, InventoryPair } from "../drone.js";
+import { Items } from "../constants.js";
+import { GameState } from "../game/game.js";
+import { ChangeSelectedEvent } from '../event/events.js';
+import { ObservableArray, Observable, KnockoutStatic } from "../../node_modules/knockout/build/output/knockout-latest.js";
+declare var ko: KnockoutStatic;
 
 class ViewModel
 {
@@ -26,7 +25,7 @@ class ViewModel
         this.drones = ko.observableArray(); 
         this.game = game;
 
-        this.drone.subscribe(this.updateDroneData);
+        this.drone.subscribe(() => this.updateDroneData());
     }
 
     private updateDroneData()

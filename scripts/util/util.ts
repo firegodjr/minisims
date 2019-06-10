@@ -36,6 +36,8 @@ class Table<V>
     {
         if(!inputs || !outputs) return;
 
+        this.m_data = {};
+
         for(var i = 0; i < inputs.length; ++i)
         {
             this.add(inputs[i], outputs[i]);
