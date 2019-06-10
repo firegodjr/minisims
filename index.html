@@ -41,7 +41,7 @@
             <button id="btn_dotick">Next Turn</button>
             <h2>All Drones</h2>
             <ul class="dynamic-content" data-bind="foreach: drones">
-                <li><button data-bind="click: $parent.selectDrone.bind($data, $data), text: 'Drone: ' + $data"></button></li>
+                <li><button data-bind="click: $parent.selectDrone.bind($parent, $data), text: 'Drone: ' + $data"></button></li>
             </ul>
         </div>
     </div>

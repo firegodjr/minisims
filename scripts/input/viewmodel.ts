@@ -59,7 +59,7 @@ class ViewModel
     addDrone()
     {
         var drone_index = this.game.m_drones.length;
-        this.game.add_drone();
+        this.game.add_drone(); //FIXME the drone y coordinate is undefined sometimes, why?
         this.drones.push(drone_index);
     };
 

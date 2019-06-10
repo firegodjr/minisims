@@ -60,7 +60,10 @@ enum Deficits
     ENOUGH_CROP
 }
 
-const TILE_DEGRADE_TABLE = new Table([Tiles.WHEAT_RIPE, Tiles.ORE_RIPE], [Tiles.WHEAT, Tiles.ORE]);
+const TILE_DEGRADE_TABLE = new Table([
+    { key: Tiles.WHEAT_RIPE, value: Tiles.ORE_RIPE}, 
+    { key: Tiles.WHEAT, value: Tiles.ORE }
+]);
 
 export { Goals, Tiles, Items, Deficits };
 export { GoalStrings, TileStrings, ItemStrings };

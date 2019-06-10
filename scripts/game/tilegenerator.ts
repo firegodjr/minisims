@@ -1,5 +1,5 @@
 import { Tiles } from "../constants.js";
-import { GameState } from "../game/game.js";
+import { GameState, Tile } from "../game/game.js";
 declare var noise: any;
 
 const TILES = [Tiles.GRASS, Tiles.WATER];
@@ -15,7 +15,7 @@ const WHEAT_MIN = 0.65;
 export function GenerateTiles(game: GameState, width: number, height: number)
 {
     noise.seed(Math.random());
-    let tiles: Array<Array<Tiles>> = [];
+    let tiles: Array<Array<Tile>> = [];
     for(var i = 0; i < width; ++i)
     {
         tiles.push([]);
@@ -27,7 +27,7 @@ export function GenerateTiles(game: GameState, width: number, height: number)
             {
                 if(water_level > WATER_LEVEL_RANGES[tl].min)
                 {
-                    tiles[i].push(WATER_LEVEL_RANGES[tl].tile);
+                    tiles[i].push(game.m_tile_creator.create(WATER_LEVEL_RANGES[tl].tile));
                     break;
                 }
             }
@@ -36,9 +36,9 @@ export function GenerateTiles(game: GameState, width: number, height: number)
 
             if(crop_noise > WHEAT_MIN)
             {
-                if(tiles[i][j] == Tiles.GRASS)
+                if(tiles[i][j].type == Tiles.GRASS)
                 {
-                    tiles[i][j] = Tiles.WHEAT_RIPE;
+                    tiles[i][j] = game.m_tile_creator.create(Tiles.WHEAT_RIPE);
                 }
             }
         }

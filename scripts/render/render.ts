@@ -1,6 +1,6 @@
 import { Tiles } from "../constants.js";
 import { Table } from "../util/util.js";
-import { GameState, ICoords } from "../game/game.js";
+import { GameState, ICoords, Tile, TileCreator } from "../game/game.js";
 import { Coords } from "../game/game.js";
 declare var Zdog: any;
 
@@ -15,7 +15,11 @@ interface IVariedColor
     v?: number
 }
 
-const colorTable = new Table([Tiles.GRASS, Tiles.WHEAT, Tiles.WHEAT_RIPE, Tiles.STONE, Tiles.ORE, Tiles.ORE_RIPE, Tiles.WATER], [{ r: 35, g: 135, b: 43 }, { r: 100, g: 75, b: 45 }, { r: 210, g: 155, b: 94 }, { r: 150, g: 150, b: 150, v: 5 }, { r: 80, g: 80, b: 80, v: 5 }, { r: 80, g: 80, b: 80, v: 5 }, { r: 110, g: 210, b: 190, v: 0 }]);
+enum GrassColorType
+{
+    Inherit,
+    Custom
+}
 
 function add_detail(x: number, y: number, half_board: number, anchor: number, color: string, stroke: number = 4, density: number = 20, height = 20, height_variation = 1, height_offset_x = 0, height_offset_z = 0, random_variation = false, optimize = true)
 {
@@ -75,7 +79,8 @@ function add_detail(x: number, y: number, half_board: number, anchor: number, co
         addTo: grass_container,
         stroke: stroke,
         color: color,
-        path: path
+        visible: path.length == 0 ? false : true,
+        path: path.length == 0 ? [{move: {x: 0, y: 0, z: 0}}] : path
     });
 
     return grass_container;
@@ -96,14 +101,14 @@ function get_tile_pos(x: number, y: number, half_board: number)
     return {x: x * TILE_SIZE - half_board, z: y * TILE_SIZE - half_board};
 }
 
-function semi_random_color(r: number, g: number, b: number, variation: number = 10)
+function create_tile_from_object(tile: Tile, x: number, y: number, half_board: number, anchor: any)
 {
-    return `rgb(${Zdog.lerp(r-variation, r+variation, Math.random())}, ${Zdog.lerp(g-variation, g+variation, Math.random())}, ${Zdog.lerp(b-variation, b+variation, Math.random())}`;
+    return create_tile(tile.get_color(), x, y, half_board, anchor, tile.type, true, tile.stroke);
 }
 
-function varied_color(color: IVariedColor)
+function create_grass_from_tile(tile: Tile, x: number, y: number, half_board: number, anchor: any)
 {
-    return semi_random_color(color.r, color.g, color.b, color.v);
+    return add_grass(x, y, half_board, anchor, tile.grass_color, tile.density, tile.height, tile.height_variation, tile.optimize);
 }
 
 function create_tile(color: string, x: number, y: number, half_board: number, anchor: any, tileType: number = -1, fill: boolean = true, stroke: number = 1)
@@ -165,7 +170,7 @@ function create_drone(x: number, y: number, anchor: any)
 
 function init_tile(game: GameState, x: number, y: number, half_board: number, tile: Tiles, anchor: any)
 {
-    return create_tile(varied_color(colorTable.get(tile)), x, y, half_board, anchor, tile);
+    return create_tile(game.m_tiles[x][y].get_color(), x, y, half_board, anchor, tile);
 }
 
 class BoardManager
@@ -270,28 +275,14 @@ export function drawBoard(game: GameState, board_mgr: BoardManager)
         for(var j = 0; j < game.m_tiles[i].length; ++j)
         {
             var tile = game.m_tiles[i][j];
-            var tile_surface = init_tile(game, i, j, half_board, tile, tiles);
+            var tile_surface = create_tile_from_object(game.m_tiles[i][j], i, j, half_board, tiles);
             var tile_highlight = create_tile("rgba(255, 0, 0, 0.8)", i, j, half_board, highlights, -1, false, 4);
             tile_highlight.visible = false;
 
             tileArr[i].push(tile_surface);
             highlightArr[i].push(tile_highlight);
 
-            switch(tile)
-            {
-                case Tiles.WHEAT_RIPE:
-                    grassArr[i].push(add_grass(i, j, half_board, grass, tile_surface.color, 5, 20, 0.2, false));
-                    break;
-                case Tiles.GRASS:
-                    grassArr[i].push(add_grass(i, j, half_board, grass, tile_surface.color, 8, 10));
-                    break;
-                case Tiles.ORE_RIPE:
-                    grassArr[i].push(add_mineral(i, j, half_board, grass, "#930", 2));
-                    break;
-                default:
-                    grassArr[i].push(new Zdog.Shape({ visible: false }));
-                    break;
-            }
+            grassArr[i].push(add_grass(i, j, half_board, grass, tile_surface.color, tile.density, tile.height, tile.height_variation, tile.optimize));
         }
     }
 
@@ -339,23 +330,11 @@ export function drawBoard(game: GameState, board_mgr: BoardManager)
             grassArr[pair.x][pair.y].remove();
             grassArr[pair.x][pair.y].visible = false;
 
-            tileArr[pair.x][pair.y] = init_tile(game, pair.x, pair.y, half_board, game.m_tiles[pair.x][pair.y], tiles);
-            
-            switch(game.m_tiles[pair.x][pair.y])
-            {
-                case Tiles.WHEAT_RIPE:
-                    grassArr[pair.x][pair.y] = add_grass(pair.x, pair.y, half_board, grass, tileArr[pair.x][pair.y].color, 5, 20, 0.2);
-                    break;
-                case Tiles.GRASS:
-                    grassArr[pair.x][pair.y] = add_grass(pair.x, pair.y, half_board, grass, tileArr[pair.x][pair.y].color, 8, 10);
-                    break;
-                case Tiles.ORE_RIPE:
-                    grassArr[pair.x][pair.y] = add_mineral(pair.x, pair.y, half_board, grass, "#930", 2);
-                    break;
-                default:
-                    grassArr[pair.x][pair.y] = new Zdog.Shape({ visible: false });
-                    break;
-            }
+            let newTile = create_tile_from_object(game.m_tiles[pair.x][pair.y], pair.x, pair.y, half_board, tiles);
+            tileArr[pair.x][pair.y] = newTile
+
+            grassArr[pair.x][pair.y] = add_grass(i, j, half_board, grass, newTile.color, tile.density, tile.height, tile.height_variation, tile.optimize);
+
             tiles.updateGraph();
             grass.updateGraph();
         }

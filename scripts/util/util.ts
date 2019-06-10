@@ -1,4 +1,10 @@
 
+interface ITablePair<V>
+{
+    key: string | number;
+    value: V;
+}
+
 class Table<V>
 {
     m_data: { [key: string]: V };
@@ -15,32 +21,21 @@ class Table<V>
 
     get(key: string | number) : V
     {
-        if(key >= 0 && key < this.keys().length)
-        {
-            return this.m_data[key + ""];
-        }
-        else return null;
+        return this.m_data[key + ""];
     }
 
-    set(key: string | number, value: V) : boolean
+    set(key: string | number, value: V) : void
     {
-        if(key >= 0 && key < this.keys().length)
-        {
-            this.m_data[key] = value;
-            return true;
-        }
-        else return false;
+        this.m_data[key] = value;
     }
 
-    constructor(inputs?: Array<string | number>, outputs?: Array<V>)
+    constructor(pairs: Array<ITablePair<V>>)
     {
-        if(!inputs || !outputs) return;
-
         this.m_data = {};
 
-        for(var i = 0; i < inputs.length; ++i)
+        for(var i = 0; i < pairs.length; ++i)
         {
-            this.add(inputs[i], outputs[i]);
+            this.add(pairs[i].key, pairs[i].value);
         }
     }
 }

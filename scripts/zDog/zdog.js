@@ -5,4 +5,2152 @@
  * https://zzz.dog
  * Copyright 2019 Metafizzy
  */
-(function(t,e){if(typeof module=="object"&&module.exports){module.exports=e()}else{t.Zdog=e()}})(this,function t(){var e={};e.TAU=Math.PI*2;e.extend=function(t,e){for(var r in e){t[r]=e[r]}return t};e.lerp=function(t,e,r){return(e-t)*r+t};e.modulo=function(t,e){return(t%e+e)%e};var s={2:function(t){return t*t},3:function(t){return t*t*t},4:function(t){return t*t*t*t},5:function(t){return t*t*t*t*t}};e.easeInOut=function(t,e){if(e==1){return t}t=Math.max(0,Math.min(1,t));var r=t<.5;var i=r?t:1-t;i/=.5;var o=s[e]||s[2];var n=o(i);n/=2;return r?n:1-n};return e});(function(t,e){if(typeof module=="object"&&module.exports){module.exports=e()}else{t.Zdog.CanvasRenderer=e()}})(this,function t(){var o={isCanvas:true};o.begin=function(t){t.beginPath()};o.move=function(t,e,r){t.moveTo(r.x,r.y)};o.line=function(t,e,r){t.lineTo(r.x,r.y)};o.bezier=function(t,e,r,i,o){t.bezierCurveTo(r.x,r.y,i.x,i.y,o.x,o.y)};o.closePath=function(t){t.closePath()};o.setPath=function(){};o.renderPath=function(e,r,t,i){this.begin(e,r);t.forEach(function(t){t.render(e,r,o)});if(i){this.closePath(e,r)}};o.stroke=function(t,e,r,i,o){if(!r){return}t.strokeStyle=i;t.lineWidth=o;t.stroke()};o.fill=function(t,e,r,i){if(!r){return}t.fillStyle=i;t.fill()};o.end=function(){};return o});(function(t,e){if(typeof module=="object"&&module.exports){module.exports=e()}else{t.Zdog.SvgRenderer=e()}})(this,function t(){var n={isSvg:true};var e=n.round=function(t){return Math.round(t*1e3)/1e3};function s(t){return e(t.x)+","+e(t.y)+" "}n.begin=function(){};n.move=function(t,e,r){return"M"+s(r)};n.line=function(t,e,r){return"L"+s(r)};n.bezier=function(t,e,r,i,o){return"C"+s(r)+s(i)+s(o)};n.closePath=function(){return"Z"};n.setPath=function(t,e,r){e.setAttribute("d",r)};n.renderPath=function(e,r,t,i){var o="";t.forEach(function(t){o+=t.render(e,r,n)});if(i){o+=this.closePath(e,r)}this.setPath(e,r,o)};n.stroke=function(t,e,r,i,o){if(!r){return}e.setAttribute("stroke",i);e.setAttribute("stroke-width",o)};n.fill=function(t,e,r,i){var o=r?i:"none";e.setAttribute("fill",o)};n.end=function(t,e){t.appendChild(e)};return n});(function(t,e){if(typeof module=="object"&&module.exports){module.exports=e(require("./boilerplate"))}else{var r=t.Zdog;r.Vector=e(r)}})(this,function t(r){function e(t){this.set(t)}var h=r.TAU;e.prototype.set=function(t){this.x=t&&t.x||0;this.y=t&&t.y||0;this.z=t&&t.z||0;return this};e.prototype.write=function(t){if(!t){return this}this.x=t.x!=undefined?t.x:this.x;this.y=t.y!=undefined?t.y:this.y;this.z=t.z!=undefined?t.z:this.z;return this};e.prototype.rotate=function(t){if(!t){return}this.rotateZ(t.z);this.rotateY(t.y);this.rotateX(t.x);return this};e.prototype.rotateZ=function(t){i(this,t,"x","y")};e.prototype.rotateX=function(t){i(this,t,"y","z")};e.prototype.rotateY=function(t){i(this,t,"x","z")};function i(t,e,r,i){if(!e||e%h===0){return}var o=Math.cos(e);var n=Math.sin(e);var s=t[r];var a=t[i];t[r]=s*o-a*n;t[i]=a*o+s*n}e.prototype.add=function(t){if(!t){return this}this.x+=t.x||0;this.y+=t.y||0;this.z+=t.z||0;return this};e.prototype.subtract=function(t){if(!t){return this}this.x-=t.x||0;this.y-=t.y||0;this.z-=t.z||0;return this};e.prototype.multiply=function(t){if(t==undefined){return this}if(typeof t=="number"){this.x*=t;this.y*=t;this.z*=t}else{this.x*=t.x!=undefined?t.x:1;this.y*=t.y!=undefined?t.y:1;this.z*=t.z!=undefined?t.z:1}return this};e.prototype.transform=function(t,e,r){this.multiply(r);this.rotate(e);this.add(t);return this};e.prototype.lerp=function(t,e){this.x=r.lerp(this.x,t.x||0,e);this.y=r.lerp(this.y,t.y||0,e);this.z=r.lerp(this.z,t.z||0,e);return this};e.prototype.magnitude=function(){var t=this.x*this.x+this.y*this.y+this.z*this.z;return o(t)};function o(t){if(Math.abs(t-1)<1e-8){return 1}return Math.sqrt(t)}e.prototype.magnitude2d=function(){var t=this.x*this.x+this.y*this.y;return o(t)};e.prototype.copy=function(){return new e(this)};return e});(function(t,e){if(typeof module=="object"&&module.exports){module.exports=e(require("./boilerplate"),require("./vector"),require("./canvas-renderer"),require("./svg-renderer"))}else{var r=t.Zdog;r.Anchor=e(r,r.Vector,r.CanvasRenderer,r.SvgRenderer)}})(this,function t(o,e,r,i){var n=o.TAU;var s={x:1,y:1,z:1};function a(t){this.create(t||{})}a.prototype.create=function(t){o.extend(this,this.constructor.defaults);this.setOptions(t);this.translate=new e(t.translate);this.rotate=new e(t.rotate);this.scale=new e(s).multiply(this.scale);this.origin=new e;this.renderOrigin=new e;this.children=[];if(this.addTo){this.addTo.addChild(this)}};a.defaults={};a.optionKeys=Object.keys(a.defaults).concat(["rotate","translate","scale","addTo"]);a.prototype.setOptions=function(t){var e=this.constructor.optionKeys;for(var r in t){if(e.includes(r)){this[r]=t[r]}}};a.prototype.addChild=function(t){var e=this.children.indexOf(t);if(e!=-1){return}t.remove();t.addTo=this;this.children.push(t)};a.prototype.removeChild=function(t){var e=this.children.indexOf(t);if(e!=-1){this.children.splice(e,1)}};a.prototype.remove=function(){if(this.addTo){this.addTo.removeChild(this)}};a.prototype.update=function(){this.reset();this.children.forEach(function(t){t.update()});this.transform(this.translate,this.rotate,this.scale)};a.prototype.reset=function(){this.renderOrigin.set(this.origin)};a.prototype.transform=function(e,r,i){this.renderOrigin.transform(e,r,i);this.children.forEach(function(t){t.transform(e,r,i)})};a.prototype.updateGraph=function(){this.update();this.updateFlatGraph();this.flatGraph.forEach(function(t){t.updateSortValue()});this.flatGraph.sort(a.shapeSorter)};a.shapeSorter=function(t,e){return t.sortValue-e.sortValue};Object.defineProperty(a.prototype,"flatGraph",{get:function(){if(!this._flatGraph){this.updateFlatGraph()}return this._flatGraph},set:function(t){this._flatGraph=t}});a.prototype.updateFlatGraph=function(){this.flatGraph=this.getFlatGraph()};a.prototype.getFlatGraph=function(){var t=[this];return this.addChildFlatGraph(t)};a.prototype.addChildFlatGraph=function(r){this.children.forEach(function(t){var e=t.getFlatGraph();Array.prototype.push.apply(r,e)});return r};a.prototype.updateSortValue=function(){this.sortValue=this.renderOrigin.z};a.prototype.render=function(){};a.prototype.renderGraphCanvas=function(e){if(!e){throw new Error("ctx is "+e+". "+"Canvas context required for render. Check .renderGraphCanvas( ctx ).")}this.flatGraph.forEach(function(t){t.render(e,r)})};a.prototype.renderGraphSvg=function(e){if(!e){throw new Error("svg is "+e+". "+"SVG required for render. Check .renderGraphSvg( svg ).")}this.checkFlatGraph();this.flatGraph.forEach(function(t){t.render(e,i)})};a.prototype.copy=function(t){var e={};var r=this.constructor.optionKeys;r.forEach(function(t){e[t]=this[t]},this);o.extend(e,t);var i=this.constructor;return new i(e)};a.prototype.copyGraph=function(t){var e=this.copy(t);this.children.forEach(function(t){t.copyGraph({addTo:e})});return e};a.prototype.normalizeRotate=function(){this.rotate.x=o.modulo(this.rotate.x,n);this.rotate.y=o.modulo(this.rotate.y,n);this.rotate.z=o.modulo(this.rotate.z,n)};function h(r){return function(t){function e(t){this.create(t||{})}e.prototype=Object.create(r.prototype);e.prototype.constructor=e;e.defaults=o.extend({},r.defaults);o.extend(e.defaults,t);e.optionKeys=r.optionKeys.slice(0);Object.keys(e.defaults).forEach(function(t){if(!e.optionKeys.includes(t)){e.optionKeys.push(t)}});e.subclass=h(e);return e}}a.subclass=h(a);return a});(function(t,e){if(typeof module=="object"&&module.exports){module.exports=e(t)}else{t.Zdog.Dragger=e(t)}})(this,function t(r){var e="mousedown";var i="mousemove";var o="mouseup";if(r.PointerEvent){e="pointerdown";i="pointermove";o="pointerup"}else if("ontouchstart"in r){e="touchstart";i="touchmove";o="touchend"}function n(){}function s(t){this.create(t||{})}s.prototype.create=function(t){this.onDragStart=t.onDragStart||n;this.onDragMove=t.onDragMove||n;this.onDragEnd=t.onDragEnd||n;this.bindDrag(t.startElement)};s.prototype.bindDrag=function(t){t=this.getQueryElement(t);if(t){t.addEventListener(e,this)}};s.prototype.getQueryElement=function(t){if(typeof t=="string"){t=document.querySelector(t)}return t};s.prototype.handleEvent=function(t){var e=this["on"+t.type];if(e){e.call(this,t)}};s.prototype.onmousedown=s.prototype.onpointerdown=function(t){this.dragStart(t,t)};s.prototype.ontouchstart=function(t){this.dragStart(t,t.changedTouches[0])};s.prototype.dragStart=function(t,e){t.preventDefault();this.dragStartX=e.pageX;this.dragStartY=e.pageY;r.addEventListener(i,this);r.addEventListener(o,this);this.onDragStart(e)};s.prototype.ontouchmove=function(t){this.dragMove(t,t.changedTouches[0])};s.prototype.onmousemove=s.prototype.onpointermove=function(t){this.dragMove(t,t)};s.prototype.dragMove=function(t,e){t.preventDefault();var r=e.pageX-this.dragStartX;var i=e.pageY-this.dragStartY;this.onDragMove(e,r,i)};s.prototype.onmouseup=s.prototype.onpointerup=s.prototype.ontouchend=s.prototype.dragEnd=function(){r.removeEventListener(i,this);r.removeEventListener(o,this);this.onDragEnd()};return s});(function(t,e){if(typeof module=="object"&&module.exports){module.exports=e(require("./boilerplate"),require("./anchor"),require("./dragger"))}else{var r=t.Zdog;r.Illustration=e(r,r.Anchor,r.Dragger)}})(this,function t(e,r,a){function i(){}var h=e.TAU;var o=r.subclass({element:undefined,centered:true,zoom:1,dragRotate:false,resize:false,onPrerender:i,onDragStart:i,onDragMove:i,onDragEnd:i,onResize:i});e.extend(o.prototype,a.prototype);o.prototype.create=function(t){r.prototype.create.call(this,t);a.prototype.create.call(this,t);this.setElement(this.element);this.setDragRotate(this.dragRotate);this.setResize(this.resize)};o.prototype.setElement=function(t){t=this.getQueryElement(t);if(!t){throw new Error("Zdog.Illustration element required. Set to "+t)}var e=t.nodeName.toLowerCase();if(e=="canvas"){this.setCanvas(t)}else if(e=="svg"){this.setSvg(t)}};o.prototype.setSize=function(t,e){t=Math.round(t);e=Math.round(e);if(this.isCanvas){this.setSizeCanvas(t,e)}else if(this.isSvg){this.setSizeSvg(t,e)}};o.prototype.setResize=function(t){this.resize=t;if(!this.resizeListener){this.resizeListener=this.onWindowResize.bind(this)}if(t){window.addEventListener("resize",this.resizeListener);this.onWindowResize()}else{window.removeEventListener("resize",this.resizeListener)}};o.prototype.onWindowResize=function(){this.setMeasuredSize();this.onResize(this.width,this.height)};o.prototype.setMeasuredSize=function(){var t,e;var r=this.resize=="fullscreen";if(r){t=window.innerWidth;e=window.innerHeight}else{var i=this.element.getBoundingClientRect();t=i.width;e=i.height}this.setSize(t,e)};o.prototype.renderGraph=function(t){if(this.isCanvas){this.renderGraphCanvas(t)}else if(this.isSvg){this.renderGraphSvg(t)}};o.prototype.updateRenderGraph=function(t){this.updateGraph();this.renderGraph(t)};o.prototype.setCanvas=function(t){this.element=t;this.isCanvas=true;this.ctx=this.element.getContext("2d");this.setSizeCanvas(t.width,t.height)};o.prototype.setSizeCanvas=function(t,e){this.width=t;this.height=e;var r=this.pixelRatio=window.devicePixelRatio||1;this.element.width=this.canvasWidth=t*r;this.element.height=this.canvasHeight=e*r;var i=r>1&&!this.resize;if(i){this.element.style.width=t+"px";this.element.style.height=e+"px"}};o.prototype.renderGraphCanvas=function(t){t=t||this;this.prerenderCanvas();r.prototype.renderGraphCanvas.call(t,this.ctx);this.postrenderCanvas()};o.prototype.prerenderCanvas=function(){var t=this.ctx;t.lineCap="round";t.lineJoin="round";t.clearRect(0,0,this.canvasWidth,this.canvasHeight);t.save();if(this.centered){var e=this.width/2*this.pixelRatio;var r=this.height/2*this.pixelRatio;t.translate(e,r)}var i=this.pixelRatio*this.zoom;t.scale(i,i);this.onPrerender(t)};o.prototype.postrenderCanvas=function(){this.ctx.restore()};o.prototype.setSvg=function(t){this.element=t;this.isSvg=true;this.pixelRatio=1;var e=t.getAttribute("width");var r=t.getAttribute("height");this.setSizeSvg(e,r)};o.prototype.setSizeSvg=function(t,e){this.width=t;this.height=e;var r=t/this.zoom;var i=e/this.zoom;var o=this.centered?-r/2:0;var n=this.centered?-i/2:0;this.element.setAttribute("viewBox",o+" "+n+" "+r+" "+i);if(this.resize){this.element.removeAttribute("width");this.element.removeAttribute("height")}else{this.element.setAttribute("width",t);this.element.setAttribute("height",e)}};o.prototype.renderGraphSvg=function(t){t=t||this;n(this.element);this.onPrerender(this.element);r.prototype.renderGraphSvg.call(t,this.element)};function n(t){while(t.firstChild){t.removeChild(t.firstChild)}}o.prototype.setDragRotate=function(t){if(!t){return}else if(t===true){t=this}this.dragRotate=t;this.bindDrag(this.element)};o.prototype.dragStart=function(){this.dragStartRX=this.dragRotate.rotate.x;this.dragStartRY=this.dragRotate.rotate.y;a.prototype.dragStart.apply(this,arguments)};o.prototype.dragMove=function(t,e){var r=e.pageX-this.dragStartX;var i=e.pageY-this.dragStartY;var o=Math.min(this.width,this.height);var n=r/o*h;var s=i/o*h;this.dragRotate.rotate.x=this.dragStartRX-s;this.dragRotate.rotate.y=this.dragStartRY-n;a.prototype.dragMove.apply(this,arguments)};return o});(function(t,e){if(typeof module=="object"&&module.exports){module.exports=e(require("./vector"))}else{var r=t.Zdog;r.PathCommand=e(r.Vector)}})(this,function t(i){function e(t,e,r){this.method=t;this.points=e.map(o);this.renderPoints=e.map(n);this.previousPoint=r;this.endRenderPoint=this.renderPoints[this.renderPoints.length-1];if(t=="arc"){this.controlPoints=[new i,new i]}}function o(t){if(t instanceof i){return t}else{return new i(t)}}function n(t){return new i(t)}e.prototype.reset=function(){var i=this.points;this.renderPoints.forEach(function(t,e){var r=i[e];t.set(r)})};e.prototype.transform=function(e,r,i){this.renderPoints.forEach(function(t){t.transform(e,r,i)})};e.prototype.render=function(t,e,r){return this[this.method](t,e,r)};e.prototype.move=function(t,e,r){return r.move(t,e,this.renderPoints[0])};e.prototype.line=function(t,e,r){return r.line(t,e,this.renderPoints[0])};e.prototype.bezier=function(t,e,r){var i=this.renderPoints[0];var o=this.renderPoints[1];var n=this.renderPoints[2];return r.bezier(t,e,i,o,n)};var h=9/16;e.prototype.arc=function(t,e,r){var i=this.previousPoint;var o=this.renderPoints[0];var n=this.renderPoints[1];var s=this.controlPoints[0];var a=this.controlPoints[1];s.set(i).lerp(o,h);a.set(n).lerp(o,h);return r.bezier(t,e,s,a,n)};return e});(function(t,e){if(typeof module=="object"&&module.exports){module.exports=e(require("./boilerplate"),require("./vector"),require("./path-command"),require("./anchor"))}else{var r=t.Zdog;r.Shape=e(r,r.Vector,r.PathCommand,r.Anchor)}})(this,function t(e,r,p,i){var o=i.subclass({stroke:1,fill:false,color:"#333",closed:true,visible:true,path:[{}],front:{z:1},backface:true});o.prototype.create=function(t){i.prototype.create.call(this,t);this.updatePath();this.front=new r(t.front||this.front);this.renderFront=new r(this.front);this.renderNormal=new r};var d=["move","line","bezier","arc"];o.prototype.updatePath=function(){this.setPath();this.updatePathCommands()};o.prototype.setPath=function(){};o.prototype.updatePathCommands=function(){var u;this.pathCommands=this.path.map(function(t,e){var r=Object.keys(t);var i=r[0];var o=t[i];var n=r.length==1&&d.includes(i);if(!n){i="line";o=t}var s=i=="line"||i=="move";var a=Array.isArray(o);if(s&&!a){o=[o]}i=e===0?"move":i;var h=new p(i,o,u);u=h.endRenderPoint;return h})};o.prototype.reset=function(){this.renderOrigin.set(this.origin);this.renderFront.set(this.front);this.pathCommands.forEach(function(t){t.reset()})};o.prototype.transform=function(e,r,i){this.renderOrigin.transform(e,r,i);this.renderFront.transform(e,r,i);this.renderNormal.set(this.renderOrigin).subtract(this.renderFront);this.pathCommands.forEach(function(t){t.transform(e,r,i)});this.children.forEach(function(t){t.transform(e,r,i)})};o.prototype.updateSortValue=function(){var e=0;this.pathCommands.forEach(function(t){e+=t.endRenderPoint.z});this.sortValue=e/this.pathCommands.length};o.prototype.render=function(t,e){var r=this.pathCommands.length;if(!this.visible||!r){return}this.isFacingBack=this.renderNormal.z>0;if(!this.backface&&this.isFacingBack){return}if(!e){throw new Error("Zdog renderer required. Set to "+e)}var i=r==1;if(e.isCanvas&&i){this.renderCanvasDot(t,e)}else{this.renderPath(t,e)}};var n=e.TAU;o.prototype.renderCanvasDot=function(t){var e=this.getLineWidth();if(!e){return}t.fillStyle=this.getRenderColor();var r=this.pathCommands[0].endRenderPoint;t.beginPath();var i=e/2;t.arc(r.x,r.y,i,0,n);t.fill()};o.prototype.getLineWidth=function(){if(!this.stroke){return 0}if(this.stroke==true){return 1}return this.stroke};o.prototype.getRenderColor=function(){var t=typeof this.backface=="string"&&this.isFacingBack;var e=t?this.backface:this.color;return e};o.prototype.renderPath=function(t,e){var r=this.getRenderElement(t,e);var i=this.pathCommands.length==2&&this.pathCommands[1].method=="line";var o=!i&&this.closed;var n=this.getRenderColor();e.renderPath(t,r,this.pathCommands,o);e.stroke(t,r,this.stroke,n,this.getLineWidth());e.fill(t,r,this.fill,n);e.end(t,r)};var s="http://www.w3.org/2000/svg";o.prototype.getRenderElement=function(t,e){if(!e.isSvg){return}if(!this.svgElement){this.svgElement=document.createElementNS(s,"path");this.svgElement.setAttribute("stroke-linecap","round");this.svgElement.setAttribute("stroke-linejoin","round")}return this.svgElement};return o});(function(t,e){if(typeof module=="object"&&module.exports){module.exports=e(require("./anchor"))}else{var r=t.Zdog;r.Group=e(r.Anchor)}})(this,function t(r){var e=r.subclass({updateSort:false,visible:true});e.prototype.updateSortValue=function(){var e=0;this.flatGraph.forEach(function(t){t.updateSortValue();e+=t.sortValue});this.sortValue=e/this.flatGraph.length;if(this.updateSort){this.flatGraph.sort(r.shapeSorter)}};e.prototype.render=function(e,r){if(!this.visible){return}this.flatGraph.forEach(function(t){t.render(e,r)})};e.prototype.updateFlatGraph=function(){var t=[];this.flatGraph=this.addChildFlatGraph(t)};e.prototype.getFlatGraph=function(){return[this]};return e});(function(t,e){if(typeof module=="object"&&module.exports){module.exports=e(require("./shape"))}else{var r=t.Zdog;r.Rect=e(r.Shape)}})(this,function t(e){var r=e.subclass({width:1,height:1});r.prototype.setPath=function(){var t=this.width/2;var e=this.height/2;this.path=[{x:-t,y:-e},{x:t,y:-e},{x:t,y:e},{x:-t,y:e}]};return r});(function(t,e){if(typeof module=="object"&&module.exports){module.exports=e(require("./shape"))}else{var r=t.Zdog;r.RoundedRect=e(r.Shape)}})(this,function t(r){var e=r.subclass({width:1,height:1,cornerRadius:.25,closed:false});e.prototype.setPath=function(){var t=this.width/2;var e=this.height/2;var r=Math.min(t,e);var i=Math.min(this.cornerRadius,r);var o=t-i;var n=e-i;var s=[{x:o,y:-e},{arc:[{x:t,y:-e},{x:t,y:-n}]}];if(n){s.push({x:t,y:n})}s.push({arc:[{x:t,y:e},{x:o,y:e}]});if(o){s.push({x:-o,y:e})}s.push({arc:[{x:-t,y:e},{x:-t,y:n}]});if(n){s.push({x:-t,y:-n})}s.push({arc:[{x:-t,y:-e},{x:-o,y:-e}]});if(o){s.push({x:o,y:-e})}this.path=s};e.prototype.updateSortValue=function(){r.prototype.updateSortValue.apply(this,arguments);var t=this.pathCommands.length;var e=this.pathCommands[t-1].endRenderPoint;this.sortValue-=e.z/t};return e});(function(t,e){if(typeof module=="object"&&module.exports){module.exports=e(require("./shape"))}else{var r=t.Zdog;r.Ellipse=e(r.Shape)}})(this,function t(r){var e=r.subclass({diameter:1,width:undefined,height:undefined,quarters:4,closed:false});e.prototype.setPath=function(){var t=this.width!=undefined?this.width:this.diameter;var e=this.height!=undefined?this.height:this.diameter;var r=t/2;var i=e/2;this.path=[{x:0,y:-i},{arc:[{x:r,y:-i},{x:r,y:0}]}];if(this.quarters>1){this.path.push({arc:[{x:r,y:i},{x:0,y:i}]})}if(this.quarters>2){this.path.push({arc:[{x:-r,y:i},{x:-r,y:0}]})}if(this.quarters>3){this.path.push({arc:[{x:-r,y:-i},{x:0,y:-i}]})}};e.prototype.updateSortValue=function(){r.prototype.updateSortValue.apply(this,arguments);if(this.quarters!=4){return}var t=this.pathCommands.length;var e=this.pathCommands[t-1].endRenderPoint;this.sortValue-=e.z/t};return e});(function(t,e){if(typeof module=="object"&&module.exports){module.exports=e(require("./boilerplate"),require("./shape"))}else{var r=t.Zdog;r.Polygon=e(r,r.Shape)}})(this,function t(e,r){var i=r.subclass({sides:3,radius:.5});var o=e.TAU;i.prototype.setPath=function(){this.path=[];for(var t=0;t<this.sides;t++){var e=t/this.sides*o-o/4;var r=Math.cos(e)*this.radius;var i=Math.sin(e)*this.radius;this.path.push({x:r,y:i})}};return i});(function(t,e){if(typeof module=="object"&&module.exports){module.exports=e(require("./boilerplate"),require("./ellipse"))}else{var r=t.Zdog;r.Hemisphere=e(r,r.Ellipse)}})(this,function t(e,r){var i=r.subclass({fill:true});var u=e.TAU;i.prototype.render=function(t,e){this.renderDome(t,e);r.prototype.render.apply(this,arguments)};i.prototype.renderDome=function(t,e){if(!this.visible){return}var r=this.getDomeRenderElement(t,e);var i=Math.atan2(this.renderNormal.y,this.renderNormal.x);var o=this.diameter/2*this.renderNormal.magnitude();var n=this.renderOrigin.x;var s=this.renderOrigin.y;if(e.isCanvas){var a=i+u/4;var h=i-u/4;t.beginPath();t.arc(n,s,o,a,h)}else if(e.isSvg){i=(i-u/4)/u*360;this.domeSvgElement.setAttribute("d","M "+-o+",0 A "+o+","+o+" 0 0 1 "+o+",0");this.domeSvgElement.setAttribute("transform","translate("+n+","+s+" ) rotate("+i+")")}e.stroke(t,r,this.stroke,this.color,this.getLineWidth());e.fill(t,r,this.fill,this.color);e.end(t,r)};var o="http://www.w3.org/2000/svg";i.prototype.getDomeRenderElement=function(t,e){if(!e.isSvg){return}if(!this.domeSvgElement){this.domeSvgElement=document.createElementNS(o,"path");this.domeSvgElement.setAttribute("stroke-linecap","round");this.domeSvgElement.setAttribute("stroke-linejoin","round")}return this.domeSvgElement};return i});(function(t,e){if(typeof module=="object"&&module.exports){module.exports=e(require("./boilerplate"),require("./path-command"),require("./shape"),require("./group"),require("./ellipse"))}else{var r=t.Zdog;r.Cylinder=e(r,r.PathCommand,r.Shape,r.Group,r.Ellipse)}})(this,function t(e,r,i,o,n){function s(){}var a=o.subclass({color:"#333",updateSort:true});a.prototype.create=function(){o.prototype.create.apply(this,arguments);this.pathCommands=[new r("move",[{}]),new r("line",[{}])]};a.prototype.render=function(t,e){this.renderCylinderSurface(t,e);o.prototype.render.apply(this,arguments)};a.prototype.renderCylinderSurface=function(t,e){if(!this.visible){return}var r=this.getRenderElement(t,e);var i=this.frontBase;var o=this.rearBase;var n=i.renderNormal.magnitude();var s=i.diameter*n+i.getLineWidth();this.pathCommands[0].renderPoints[0].set(i.renderOrigin);this.pathCommands[1].renderPoints[0].set(o.renderOrigin);if(e.isCanvas){t.lineCap="butt"}e.renderPath(t,r,this.pathCommands);e.stroke(t,r,true,this.color,s);e.end(t,r);if(e.isCanvas){t.lineCap="round"}};var h="http://www.w3.org/2000/svg";a.prototype.getRenderElement=function(t,e){if(!e.isSvg){return}if(!this.svgElement){this.svgElement=document.createElementNS(h,"path")}return this.svgElement};a.prototype.copyGraph=s;var u=n.subclass();u.prototype.copyGraph=s;var p=i.subclass({diameter:1,length:1,frontFace:undefined,fill:true});var d=e.TAU;p.prototype.create=function(){i.prototype.create.apply(this,arguments);this.group=new a({addTo:this,color:this.color,visible:this.visible});var t=this.length/2;var e=this.backface||true;this.frontBase=this.group.frontBase=new n({addTo:this.group,diameter:this.diameter,translate:{z:t},rotate:{y:d/2},color:this.color,stroke:this.stroke,fill:this.fill,backface:this.frontFace||e,visible:this.visible});this.rearBase=this.group.rearBase=this.frontBase.copy({translate:{z:-t},rotate:{y:0},backface:e})};p.prototype.render=function(){};var c=["stroke","fill","color","visible"];c.forEach(function(e){var r="_"+e;Object.defineProperty(p.prototype,e,{get:function(){return this[r]},set:function(t){this[r]=t;if(this.frontBase){this.frontBase[e]=t;this.rearBase[e]=t;this.group[e]=t}}})});return p});(function(t,e){if(typeof module=="object"&&module.exports){module.exports=e(require("./boilerplate"),require("./vector"),require("./path-command"),require("./anchor"),require("./ellipse"))}else{var r=t.Zdog;r.Cone=e(r,r.Vector,r.PathCommand,r.Anchor,r.Ellipse)}})(this,function t(e,r,i,o,n){var s=n.subclass({length:1,fill:true});var v=e.TAU;s.prototype.create=function(){n.prototype.create.apply(this,arguments);this.apex=new o({addTo:this,translate:{z:this.length}});this.renderApex=new r;this.tangentA=new r;this.tangentB=new r;this.surfacePathCommands=[new i("move",[{}]),new i("line",[{}]),new i("line",[{}])]};s.prototype.render=function(t,e){this.renderConeSurface(t,e);n.prototype.render.apply(this,arguments)};s.prototype.renderConeSurface=function(t,e){if(!this.visible){return}this.renderApex.set(this.apex.renderOrigin).subtract(this.renderOrigin);var r=this.renderNormal.magnitude();var i=this.renderApex.magnitude2d();var o=this.renderNormal.magnitude2d();var n=Math.acos(o/r);var s=Math.sin(n);var a=this.diameter/2*r;var h=a*s<i;if(!h){return}var u=Math.atan2(this.renderNormal.y,this.renderNormal.x)+v/2;var p=i/s;var d=Math.acos(a/p);var c=this.tangentA;var l=this.tangentB;c.x=Math.cos(d)*a*s;c.y=Math.sin(d)*a;l.set(this.tangentA);l.y*=-1;c.rotateZ(u);l.rotateZ(u);c.add(this.renderOrigin);l.add(this.renderOrigin);this.setSurfaceRenderPoint(0,c);this.setSurfaceRenderPoint(1,this.apex.renderOrigin);this.setSurfaceRenderPoint(2,l);var f=this.getSurfaceRenderElement(t,e);e.renderPath(t,f,this.surfacePathCommands);e.stroke(t,f,this.stroke,this.color,this.getLineWidth());e.fill(t,f,this.fill,this.color);e.end(t,f)};var a="http://www.w3.org/2000/svg";s.prototype.getSurfaceRenderElement=function(t,e){if(!e.isSvg){return}if(!this.surfaceSvgElement){this.surfaceSvgElement=document.createElementNS(a,"path");this.surfaceSvgElement.setAttribute("stroke-linecap","round");this.surfaceSvgElement.setAttribute("stroke-linejoin","round")}return this.surfaceSvgElement};s.prototype.setSurfaceRenderPoint=function(t,e){var r=this.surfacePathCommands[t].renderPoints[0];r.set(e)};return s});(function(t,e){if(typeof module=="object"&&module.exports){module.exports=e(require("./boilerplate"),require("./anchor"),require("./shape"),require("./rect"))}else{var r=t.Zdog;r.Box=e(r,r.Anchor,r.Shape,r.Rect)}})(this,function t(n,e,r,i){var s=i.subclass();s.prototype.copyGraph=function(){};var o=n.extend({width:1,height:1,depth:1,frontFace:true,rearFace:true,leftFace:true,rightFace:true,topFace:true,bottomFace:true},r.defaults);o.fill=true;delete o.path;var a=e.subclass(o);var h=n.TAU;a.prototype.create=function(t){e.prototype.create.call(this,t);this.updatePath()};a.prototype.updatePath=function(){this.setFace("frontFace",{width:this.width,height:this.height,translate:{z:this.depth/2}});this.setFace("rearFace",{width:this.width,height:this.height,translate:{z:-this.depth/2},rotate:{y:h/2}});this.setFace("leftFace",{width:this.depth,height:this.height,translate:{x:-this.width/2},rotate:{y:-h/4}});this.setFace("rightFace",{width:this.depth,height:this.height,translate:{x:this.width/2},rotate:{y:h/4}});this.setFace("topFace",{width:this.width,height:this.depth,translate:{y:-this.height/2},rotate:{x:-h/4}});this.setFace("bottomFace",{width:this.width,height:this.depth,translate:{y:this.height/2},rotate:{x:-h/4}})};a.prototype.setFace=function(t,e){var r=this[t];var i=t+"Rect";var o=this[i];if(!r){this.removeChild(o);return}n.extend(e,{color:typeof r=="string"?r:this.color,stroke:this.stroke,fill:this.fill,backface:this.backface,front:this.front,visible:this.visible});if(o){o.setOptions(e)}else{o=this[i]=new s(e)}o.updatePath();this.addChild(o)};return a});(function(t,e){if(typeof module=="object"&&module.exports){module.exports=e(require("./boilerplate"),require("./canvas-renderer"),require("./svg-renderer"),require("./vector"),require("./anchor"),require("./dragger"),require("./illustration"),require("./path-command"),require("./shape"),require("./group"),require("./rect"),require("./rounded-rect"),require("./ellipse"),require("./polygon"),require("./hemisphere"),require("./cylinder"),require("./cone"),require("./box"))}else if(typeof define=="function"&&define.amd){define("zdog",[],t.Zdog)}})(this,function t(e,r,i,o,n,s,a,h,u,p,d,c,l,f,v,m,y,g){e.CanvasRenderer=r;e.SvgRenderer=i;e.Vector=o;e.Anchor=n;e.Dragger=s;e.Illustration=a;e.PathCommand=h;e.Shape=u;e.Group=p;e.Rect=d;e.RoundedRect=c;e.Ellipse=l;e.Polygon=f;e.Hemisphere=v;e.Cylinder=m;e.Cone=y;e.Box=g;return e});
+
+/**
+ * Boilerplate & utils
+ */
+
+( function( root, factory ) {
+  // module definition
+  if ( typeof module == 'object' && module.exports ) {
+    // CommonJS
+    module.exports = factory();
+  } else {
+    // browser global
+    root.Zdog = factory();
+  }
+}( this, function factory() {
+
+var Zdog = {};
+
+Zdog.TAU = Math.PI * 2;
+
+Zdog.extend = function( a, b ) {
+  for ( var prop in b ) {
+    a[ prop ] = b[ prop ];
+  }
+  return a;
+};
+
+Zdog.lerp = function( a, b, alpha ) {
+  return ( b - a ) * alpha + a;
+};
+
+Zdog.modulo = function( num, div ) {
+  return ( ( num % div ) + div ) % div;
+};
+
+var powerMultipliers = {
+  2: function( a ) {
+    return a * a;
+  },
+  3: function( a ) {
+    return a * a * a;
+  },
+  4: function( a ) {
+    return a * a * a * a;
+  },
+  5: function( a ) {
+    return a * a * a * a * a;
+  },
+};
+
+Zdog.easeInOut = function( alpha, power ) {
+  if ( power == 1 ) {
+    return alpha;
+  }
+  alpha = Math.max( 0, Math.min( 1, alpha ) );
+  var isFirstHalf = alpha < 0.5;
+  var slope = isFirstHalf ? alpha : 1 - alpha;
+  slope /= 0.5;
+  // make easing steeper with more multiples
+  var powerMultiplier = powerMultipliers[ power ] || powerMultipliers[2];
+  var curve = powerMultiplier( slope );
+  curve /= 2;
+  return isFirstHalf ? curve : 1 - curve;
+};
+
+return Zdog;
+
+}));
+/**
+ * CanvasRenderer
+ */
+
+( function( root, factory ) {
+  // module definition
+  if ( typeof module == 'object' && module.exports ) {
+    // CommonJS
+    module.exports = factory();
+  } else {
+    // browser global
+    root.Zdog.CanvasRenderer = factory();
+  }
+}( this, function factory() {
+
+var CanvasRenderer = { isCanvas: true };
+
+CanvasRenderer.begin = function( ctx ) {
+  ctx.beginPath();
+};
+
+CanvasRenderer.move = function( ctx, elem, point ) {
+  ctx.moveTo( point.x, point.y );
+};
+
+CanvasRenderer.line = function( ctx, elem, point ) {
+  ctx.lineTo( point.x, point.y );
+};
+
+CanvasRenderer.bezier = function( ctx, elem, cp0, cp1, end ) {
+  ctx.bezierCurveTo( cp0.x, cp0.y, cp1.x, cp1.y, end.x, end.y );
+};
+
+CanvasRenderer.closePath = function( ctx ) {
+  ctx.closePath();
+};
+
+CanvasRenderer.setPath = function() {};
+
+CanvasRenderer.renderPath = function( ctx, elem, pathCommands, isClosed ) {
+  this.begin( ctx, elem );
+  pathCommands.forEach( function( command ) {
+    command.render( ctx, elem, CanvasRenderer );
+  });
+  if ( isClosed ) {
+    this.closePath( ctx, elem );
+  }
+};
+
+CanvasRenderer.stroke = function( ctx, elem, isStroke, color, lineWidth ) {
+  if ( !isStroke ) {
+    return;
+  }
+  ctx.strokeStyle = color;
+  ctx.lineWidth = lineWidth;
+  ctx.stroke();
+};
+
+CanvasRenderer.fill = function( ctx, elem, isFill, color ) {
+  if ( !isFill ) {
+    return;
+  }
+  ctx.fillStyle = color;
+  ctx.fill();
+};
+
+CanvasRenderer.end = function() {};
+
+return CanvasRenderer;
+
+}));
+/**
+ * SvgRenderer
+ */
+
+( function( root, factory ) {
+  // module definition
+  if ( typeof module == 'object' && module.exports ) {
+    // CommonJS
+    module.exports = factory();
+  } else {
+    // browser global
+    root.Zdog.SvgRenderer = factory();
+  }
+}( this, function factory() {
+
+var SvgRenderer = { isSvg: true };
+
+// round path coordinates to 3 decimals
+var round = SvgRenderer.round = function( num ) {
+  return Math.round( num * 1000 ) / 1000;
+};
+
+function getPointString( point ) {
+  return round( point.x ) + ',' + round( point.y ) + ' ';
+}
+
+SvgRenderer.begin = function() {};
+
+SvgRenderer.move = function( svg, elem, point ) {
+  return 'M' + getPointString( point );
+};
+
+SvgRenderer.line = function( svg, elem, point ) {
+  return 'L' + getPointString( point );
+};
+
+SvgRenderer.bezier = function( svg, elem, cp0, cp1, end ) {
+  return 'C' + getPointString( cp0 ) + getPointString( cp1 ) +
+    getPointString( end );
+};
+
+SvgRenderer.closePath = function(/* elem */) {
+  return 'Z';
+};
+
+SvgRenderer.setPath = function( svg, elem, pathValue ) {
+  elem.setAttribute( 'd', pathValue );
+};
+
+SvgRenderer.renderPath = function( svg, elem, pathCommands, isClosed ) {
+  var pathValue = '';
+  pathCommands.forEach( function( command ) {
+    pathValue += command.render( svg, elem, SvgRenderer );
+  });
+  if ( isClosed ) {
+    pathValue += this.closePath( svg, elem );
+  }
+  this.setPath( svg, elem, pathValue );
+};
+
+SvgRenderer.stroke = function( svg, elem, isStroke, color, lineWidth ) {
+  if ( !isStroke ) {
+    return;
+  }
+  elem.setAttribute( 'stroke', color );
+  elem.setAttribute( 'stroke-width', lineWidth );
+};
+
+SvgRenderer.fill = function( svg, elem, isFill, color ) {
+  var fillColor = isFill ? color : 'none';
+  elem.setAttribute( 'fill', fillColor );
+};
+
+SvgRenderer.end = function( svg, elem ) {
+  svg.appendChild( elem );
+};
+
+return SvgRenderer;
+
+}));
+/**
+ * Vector
+ */
+
+( function( root, factory ) {
+  // module definition
+  if ( typeof module == 'object' && module.exports ) {
+    // CommonJS
+    module.exports = factory( require('./boilerplate') );
+  } else {
+    // browser global
+    var Zdog = root.Zdog;
+    Zdog.Vector = factory( Zdog );
+  }
+
+}( this, function factory( utils ) {
+
+function Vector( position ) {
+  this.set( position );
+}
+
+var TAU = utils.TAU;
+
+// 'pos' = 'position'
+Vector.prototype.set = function( pos ) {
+  this.x = pos && pos.x || 0;
+  this.y = pos && pos.y || 0;
+  this.z = pos && pos.z || 0;
+  return this;
+};
+
+// set coordinates without sanitizing
+// vec.write({ y: 2 }) only sets y coord
+Vector.prototype.write = function( pos ) {
+  if ( !pos ) {
+    return this;
+  }
+  this.x = pos.x != undefined ? pos.x : this.x;
+  this.y = pos.y != undefined ? pos.y : this.y;
+  this.z = pos.z != undefined ? pos.z : this.z;
+  return this;
+};
+
+Vector.prototype.rotate = function( rotation ) {
+  if ( !rotation ) {
+    return;
+  }
+  this.rotateZ( rotation.z );
+  this.rotateY( rotation.y );
+  this.rotateX( rotation.x );
+  return this;
+};
+
+Vector.prototype.rotateZ = function( angle ) {
+  rotateProperty( this, angle, 'x', 'y' );
+};
+
+Vector.prototype.rotateX = function( angle ) {
+  rotateProperty( this, angle, 'y', 'z' );
+};
+
+Vector.prototype.rotateY = function( angle ) {
+  rotateProperty( this, angle, 'x', 'z' );
+};
+
+function rotateProperty( vec, angle, propA, propB ) {
+  if ( !angle || angle % TAU === 0 ) {
+    return;
+  }
+  var cos = Math.cos( angle );
+  var sin = Math.sin( angle );
+  var a = vec[ propA ];
+  var b = vec[ propB ];
+  vec[ propA ] = a*cos - b*sin;
+  vec[ propB ] = b*cos + a*sin;
+}
+
+Vector.prototype.isSame = function( pos ) {
+  if ( !pos ) {
+    return false;
+  }
+  return (this.x === pos.x &&
+          this.y === pos.y &&
+          this.z === pos.z);
+};
+
+Vector.prototype.add = function( pos ) {
+  if ( !pos ) {
+    return this;
+  }
+  this.x += pos.x || 0;
+  this.y += pos.y || 0;
+  this.z += pos.z || 0;
+  return this;
+};
+
+Vector.prototype.subtract = function( pos ) {
+  if ( !pos ) {
+    return this;
+  }
+  this.x -= pos.x || 0;
+  this.y -= pos.y || 0;
+  this.z -= pos.z || 0;
+  return this;
+};
+
+Vector.prototype.multiply = function( pos ) {
+  if ( pos == undefined ) {
+    return this;
+  }
+  // multiple all values by same number
+  if ( typeof pos == 'number' ) {
+    this.x *= pos;
+    this.y *= pos;
+    this.z *= pos;
+  } else {
+    // multiply object
+    this.x *= pos.x != undefined ? pos.x : 1;
+    this.y *= pos.y != undefined ? pos.y : 1;
+    this.z *= pos.z != undefined ? pos.z : 1;
+  }
+  return this;
+};
+
+Vector.prototype.transform = function( translation, rotation, scale ) {
+  this.multiply( scale );
+  this.rotate( rotation );
+  this.add( translation );
+  return this;
+};
+
+Vector.prototype.lerp = function( pos, alpha ) {
+  this.x = utils.lerp( this.x, pos.x || 0, alpha );
+  this.y = utils.lerp( this.y, pos.y || 0, alpha );
+  this.z = utils.lerp( this.z, pos.z || 0, alpha );
+  return this;
+};
+
+Vector.prototype.magnitude = function() {
+  var sum = this.x*this.x + this.y*this.y + this.z*this.z;
+  return getMagnitudeSqrt( sum );
+};
+
+function getMagnitudeSqrt( sum ) {
+  // PERF: check if sum ~= 1 and skip sqrt
+  if ( Math.abs( sum - 1 ) < 0.00000001 ) {
+    return 1;
+  }
+  return Math.sqrt( sum );
+}
+
+Vector.prototype.magnitude2d = function() {
+  var sum = this.x*this.x + this.y*this.y;
+  return getMagnitudeSqrt( sum );
+};
+
+Vector.prototype.copy = function() {
+  return new Vector( this );
+};
+
+return Vector;
+
+}));
+/**
+ * Anchor
+ */
+
+( function( root, factory ) {
+  // module definition
+  if ( typeof module == 'object' && module.exports ) {
+    // CommonJS
+    module.exports = factory( require('./boilerplate'), require('./vector'),
+        require('./canvas-renderer'), require('./svg-renderer') );
+  } else {
+    // browser global
+    var Zdog = root.Zdog;
+    Zdog.Anchor = factory( Zdog, Zdog.Vector, Zdog.CanvasRenderer,
+        Zdog.SvgRenderer );
+  }
+}( this, function factory( utils, Vector, CanvasRenderer, SvgRenderer ) {
+
+var TAU = utils.TAU;
+var onePoint = { x: 1, y: 1, z: 1 };
+
+function Anchor( options ) {
+  this.create( options || {} );
+}
+
+Anchor.prototype.create = function( options ) {
+  // set defaults & options
+  utils.extend( this, this.constructor.defaults );
+  this.setOptions( options );
+
+  // transform
+  this.translate = new Vector( options.translate );
+  this.rotate = new Vector( options.rotate );
+  this.scale = new Vector( onePoint ).multiply( this.scale );
+  // origin
+  this.origin = new Vector();
+  this.renderOrigin = new Vector();
+  // children
+  this.children = [];
+  if ( this.addTo ) {
+    this.addTo.addChild( this );
+  }
+};
+
+Anchor.defaults = {};
+
+Anchor.optionKeys = Object.keys( Anchor.defaults ).concat([
+  'rotate',
+  'translate',
+  'scale',
+  'addTo',
+]);
+
+Anchor.prototype.setOptions = function( options ) {
+  var optionKeys = this.constructor.optionKeys;
+
+  for ( var key in options ) {
+    if ( optionKeys.includes( key ) ) {
+      this[ key ] = options[ key ];
+    }
+  }
+};
+
+Anchor.prototype.addChild = function( shape ) {
+  var index = this.children.indexOf( shape );
+  if ( index != -1 ) {
+    return;
+  }
+  shape.remove(); // remove previous parent
+  shape.addTo = this; // keep parent reference
+  this.children.push( shape );
+};
+
+Anchor.prototype.removeChild = function( shape ) {
+  var index = this.children.indexOf( shape );
+  if ( index != -1 ) {
+    this.children.splice( index, 1 );
+  }
+};
+
+Anchor.prototype.remove = function() {
+  if ( this.addTo ) {
+    this.addTo.removeChild( this );
+  }
+};
+
+// ----- update ----- //
+
+Anchor.prototype.update = function() {
+  // update self
+  this.reset();
+  // update children
+  this.children.forEach( function( child ) {
+    child.update();
+  });
+  this.transform( this.translate, this.rotate, this.scale );
+};
+
+Anchor.prototype.reset = function() {
+  this.renderOrigin.set( this.origin );
+};
+
+Anchor.prototype.transform = function( translation, rotation, scale ) {
+  this.renderOrigin.transform( translation, rotation, scale );
+  // transform children
+  this.children.forEach( function( child ) {
+    child.transform( translation, rotation, scale );
+  });
+};
+
+Anchor.prototype.updateGraph = function() {
+  this.update();
+  this.updateFlatGraph();
+  this.flatGraph.forEach( function( item ) {
+    item.updateSortValue();
+  });
+  // z-sort
+  this.flatGraph.sort( Anchor.shapeSorter );
+};
+
+Anchor.shapeSorter = function( a, b ) {
+  return a.sortValue - b.sortValue;
+};
+
+// custom getter to check for flatGraph before using it
+Object.defineProperty( Anchor.prototype, 'flatGraph', {
+  get: function() {
+    if ( !this._flatGraph ) {
+      this.updateFlatGraph();
+    }
+    return this._flatGraph;
+  },
+  set: function( graph ) {
+    this._flatGraph = graph;
+  },
+});
+
+Anchor.prototype.updateFlatGraph = function() {
+  this.flatGraph = this.getFlatGraph();
+};
+
+// return Array of self & all child graph items
+Anchor.prototype.getFlatGraph = function() {
+  var flatGraph = [ this ];
+  return this.addChildFlatGraph( flatGraph );
+};
+
+Anchor.prototype.addChildFlatGraph = function( flatGraph ) {
+  this.children.forEach( function( child ) {
+    var childFlatGraph = child.getFlatGraph();
+    Array.prototype.push.apply( flatGraph, childFlatGraph );
+  });
+  return flatGraph;
+};
+
+Anchor.prototype.updateSortValue = function() {
+  this.sortValue = this.renderOrigin.z;
+};
+
+// ----- render ----- //
+
+Anchor.prototype.render = function() {};
+
+// TODO refactor out CanvasRenderer so its not a dependency within anchor.js
+Anchor.prototype.renderGraphCanvas = function( ctx ) {
+  if ( !ctx ) {
+    throw new Error( 'ctx is ' + ctx + '. ' +
+      'Canvas context required for render. Check .renderGraphCanvas( ctx ).' );
+  }
+  this.flatGraph.forEach( function( item ) {
+    item.render( ctx, CanvasRenderer );
+  });
+};
+
+Anchor.prototype.renderGraphSvg = function( svg ) {
+  if ( !svg ) {
+    throw new Error( 'svg is ' + svg + '. ' +
+      'SVG required for render. Check .renderGraphSvg( svg ).' );
+  }
+  this.flatGraph.forEach( function( item ) {
+    item.render( svg, SvgRenderer );
+  });
+};
+
+// ----- misc ----- //
+
+Anchor.prototype.copy = function( options ) {
+  // copy options
+  var itemOptions = {};
+  var optionKeys = this.constructor.optionKeys;
+  optionKeys.forEach( function( key ) {
+    itemOptions[ key ] = this[ key ];
+  }, this );
+  // add set options
+  utils.extend( itemOptions, options );
+  var ItemClass = this.constructor;
+  return new ItemClass( itemOptions );
+};
+
+Anchor.prototype.copyGraph = function( options ) {
+  var clone = this.copy( options );
+  this.children.forEach( function( child ) {
+    child.copyGraph({
+      addTo: clone,
+    });
+  });
+  return clone;
+};
+
+Anchor.prototype.normalizeRotate = function() {
+  this.rotate.x = utils.modulo( this.rotate.x, TAU );
+  this.rotate.y = utils.modulo( this.rotate.y, TAU );
+  this.rotate.z = utils.modulo( this.rotate.z, TAU );
+};
+
+// ----- subclass ----- //
+
+function getSubclass( Super ) {
+  return function( defaults ) {
+    // create constructor
+    function Item( options ) {
+      this.create( options || {} );
+    }
+
+    Item.prototype = Object.create( Super.prototype );
+    Item.prototype.constructor = Item;
+
+    Item.defaults = utils.extend( {}, Super.defaults );
+    utils.extend( Item.defaults, defaults );
+    // create optionKeys
+    Item.optionKeys = Super.optionKeys.slice(0);
+    // add defaults keys to optionKeys, dedupe
+    Object.keys( Item.defaults ).forEach( function( key ) {
+      if ( !Item.optionKeys.includes( key ) ) {
+        Item.optionKeys.push( key );
+      }
+    });
+
+    Item.subclass = getSubclass( Item );
+
+    return Item;
+  };
+}
+
+Anchor.subclass = getSubclass( Anchor );
+
+return Anchor;
+
+}));
+/**
+ * Dragger
+ */
+
+( function( root, factory ) {
+  // module definition
+  if ( typeof module == 'object' && module.exports ) {
+    // CommonJS
+    module.exports = factory( root );
+  } else {
+    // browser global
+    root.Zdog.Dragger = factory( root );
+  }
+}( this, function factory( window ) {
+
+// quick & dirty drag event stuff
+// messes up if multiple pointers/touches
+
+// event support, default to mouse events
+var downEvent = 'mousedown';
+var moveEvent = 'mousemove';
+var upEvent = 'mouseup';
+if ( window.PointerEvent ) {
+  // PointerEvent, Chrome
+  downEvent = 'pointerdown';
+  moveEvent = 'pointermove';
+  upEvent = 'pointerup';
+} else if ( 'ontouchstart' in window ) {
+  // Touch Events, iOS Safari
+  downEvent = 'touchstart';
+  moveEvent = 'touchmove';
+  upEvent = 'touchend';
+}
+
+function noop() {}
+
+function Dragger( options ) {
+  this.create( options || {} );
+}
+
+Dragger.prototype.create = function( options ) {
+  this.onDragStart = options.onDragStart || noop;
+  this.onDragMove = options.onDragMove || noop;
+  this.onDragEnd = options.onDragEnd || noop;
+
+  this.bindDrag( options.startElement );
+};
+
+Dragger.prototype.bindDrag = function( element ) {
+  element = this.getQueryElement( element );
+  if ( !element ) {
+    return;
+  }
+  // disable browser gestures #53
+  element.style.touchAction = 'none';
+  element.addEventListener( downEvent, this );
+};
+
+Dragger.prototype.getQueryElement = function( element ) {
+  if ( typeof element == 'string' ) {
+    // with string, query selector
+    element = document.querySelector( element );
+  }
+  return element;
+};
+
+Dragger.prototype.handleEvent = function( event ) {
+  var method = this[ 'on' + event.type ];
+  if ( method ) {
+    method.call( this, event );
+  }
+};
+
+Dragger.prototype.onmousedown =
+Dragger.prototype.onpointerdown = function( event ) {
+  this.dragStart( event, event );
+};
+
+Dragger.prototype.ontouchstart = function( event ) {
+  this.dragStart( event, event.changedTouches[0] );
+};
+
+Dragger.prototype.dragStart = function( event, pointer ) {
+  event.preventDefault();
+  this.dragStartX = pointer.pageX;
+  this.dragStartY = pointer.pageY;
+  window.addEventListener( moveEvent, this );
+  window.addEventListener( upEvent, this );
+  this.onDragStart( pointer );
+};
+
+Dragger.prototype.ontouchmove = function( event ) {
+  // HACK, moved touch may not be first
+  this.dragMove( event, event.changedTouches[0] );
+};
+
+Dragger.prototype.onmousemove =
+Dragger.prototype.onpointermove = function( event ) {
+  this.dragMove( event, event );
+};
+
+Dragger.prototype.dragMove = function( event, pointer ) {
+  event.preventDefault();
+  var moveX = pointer.pageX - this.dragStartX;
+  var moveY = pointer.pageY - this.dragStartY;
+  this.onDragMove( pointer, moveX, moveY );
+};
+
+Dragger.prototype.onmouseup =
+Dragger.prototype.onpointerup =
+Dragger.prototype.ontouchend =
+Dragger.prototype.dragEnd = function(/* event */) {
+  window.removeEventListener( moveEvent, this );
+  window.removeEventListener( upEvent, this );
+  this.onDragEnd();
+};
+
+return Dragger;
+
+}));
+/**
+ * Illustration
+ */
+
+( function( root, factory ) {
+  // module definition
+  if ( typeof module == 'object' && module.exports ) {
+    // CommonJS
+    module.exports = factory( require('./boilerplate'), require('./anchor'),
+        require('./dragger') );
+  } else {
+    // browser global
+    var Zdog = root.Zdog;
+    Zdog.Illustration = factory( Zdog, Zdog.Anchor, Zdog.Dragger );
+  }
+}( this, function factory( utils, Anchor, Dragger ) {
+
+function noop() {}
+var TAU = utils.TAU;
+
+var Illustration = Anchor.subclass({
+  element: undefined,
+  centered: true,
+  zoom: 1,
+  dragRotate: false,
+  resize: false,
+  onPrerender: noop,
+  onDragStart: noop,
+  onDragMove: noop,
+  onDragEnd: noop,
+  onResize: noop,
+});
+
+utils.extend( Illustration.prototype, Dragger.prototype );
+
+Illustration.prototype.create = function( options ) {
+  Anchor.prototype.create.call( this, options );
+  Dragger.prototype.create.call( this, options );
+  this.setElement( this.element );
+  this.setDragRotate( this.dragRotate );
+  this.setResize( this.resize );
+};
+
+Illustration.prototype.setElement = function( element ) {
+  element = this.getQueryElement( element );
+  if ( !element ) {
+    throw new Error( 'Zdog.Illustration element required. Set to ' + element );
+  }
+
+  var nodeName = element.nodeName.toLowerCase();
+  if ( nodeName == 'canvas' ) {
+    this.setCanvas( element );
+  } else if ( nodeName == 'svg' ) {
+    this.setSvg( element );
+  }
+};
+
+Illustration.prototype.setSize = function( width, height ) {
+  width = Math.round( width );
+  height = Math.round( height );
+  if ( this.isCanvas ) {
+    this.setSizeCanvas( width, height );
+  } else if ( this.isSvg ) {
+    this.setSizeSvg( width, height );
+  }
+};
+
+Illustration.prototype.setResize = function( resize ) {
+  this.resize = resize;
+  // create resize event listener
+  if ( !this.resizeListener ) {
+    this.resizeListener = this.onWindowResize.bind( this );
+  }
+  // add/remove event listener
+  if ( resize ) {
+    window.addEventListener( 'resize', this.resizeListener );
+    this.onWindowResize();
+  } else {
+    window.removeEventListener( 'resize', this.resizeListener );
+  }
+};
+
+// TODO debounce this?
+Illustration.prototype.onWindowResize = function() {
+  this.setMeasuredSize();
+  this.onResize( this.width, this.height );
+};
+
+Illustration.prototype.setMeasuredSize = function() {
+  var width, height;
+  var isFullscreen = this.resize == 'fullscreen';
+  if ( isFullscreen ) {
+    width = window.innerWidth;
+    height = window.innerHeight;
+  } else {
+    var rect = this.element.getBoundingClientRect();
+    width = rect.width;
+    height = rect.height;
+  }
+  this.setSize( width, height );
+};
+
+// ----- render ----- //
+
+Illustration.prototype.renderGraph = function( item ) {
+  if ( this.isCanvas ) {
+    this.renderGraphCanvas( item );
+  } else if ( this.isSvg ) {
+    this.renderGraphSvg( item );
+  }
+};
+
+// combo method
+Illustration.prototype.updateRenderGraph = function( item ) {
+  this.updateGraph();
+  this.renderGraph( item );
+};
+
+// ----- canvas ----- //
+
+Illustration.prototype.setCanvas = function( element ) {
+  this.element = element;
+  this.isCanvas = true;
+  // update related properties
+  this.ctx = this.element.getContext('2d');
+  // set initial size
+  this.setSizeCanvas( element.width, element.height );
+};
+
+Illustration.prototype.setSizeCanvas = function( width, height ) {
+  this.width = width;
+  this.height = height;
+  // up-rez for hi-DPI devices
+  var pixelRatio = this.pixelRatio = window.devicePixelRatio || 1;
+  this.element.width = this.canvasWidth = width * pixelRatio;
+  this.element.height = this.canvasHeight = height * pixelRatio;
+  var needsHighPixelRatioSizing = pixelRatio > 1 && !this.resize;
+  if ( needsHighPixelRatioSizing ) {
+    this.element.style.width = width + 'px';
+    this.element.style.height = height + 'px';
+  }
+};
+
+Illustration.prototype.renderGraphCanvas = function( item ) {
+  item = item || this;
+  this.prerenderCanvas();
+  Anchor.prototype.renderGraphCanvas.call( item, this.ctx );
+  this.postrenderCanvas();
+};
+
+Illustration.prototype.prerenderCanvas = function() {
+  var ctx = this.ctx;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.clearRect( 0, 0, this.canvasWidth, this.canvasHeight );
+  ctx.save();
+  if ( this.centered ) {
+    var centerX = this.width/2 * this.pixelRatio;
+    var centerY = this.height/2 * this.pixelRatio;
+    ctx.translate( centerX, centerY );
+  }
+  var scale = this.pixelRatio * this.zoom;
+  ctx.scale( scale, scale );
+  this.onPrerender( ctx );
+};
+
+Illustration.prototype.postrenderCanvas = function() {
+  this.ctx.restore();
+};
+
+// ----- svg ----- //
+
+Illustration.prototype.setSvg = function( element ) {
+  this.element = element;
+  this.isSvg = true;
+  this.pixelRatio = 1;
+  // set initial size from width & height attributes
+  var width = element.getAttribute('width');
+  var height = element.getAttribute('height');
+  this.setSizeSvg( width, height );
+};
+
+Illustration.prototype.setSizeSvg = function( width, height ) {
+  this.width = width;
+  this.height = height;
+  var viewWidth = width / this.zoom;
+  var viewHeight = height / this.zoom;
+  var viewX = this.centered ? -viewWidth/2 : 0;
+  var viewY = this.centered ? -viewHeight/2 : 0;
+  this.element.setAttribute( 'viewBox', viewX + ' ' + viewY + ' ' +
+    viewWidth + ' ' + viewHeight );
+  if ( this.resize ) {
+    // remove size attributes, let size be determined by viewbox
+    this.element.removeAttribute('width');
+    this.element.removeAttribute('height');
+  } else {
+    this.element.setAttribute( 'width', width );
+    this.element.setAttribute( 'height', height );
+  }
+};
+
+Illustration.prototype.renderGraphSvg = function( item ) {
+  item = item || this;
+  empty( this.element );
+  this.onPrerender( this.element );
+  Anchor.prototype.renderGraphSvg.call( item, this.element );
+};
+
+function empty( element ) {
+  while ( element.firstChild ) {
+    element.removeChild( element.firstChild );
+  }
+}
+
+// ----- drag ----- //
+
+Illustration.prototype.setDragRotate = function( item ) {
+  if ( !item ) {
+    return;
+  } else if ( item === true ) {
+    /* eslint consistent-this: "off" */
+    item = this;
+  }
+  this.dragRotate = item;
+
+  this.bindDrag( this.element );
+};
+
+Illustration.prototype.dragStart = function(/* event, pointer */) {
+  this.dragStartRX = this.dragRotate.rotate.x;
+  this.dragStartRY = this.dragRotate.rotate.y;
+  Dragger.prototype.dragStart.apply( this, arguments );
+};
+
+Illustration.prototype.dragMove = function( event, pointer ) {
+  var moveX = pointer.pageX - this.dragStartX;
+  var moveY = pointer.pageY - this.dragStartY;
+  var displaySize = Math.min( this.width, this.height );
+  var moveRY = moveX / displaySize * TAU;
+  var moveRX = moveY / displaySize * TAU;
+  this.dragRotate.rotate.x = this.dragStartRX - moveRX;
+  this.dragRotate.rotate.y = this.dragStartRY - moveRY;
+  Dragger.prototype.dragMove.apply( this, arguments );
+};
+
+return Illustration;
+
+}));
+/**
+ * PathCommand
+ */
+
+( function( root, factory ) {
+  // module definition
+  if ( typeof module == 'object' && module.exports ) {
+    // CommonJS
+    module.exports = factory( require('./vector') );
+  } else {
+    // browser global
+    var Zdog = root.Zdog;
+    Zdog.PathCommand = factory( Zdog.Vector );
+  }
+}( this, function factory( Vector ) {
+
+function PathCommand( method, points, previousPoint ) {
+  this.method = method;
+  this.points = points.map( mapVectorPoint );
+  this.renderPoints = points.map( mapNewVector );
+  this.previousPoint = previousPoint;
+  this.endRenderPoint = this.renderPoints[ this.renderPoints.length - 1 ];
+  // arc actions come with previous point & corner point
+  // but require bezier control points
+  if ( method == 'arc' ) {
+    this.controlPoints = [ new Vector(), new Vector() ];
+  }
+}
+
+function mapVectorPoint( point ) {
+  if ( point instanceof Vector ) {
+    return point;
+  } else {
+    return new Vector( point );
+  }
+}
+
+function mapNewVector( point ) {
+  return new Vector( point );
+}
+
+PathCommand.prototype.reset = function() {
+  // reset renderPoints back to orignal points position
+  var points = this.points;
+  this.renderPoints.forEach( function( renderPoint, i ) {
+    var point = points[i];
+    renderPoint.set( point );
+  });
+};
+
+PathCommand.prototype.transform = function( translation, rotation, scale ) {
+  this.renderPoints.forEach( function( renderPoint ) {
+    renderPoint.transform( translation, rotation, scale );
+  });
+};
+
+PathCommand.prototype.render = function( ctx, elem, renderer ) {
+  return this[ this.method ]( ctx, elem, renderer );
+};
+
+PathCommand.prototype.move = function( ctx, elem, renderer ) {
+  return renderer.move( ctx, elem, this.renderPoints[0] );
+};
+
+PathCommand.prototype.line = function( ctx, elem, renderer ) {
+  return renderer.line( ctx, elem, this.renderPoints[0] );
+};
+
+PathCommand.prototype.bezier = function( ctx, elem, renderer ) {
+  var cp0 = this.renderPoints[0];
+  var cp1 = this.renderPoints[1];
+  var end = this.renderPoints[2];
+  return renderer.bezier( ctx, elem, cp0, cp1, end );
+};
+
+var arcHandleLength = 9/16;
+
+PathCommand.prototype.arc = function( ctx, elem, renderer ) {
+  var prev = this.previousPoint;
+  var corner = this.renderPoints[0];
+  var end = this.renderPoints[1];
+  var cp0 = this.controlPoints[0];
+  var cp1 = this.controlPoints[1];
+  cp0.set( prev ).lerp( corner, arcHandleLength );
+  cp1.set( end ).lerp( corner, arcHandleLength );
+  return renderer.bezier( ctx, elem, cp0, cp1, end );
+};
+
+return PathCommand;
+
+}));
+/**
+ * Shape
+ */
+
+( function( root, factory ) {
+  // module definition
+  if ( typeof module == 'object' && module.exports ) {
+    // CommonJS
+    module.exports = factory( require('./boilerplate'), require('./vector'),
+        require('./path-command'), require('./anchor') );
+  } else {
+    // browser global
+    var Zdog = root.Zdog;
+    Zdog.Shape = factory( Zdog, Zdog.Vector, Zdog.PathCommand, Zdog.Anchor );
+  }
+}( this, function factory( utils, Vector, PathCommand, Anchor ) {
+
+var Shape = Anchor.subclass({
+  stroke: 1,
+  fill: false,
+  color: '#333',
+  closed: true,
+  visible: true,
+  path: [ {} ],
+  front: { z: 1 },
+  backface: true,
+});
+
+Shape.prototype.create = function( options ) {
+  Anchor.prototype.create.call( this, options );
+  this.updatePath();
+  // front
+  this.front = new Vector( options.front || this.front );
+  this.renderFront = new Vector( this.front );
+  this.renderNormal = new Vector();
+};
+
+var actionNames = [
+  'move',
+  'line',
+  'bezier',
+  'arc',
+];
+
+Shape.prototype.updatePath = function() {
+  this.setPath();
+  this.updatePathCommands();
+};
+
+// place holder for Ellipse, Rect, etc.
+Shape.prototype.setPath = function() {};
+
+// parse path into PathCommands
+Shape.prototype.updatePathCommands = function() {
+  var previousPoint;
+  this.pathCommands = this.path.map( function( pathPart, i ) {
+    // pathPart can be just vector coordinates -> { x, y, z }
+    // or path instruction -> { arc: [ {x0,y0,z0}, {x1,y1,z1} ] }
+    var keys = Object.keys( pathPart );
+    var method = keys[0];
+    var points = pathPart[ method ];
+    // default to line if no instruction
+    var isInstruction = keys.length == 1 && actionNames.includes( method );
+    if ( !isInstruction ) {
+      method = 'line';
+      points = pathPart;
+    }
+    // munge single-point methods like line & move without arrays
+    var isLineOrMove = method == 'line' || method == 'move';
+    var isPointsArray = Array.isArray( points );
+    if ( isLineOrMove && !isPointsArray ) {
+      points = [ points ];
+    }
+
+    // first action is always move
+    method = i === 0 ? 'move' : method;
+    // arcs require previous last point
+    var command = new PathCommand( method, points, previousPoint );
+    // update previousLastPoint
+    previousPoint = command.endRenderPoint;
+    return command;
+  });
+};
+
+// ----- update ----- //
+
+Shape.prototype.reset = function() {
+  this.renderOrigin.set( this.origin );
+  this.renderFront.set( this.front );
+  // reset command render points
+  this.pathCommands.forEach( function( command ) {
+    command.reset();
+  });
+};
+
+Shape.prototype.transform = function( translation, rotation, scale ) {
+  // calculate render points backface visibility & cone/hemisphere shapes
+  this.renderOrigin.transform( translation, rotation, scale );
+  this.renderFront.transform( translation, rotation, scale );
+  this.renderNormal.set( this.renderOrigin ).subtract( this.renderFront );
+  // transform points
+  this.pathCommands.forEach( function( command ) {
+    command.transform( translation, rotation, scale );
+  });
+  // transform children
+  this.children.forEach( function( child ) {
+    child.transform( translation, rotation, scale );
+  });
+};
+
+
+Shape.prototype.updateSortValue = function() {
+  // average sort all z points.
+  // ignore the final point if it is a closed shape.
+  var howManyPoints = this.pathCommands.length;
+  var sortValueTotal = 0;
+  var firstPoint = this.pathCommands[0].endRenderPoint;
+  var lastPoint = this.pathCommands[this.pathCommands.length-1].endRenderPoint;
+  if (howManyPoints > 2 &&
+      firstPoint.isSame(lastPoint)) {
+    howManyPoints -= 1; // closed shape; ignore final point.
+  }
+  
+  for (var i = 0; i < howManyPoints; i++) {
+      sortValueTotal += this.pathCommands[i].endRenderPoint.z;
+    }
+    // average sort value of all points
+    // def not geometrically correct, but works for me
+    this.sortValue = sortValueTotal / howManyPoints;
+};
+
+// ----- render ----- //
+
+Shape.prototype.render = function( ctx, renderer ) {
+  var length = this.pathCommands.length;
+  if ( !this.visible || !length ) {
+    return;
+  }
+  // do not render if hiding backface
+  this.isFacingBack = this.renderNormal.z > 0;
+  if ( !this.backface && this.isFacingBack ) {
+    return;
+  }
+  if ( !renderer ) {
+    throw new Error( 'Zdog renderer required. Set to ' + renderer );
+  }
+  // render dot or path
+  var isDot = length == 1;
+  if ( renderer.isCanvas && isDot ) {
+    this.renderCanvasDot( ctx, renderer );
+  } else {
+    this.renderPath( ctx, renderer );
+  }
+};
+
+var TAU = utils.TAU;
+// Safari does not render lines with no size, have to render circle instead
+Shape.prototype.renderCanvasDot = function( ctx ) {
+  var lineWidth = this.getLineWidth();
+  if ( !lineWidth ) {
+    return;
+  }
+  ctx.fillStyle = this.getRenderColor();
+  var point = this.pathCommands[0].endRenderPoint;
+  ctx.beginPath();
+  var radius = lineWidth/2;
+  ctx.arc( point.x, point.y, radius, 0, TAU );
+  ctx.fill();
+};
+
+Shape.prototype.getLineWidth = function() {
+  if ( !this.stroke ) {
+    return 0;
+  }
+  if ( this.stroke == true ) {
+    return 1;
+  }
+  return this.stroke;
+};
+
+Shape.prototype.getRenderColor = function() {
+  // use backface color if applicable
+  var isBackfaceColor = typeof this.backface == 'string' && this.isFacingBack;
+  var color = isBackfaceColor ? this.backface : this.color;
+  return color;
+};
+
+Shape.prototype.renderPath = function( ctx, renderer ) {
+  var elem = this.getRenderElement( ctx, renderer );
+  var isTwoPoints = this.pathCommands.length == 2 &&
+    this.pathCommands[1].method == 'line';
+  var isClosed = !isTwoPoints && this.closed;
+  var color = this.getRenderColor();
+
+  renderer.renderPath( ctx, elem, this.pathCommands, isClosed );
+  renderer.stroke( ctx, elem, this.stroke, color, this.getLineWidth() );
+  renderer.fill( ctx, elem, this.fill, color );
+  renderer.end( ctx, elem );
+};
+
+var svgURI = 'http://www.w3.org/2000/svg';
+
+Shape.prototype.getRenderElement = function( ctx, renderer ) {
+  if ( !renderer.isSvg ) {
+    return;
+  }
+  if ( !this.svgElement ) {
+    // create svgElement
+    this.svgElement = document.createElementNS( svgURI, 'path');
+    this.svgElement.setAttribute( 'stroke-linecap', 'round' );
+    this.svgElement.setAttribute( 'stroke-linejoin', 'round' );
+  }
+  return this.svgElement;
+};
+
+return Shape;
+
+}));
+/**
+ * Group
+ */
+
+( function( root, factory ) {
+  // module definition
+  if ( typeof module == 'object' && module.exports ) {
+    // CommonJS
+    module.exports = factory( require('./anchor') );
+  } else {
+    // browser global
+    var Zdog = root.Zdog;
+    Zdog.Group = factory( Zdog.Anchor );
+  }
+}( this, function factory( Anchor ) {
+
+var Group = Anchor.subclass({
+  updateSort: false,
+  visible: true,
+});
+
+// ----- update ----- //
+
+Group.prototype.updateSortValue = function() {
+  var sortValueTotal = 0;
+  this.flatGraph.forEach( function( item ) {
+    item.updateSortValue();
+    sortValueTotal += item.sortValue;
+  });
+  // average sort value of all points
+  // def not geometrically correct, but works for me
+  this.sortValue = sortValueTotal / this.flatGraph.length;
+
+  if ( this.updateSort ) {
+    this.flatGraph.sort( Anchor.shapeSorter );
+  }
+};
+
+// ----- render ----- //
+
+Group.prototype.render = function( ctx, renderer ) {
+  if ( !this.visible ) {
+    return;
+  }
+
+  this.flatGraph.forEach( function( item ) {
+    item.render( ctx, renderer );
+  });
+};
+
+// actual group flatGraph only used inside group
+Group.prototype.updateFlatGraph = function() {
+  // do not include self
+  var flatGraph = [];
+  this.flatGraph = this.addChildFlatGraph( flatGraph );
+};
+
+// do not include children, group handles rendering & sorting internally
+Group.prototype.getFlatGraph = function() {
+  return [ this ];
+};
+
+return Group;
+
+}));
+/**
+ * Rect
+ */
+
+( function( root, factory ) {
+  // module definition
+  if ( typeof module == 'object' && module.exports ) {
+    // CommonJS
+    module.exports = factory( require('./shape') );
+  } else {
+    // browser global
+    var Zdog = root.Zdog;
+    Zdog.Rect = factory( Zdog.Shape );
+  }
+}( this, function factory( Shape ) {
+
+var Rect = Shape.subclass({
+  width: 1,
+  height: 1,
+});
+
+Rect.prototype.setPath = function() {
+  var x = this.width / 2;
+  var y = this.height / 2;
+  /* eslint key-spacing: "off" */
+  this.path = [
+    { x: -x, y: -y },
+    { x:  x, y: -y },
+    { x:  x, y:  y },
+    { x: -x, y:  y },
+  ];
+};
+
+return Rect;
+
+}));
+/**
+ * RoundedRect
+ */
+
+( function( root, factory ) {
+  // module definition
+  if ( typeof module == 'object' && module.exports ) {
+    // CommonJS
+    module.exports = factory( require('./shape') );
+  } else {
+    // browser global
+    var Zdog = root.Zdog;
+    Zdog.RoundedRect = factory( Zdog.Shape );
+  }
+}( this, function factory( Shape ) {
+
+var RoundedRect = Shape.subclass({
+  width: 1,
+  height: 1,
+  cornerRadius: 0.25,
+  closed: false,
+});
+
+RoundedRect.prototype.setPath = function() {
+  /* eslint
+     id-length: [ "error", { "min": 2, "exceptions": [ "x", "y" ] }],
+     key-spacing: "off" */
+  var xA = this.width / 2;
+  var yA = this.height / 2;
+  var shortSide = Math.min( xA, yA );
+  var cornerRadius = Math.min( this.cornerRadius, shortSide );
+  var xB = xA - cornerRadius;
+  var yB = yA - cornerRadius;
+  var path = [
+    // top right corner
+    { x: xB, y: -yA },
+    { arc: [
+      { x: xA, y: -yA },
+      { x: xA, y: -yB },
+    ]},
+  ];
+  // bottom right corner
+  if ( yB ) {
+    path.push({ x: xA, y: yB });
+  }
+  path.push({ arc: [
+    { x: xA, y:  yA },
+    { x: xB, y:  yA },
+  ]});
+  // bottom left corner
+  if ( xB ) {
+    path.push({ x: -xB, y: yA });
+  }
+  path.push({ arc: [
+    { x: -xA, y:  yA },
+    { x: -xA, y:  yB },
+  ]});
+  // top left corner
+  if ( yB ) {
+    path.push({ x: -xA, y: -yB });
+  }
+  path.push({ arc: [
+    { x: -xA, y: -yA },
+    { x: -xB, y: -yA },
+  ]});
+
+  // back to top right corner
+  if ( xB ) {
+    path.push({ x: xB, y: -yA });
+  }
+
+  this.path = path;
+};
+
+return RoundedRect;
+
+}));
+/**
+ * Ellipse
+ */
+
+( function( root, factory ) {
+  // module definition
+  if ( typeof module == 'object' && module.exports ) {
+    // CommonJS
+    module.exports = factory( require('./shape') );
+  } else {
+    // browser global
+    var Zdog = root.Zdog;
+    Zdog.Ellipse = factory( Zdog.Shape );
+  }
+
+}( this, function factory( Shape ) {
+
+var Ellipse = Shape.subclass({
+  diameter: 1,
+  width: undefined,
+  height: undefined,
+  quarters: 4,
+  closed: false,
+});
+
+Ellipse.prototype.setPath = function() {
+  var width = this.width != undefined ? this.width : this.diameter;
+  var height = this.height != undefined ? this.height : this.diameter;
+  var x = width / 2;
+  var y = height / 2;
+  this.path = [
+    { x: 0, y: -y },
+    { arc: [ // top right
+      { x: x, y: -y },
+      { x: x, y: 0 },
+    ]},
+  ];
+  // bottom right
+  if ( this.quarters > 1 ) {
+    this.path.push({ arc: [
+      { x: x, y: y },
+      { x: 0, y: y },
+    ]});
+  }
+  // bottom left
+  if ( this.quarters > 2 ) {
+    this.path.push({ arc: [
+      { x: -x, y: y },
+      { x: -x, y: 0 },
+    ]});
+  }
+  // top left
+  if ( this.quarters > 3 ) {
+    this.path.push({ arc: [
+      { x: -x, y: -y },
+      { x: 0, y: -y },
+    ]});
+  }
+};
+
+return Ellipse;
+
+}));
+/**
+ * Shape
+ */
+
+( function( root, factory ) {
+  // module definition
+  if ( typeof module == 'object' && module.exports ) {
+    // CommonJS
+    module.exports = factory( require('./boilerplate'), require('./shape') );
+  } else {
+    // browser global
+    var Zdog = root.Zdog;
+    Zdog.Polygon = factory( Zdog, Zdog.Shape );
+  }
+}( this, function factory( utils, Shape ) {
+
+var Polygon = Shape.subclass({
+  sides: 3,
+  radius: 0.5,
+});
+
+var TAU = utils.TAU;
+
+Polygon.prototype.setPath = function() {
+  this.path = [];
+  for ( var i=0; i < this.sides; i++ ) {
+    var theta = i/this.sides * TAU - TAU/4;
+    var x = Math.cos( theta ) * this.radius;
+    var y = Math.sin( theta ) * this.radius;
+    this.path.push({ x: x, y: y });
+  }
+};
+
+return Polygon;
+
+}));
+/**
+ * Hemisphere composite shape
+ */
+
+( function( root, factory ) {
+  // module definition
+  if ( typeof module == 'object' && module.exports ) {
+    // CommonJS
+    module.exports = factory( require('./boilerplate'), require('./ellipse') );
+  } else {
+    // browser global
+    var Zdog = root.Zdog;
+    Zdog.Hemisphere = factory( Zdog, Zdog.Ellipse );
+  }
+}( this, function factory( utils, Ellipse ) {
+
+var Hemisphere = Ellipse.subclass({
+  fill: true,
+});
+
+var TAU = utils.TAU;
+
+Hemisphere.prototype.updateSortValue = function() {
+  // call super
+  Ellipse.prototype.updateSortValue.apply( this, arguments );
+  var contourAngleZ = Math.atan2( this.renderNormal.z, this.renderNormal.y );
+  contourAngleZ = utils.modulo( contourAngleZ, TAU );
+  //center of dome is half the radius.
+  var domeZ = this.diameter/2/2 * Math.sin(contourAngleZ);
+  this.sortValue -= domeZ;
+};
+
+Hemisphere.prototype.render = function( ctx, renderer ) {
+  this.renderDome( ctx, renderer );
+  // call super
+  Ellipse.prototype.render.apply( this, arguments );
+};
+
+Hemisphere.prototype.renderDome = function( ctx, renderer ) {
+  if ( !this.visible ) {
+    return;
+  }
+  var elem = this.getDomeRenderElement( ctx, renderer );
+  var contourAngle = Math.atan2( this.renderNormal.y, this.renderNormal.x );
+  var domeRadius = this.diameter/2 * this.renderNormal.magnitude();
+  var x = this.renderOrigin.x;
+  var y = this.renderOrigin.y;
+
+  if ( renderer.isCanvas ) {
+    // canvas
+    var startAngle = contourAngle + TAU/4;
+    var endAngle = contourAngle - TAU/4;
+    ctx.beginPath();
+    ctx.arc( x, y, domeRadius, startAngle, endAngle );
+  } else if ( renderer.isSvg ) {
+    // svg
+    contourAngle = (contourAngle - TAU/4) / TAU * 360;
+    this.domeSvgElement.setAttribute( 'd', 'M ' + -domeRadius + ',0 A ' +
+        domeRadius + ',' + domeRadius + ' 0 0 1 ' + domeRadius + ',0' );
+    this.domeSvgElement.setAttribute( 'transform',
+        'translate(' + x + ',' + y + ' ) rotate(' + contourAngle + ')' );
+  }
+
+  renderer.stroke( ctx, elem, this.stroke, this.color, this.getLineWidth() );
+  renderer.fill( ctx, elem, this.fill, this.color );
+  renderer.end( ctx, elem );
+};
+
+var svgURI = 'http://www.w3.org/2000/svg';
+
+Hemisphere.prototype.getDomeRenderElement = function( ctx, renderer ) {
+  if ( !renderer.isSvg ) {
+    return;
+  }
+  if ( !this.domeSvgElement ) {
+    // create svgElement
+    this.domeSvgElement = document.createElementNS( svgURI, 'path');
+    this.domeSvgElement.setAttribute( 'stroke-linecap', 'round' );
+    this.domeSvgElement.setAttribute( 'stroke-linejoin', 'round' );
+  }
+  return this.domeSvgElement;
+};
+
+return Hemisphere;
+
+}));
+/**
+ * Cylinder composite shape
+ */
+
+( function( root, factory ) {
+  // module definition
+  if ( typeof module == 'object' && module.exports ) {
+    // CommonJS
+    module.exports = factory( require('./boilerplate'),
+        require('./path-command'), require('./shape'), require('./group'),
+        require('./ellipse') );
+  } else {
+    // browser global
+    var Zdog = root.Zdog;
+    Zdog.Cylinder = factory( Zdog, Zdog.PathCommand, Zdog.Shape,
+        Zdog.Group, Zdog.Ellipse );
+  }
+}( this, function factory( utils, PathCommand, Shape, Group, Ellipse ) {
+
+function noop() {}
+
+// ----- CylinderGroup ----- //
+
+var CylinderGroup = Group.subclass({
+  color: '#333',
+  updateSort: true,
+});
+
+CylinderGroup.prototype.create = function() {
+  Group.prototype.create.apply( this, arguments );
+  this.pathCommands = [
+    new PathCommand( 'move', [ {} ] ),
+    new PathCommand( 'line', [ {} ] ),
+  ];
+};
+
+CylinderGroup.prototype.render = function( ctx, renderer ) {
+  this.renderCylinderSurface( ctx, renderer );
+  Group.prototype.render.apply( this, arguments );
+};
+
+CylinderGroup.prototype.renderCylinderSurface = function( ctx, renderer ) {
+  if ( !this.visible ) {
+    return;
+  }
+  // render cylinder surface
+  var elem = this.getRenderElement( ctx, renderer );
+  var frontBase = this.frontBase;
+  var rearBase = this.rearBase;
+  var scale = frontBase.renderNormal.magnitude();
+  var strokeWidth = frontBase.diameter * scale + frontBase.getLineWidth();
+  // set path command render points
+  this.pathCommands[0].renderPoints[0].set( frontBase.renderOrigin );
+  this.pathCommands[1].renderPoints[0].set( rearBase.renderOrigin );
+
+  if ( renderer.isCanvas ) {
+    ctx.lineCap = 'butt'; // nice
+  }
+  renderer.renderPath( ctx, elem, this.pathCommands );
+  renderer.stroke( ctx, elem, true, this.color, strokeWidth );
+  renderer.end( ctx, elem );
+
+  if ( renderer.isCanvas ) {
+    ctx.lineCap = 'round'; // reset
+  }
+};
+
+var svgURI = 'http://www.w3.org/2000/svg';
+
+CylinderGroup.prototype.getRenderElement = function( ctx, renderer ) {
+  if ( !renderer.isSvg ) {
+    return;
+  }
+  if ( !this.svgElement ) {
+    // create svgElement
+    this.svgElement = document.createElementNS( svgURI, 'path');
+  }
+  return this.svgElement;
+};
+
+// prevent double-creation in parent.copyGraph()
+// only create in Cylinder.create()
+CylinderGroup.prototype.copyGraph = noop;
+
+// ----- CylinderEllipse ----- //
+
+var CylinderEllipse = Ellipse.subclass();
+
+CylinderEllipse.prototype.copyGraph = noop;
+
+// ----- Cylinder ----- //
+
+var Cylinder = Shape.subclass({
+  diameter: 1,
+  length: 1,
+  frontFace: undefined,
+  fill: true,
+});
+
+var TAU = utils.TAU;
+
+Cylinder.prototype.create = function(/* options */) {
+  // call super
+  Shape.prototype.create.apply( this, arguments );
+  // composite shape, create child shapes
+  // CylinderGroup to render cylinder surface then bases
+  this.group = new CylinderGroup({
+    addTo: this,
+    color: this.color,
+    visible: this.visible,
+  });
+  var baseZ = this.length/2;
+  var baseColor = this.backface || true;
+  // front outside base
+  this.frontBase = this.group.frontBase = new Ellipse({
+    addTo: this.group,
+    diameter: this.diameter,
+    translate: { z: baseZ },
+    rotate: { y: TAU/2 },
+    color: this.color,
+    stroke: this.stroke,
+    fill: this.fill,
+    backface: this.frontFace || baseColor,
+    visible: this.visible,
+  });
+  // back outside base
+  this.rearBase = this.group.rearBase = this.frontBase.copy({
+    translate: { z: -baseZ },
+    rotate: { y: 0 },
+    backface: baseColor,
+  });
+};
+
+// Cylinder shape does not render anything
+Cylinder.prototype.render = function() {};
+
+// ----- set child properties ----- //
+
+var childProperties = [ 'stroke', 'fill', 'color', 'visible' ];
+childProperties.forEach( function( property ) {
+  // use proxy property for custom getter & setter
+  var _prop = '_' + property;
+  Object.defineProperty( Cylinder.prototype, property, {
+    get: function() {
+      return this[ _prop ];
+    },
+    set: function( value ) {
+      this[ _prop ] = value;
+      // set property on children
+      if ( this.frontBase ) {
+        this.frontBase[ property ] = value;
+        this.rearBase[ property ] = value;
+        this.group[ property ] = value;
+      }
+    },
+  });
+});
+
+// TODO child property setter for backface, frontBaseColor, & rearBaseColor
+
+return Cylinder;
+
+}));
+/**
+ * Cone composite shape
+ */
+
+( function( root, factory ) {
+  // module definition
+  if ( typeof module == 'object' && module.exports ) {
+    // CommonJS
+    module.exports = factory( require('./boilerplate'), require('./vector'),
+        require('./path-command'), require('./anchor'), require('./ellipse') );
+  } else {
+    // browser global
+    var Zdog = root.Zdog;
+    Zdog.Cone = factory( Zdog, Zdog.Vector, Zdog.PathCommand,
+        Zdog.Anchor, Zdog.Ellipse );
+  }
+}( this, function factory( utils, Vector, PathCommand, Anchor, Ellipse ) {
+
+var Cone = Ellipse.subclass({
+  length: 1,
+  fill: true,
+});
+
+var TAU = utils.TAU;
+
+Cone.prototype.create = function(/* options */) {
+  // call super
+  Ellipse.prototype.create.apply( this, arguments );
+  // composite shape, create child shapes
+  this.apex = new Anchor({
+    addTo: this,
+    translate: { z: this.length },
+  });
+
+  // vectors used for calculation
+  this.renderApex = new Vector();
+  this.tangentA = new Vector();
+  this.tangentB = new Vector();
+
+  this.surfacePathCommands = [
+    new PathCommand( 'move', [ {} ] ), // points set in renderConeSurface
+    new PathCommand( 'line', [ {} ] ),
+    new PathCommand( 'line', [ {} ] ),
+  ];
+};
+
+Cone.prototype.updateSortValue = function() {
+  // call super
+  Ellipse.prototype.updateSortValue.apply( this, arguments );
+  var apexNormal = new Vector();
+  apexNormal.set( this.renderOrigin )
+    .subtract( this.apex.renderOrigin );
+  var apexAngleZ = Math.atan2( apexNormal.z, apexNormal.y );
+  apexAngleZ = utils.modulo( apexAngleZ, TAU );
+  //center of cone is one third of its length.
+  var apexZ = this.length/3 * Math.sin(apexAngleZ);
+  this.sortValue -= apexZ;
+};
+
+Cone.prototype.render = function( ctx, renderer ) {
+  this.renderConeSurface( ctx, renderer );
+  Ellipse.prototype.render.apply( this, arguments );
+};
+
+Cone.prototype.renderConeSurface = function( ctx, renderer ) {
+  if ( !this.visible ) {
+    return;
+  }
+  this.renderApex.set( this.apex.renderOrigin )
+    .subtract( this.renderOrigin );
+
+  var scale = this.renderNormal.magnitude();
+  var apexDistance = this.renderApex.magnitude2d();
+  var normalDistance = this.renderNormal.magnitude2d();
+  // eccentricity
+  var eccenAngle = Math.acos( normalDistance / scale );
+  var eccen = Math.sin( eccenAngle );
+  var radius = this.diameter/2 * scale;
+  // does apex extend beyond eclipse of face
+  var isApexVisible = radius * eccen < apexDistance;
+  if ( !isApexVisible ) {
+    return;
+  }
+  // update tangents
+  var apexAngle = Math.atan2( this.renderNormal.y, this.renderNormal.x ) +
+      TAU/2;
+  var projectLength = apexDistance / eccen;
+  var projectAngle = Math.acos( radius / projectLength );
+  // set tangent points
+  var tangentA = this.tangentA;
+  var tangentB = this.tangentB;
+
+  tangentA.x = Math.cos( projectAngle ) * radius * eccen;
+  tangentA.y = Math.sin( projectAngle ) * radius;
+
+  tangentB.set( this.tangentA );
+  tangentB.y *= -1;
+
+  tangentA.rotateZ( apexAngle );
+  tangentB.rotateZ( apexAngle );
+  tangentA.add( this.renderOrigin );
+  tangentB.add( this.renderOrigin );
+
+  this.setSurfaceRenderPoint( 0, tangentA );
+  this.setSurfaceRenderPoint( 1, this.apex.renderOrigin );
+  this.setSurfaceRenderPoint( 2, tangentB );
+
+  // render
+  var elem = this.getSurfaceRenderElement( ctx, renderer );
+  renderer.renderPath( ctx, elem, this.surfacePathCommands );
+  renderer.stroke( ctx, elem, this.stroke, this.color, this.getLineWidth() );
+  renderer.fill( ctx, elem, this.fill, this.color );
+  renderer.end( ctx, elem );
+};
+
+var svgURI = 'http://www.w3.org/2000/svg';
+
+Cone.prototype.getSurfaceRenderElement = function( ctx, renderer ) {
+  if ( !renderer.isSvg ) {
+    return;
+  }
+  if ( !this.surfaceSvgElement ) {
+    // create svgElement
+    this.surfaceSvgElement = document.createElementNS( svgURI, 'path');
+    this.surfaceSvgElement.setAttribute( 'stroke-linecap', 'round' );
+    this.surfaceSvgElement.setAttribute( 'stroke-linejoin', 'round' );
+  }
+  return this.surfaceSvgElement;
+};
+
+Cone.prototype.setSurfaceRenderPoint = function( index, point ) {
+  var renderPoint = this.surfacePathCommands[ index ].renderPoints[0];
+  renderPoint.set( point );
+};
+
+return Cone;
+
+}));
+/**
+ * Box composite shape
+ */
+
+( function( root, factory ) {
+  // module definition
+  if ( typeof module == 'object' && module.exports ) {
+    // CommonJS
+    module.exports = factory( require('./boilerplate'), require('./anchor'),
+        require('./shape'), require('./rect') );
+  } else {
+    // browser global
+    var Zdog = root.Zdog;
+    Zdog.Box = factory( Zdog, Zdog.Anchor, Zdog.Shape, Zdog.Rect );
+  }
+}( this, function factory( utils, Anchor, Shape, Rect ) {
+
+// ----- BoxRect ----- //
+
+var BoxRect = Rect.subclass();
+// prevent double-creation in parent.copyGraph()
+// only create in Box.create()
+BoxRect.prototype.copyGraph = function() {};
+
+// ----- Box ----- //
+
+var boxDefaults = utils.extend( {
+  width: 1,
+  height: 1,
+  depth: 1,
+  frontFace: true,
+  rearFace: true,
+  leftFace: true,
+  rightFace: true,
+  topFace: true,
+  bottomFace: true,
+}, Shape.defaults );
+// default fill
+boxDefaults.fill = true;
+delete boxDefaults.path;
+
+var Box = Anchor.subclass( boxDefaults );
+
+var TAU = utils.TAU;
+
+Box.prototype.create = function( options ) {
+  Anchor.prototype.create.call( this, options );
+  this.updatePath();
+};
+
+Box.prototype.updatePath = function() {
+  this.setFace( 'frontFace', {
+    width: this.width,
+    height: this.height,
+    translate: { z: this.depth/2 },
+  });
+  this.setFace( 'rearFace', {
+    width: this.width,
+    height: this.height,
+    translate: { z: -this.depth/2 },
+    rotate: { y: TAU/2 },
+  });
+  this.setFace( 'leftFace', {
+    width: this.depth,
+    height: this.height,
+    translate: { x: -this.width/2 },
+    rotate: { y: -TAU/4 },
+  });
+  this.setFace( 'rightFace', {
+    width: this.depth,
+    height: this.height,
+    translate: { x: this.width/2 },
+    rotate: { y: TAU/4 },
+  });
+  this.setFace( 'topFace', {
+    width: this.width,
+    height: this.depth,
+    translate: { y: -this.height/2 },
+    rotate: { x: -TAU/4 },
+  });
+  this.setFace( 'bottomFace', {
+    width: this.width,
+    height: this.depth,
+    translate: { y: this.height/2 },
+    rotate: { x: -TAU/4 },
+  });
+};
+
+Box.prototype.setFace = function( faceName, options ) {
+  var property = this[ faceName ];
+  var rectProperty = faceName + 'Rect';
+  var rect = this[ rectProperty ];
+  // remove if false
+  if ( !property ) {
+    this.removeChild( rect );
+    return;
+  }
+  // update & add face
+  utils.extend( options, {
+    // set color from option, i.e. `front: '#19F'`
+    color: typeof property == 'string' ? property : this.color,
+    stroke: this.stroke,
+    fill: this.fill,
+    backface: this.backface,
+    front: this.front,
+    visible: this.visible,
+  });
+  if ( rect ) {
+    // update previous
+    rect.setOptions( options );
+  } else {
+    // create new
+    rect = this[ rectProperty ] = new BoxRect( options );
+  }
+  rect.updatePath();
+  this.addChild( rect );
+};
+
+return Box;
+
+}));
+/**
+ * Index
+ */
+
+( function( root, factory ) {
+  // module definition
+  if ( typeof module == 'object' && module.exports ) {
+    // CommonJS
+    module.exports = factory(
+        require('./boilerplate'),
+        require('./canvas-renderer'),
+        require('./svg-renderer'),
+        require('./vector'),
+        require('./anchor'),
+        require('./dragger'),
+        require('./illustration'),
+        require('./path-command'),
+        require('./shape'),
+        require('./group'),
+        require('./rect'),
+        require('./rounded-rect'),
+        require('./ellipse'),
+        require('./polygon'),
+        require('./hemisphere'),
+        require('./cylinder'),
+        require('./cone'),
+        require('./box')
+    );
+  } else if ( typeof define == 'function' && define.amd ) {
+    /* globals define */ // AMD
+    define( 'zdog', [], root.Zdog );
+  }
+})( this, function factory( Zdog, CanvasRenderer, SvgRenderer, Vector, Anchor,
+    Dragger, Illustration, PathCommand, Shape, Group, Rect, RoundedRect,
+    Ellipse, Polygon, Hemisphere, Cylinder, Cone, Box ) {
+
+      Zdog.CanvasRenderer = CanvasRenderer;
+      Zdog.SvgRenderer = SvgRenderer;
+      Zdog.Vector = Vector;
+      Zdog.Anchor = Anchor;
+      Zdog.Dragger = Dragger;
+      Zdog.Illustration = Illustration;
+      Zdog.PathCommand = PathCommand;
+      Zdog.Shape = Shape;
+      Zdog.Group = Group;
+      Zdog.Rect = Rect;
+      Zdog.RoundedRect = RoundedRect;
+      Zdog.Ellipse = Ellipse;
+      Zdog.Polygon = Polygon;
+      Zdog.Hemisphere = Hemisphere;
+      Zdog.Cylinder = Cylinder;
+      Zdog.Cone = Cone;
+      Zdog.Box = Box;
+
+      return Zdog;
+});

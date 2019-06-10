@@ -30,7 +30,7 @@ class Job
 
 function JobCitizen()
 {
-    return new Job(new Table([Deficits.ENERGY], [Goals.EAT]), [Deficits.ENERGY], Items.NONE, false, 0);
+    return new Job(new Table([{ key: Deficits.ENERGY, value: Goals.EAT }]), [Deficits.ENERGY], Items.NONE, false, 0);
 }
 
 export { Job, JobCitizen };

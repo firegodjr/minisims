@@ -8,7 +8,10 @@ class InputManager
     constructor(keys: Array<number> = [])
     {
         this.m_keys = keys;
-        this.m_keystates = new Table(["SHIFT", "CTRL"], [ false, false ]);
+        this.m_keystates = new Table([
+            { key: "SHIFT", value: false }, 
+            { key: "CTRL", value: false }
+        ]);
 
         if(keys.length > 0)
         {

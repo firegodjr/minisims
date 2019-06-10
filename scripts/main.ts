@@ -19,9 +19,15 @@ import { JobCitizen } from "./game/jobs.js";
     const DRONE_ENERGY_RECOVER = 50; // Amount of energy recovered from eating TODO make random
 
     /* Allows converting crop to the tile it's obtained from */
-    const CROP_TABLE = new Table([Items.WHEAT, Items.ORE], [Tiles.WHEAT_RIPE, Tiles.ORE_RIPE]);
+    const CROP_TABLE = new Table([
+        { key: Items.WHEAT, value: Tiles.WHEAT_RIPE },
+        { key: Items.ORE, value: Tiles.ORE_RIPE }
+    ]);
 
-    const TILE_REGROW_TABLE = new Table([Tiles.WHEAT, Tiles.ORE], [Tiles.WHEAT_RIPE, Tiles.ORE_RIPE]);
+    const TILE_REGROW_TABLE = new Table([
+        { key: Tiles.WHEAT, value: Tiles.WHEAT_RIPE },
+        { key: Tiles.ORE, value: Tiles.ORE_RIPE }
+    ]);
 
     function update_ai(game: GameState, drone_helper: DroneHelper)
     {
