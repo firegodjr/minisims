@@ -5,6 +5,11 @@ interface ITablePair<V>
     value: V;
 }
 
+function make_pair<V>(k: string | number, v: V): ITablePair<V>
+{
+    return { key: k, value: v };
+}
+
 class Table<V>
 {
     m_data: { [key: string]: V };
@@ -40,4 +45,4 @@ class Table<V>
     }
 }
 
-export { Table };
+export { Table, make_pair };

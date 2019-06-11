@@ -9,6 +9,7 @@ import { KnockoutStatic } from "../node_modules/knockout/build/output/knockout-l
 import { ItemStrings, GoalStrings } from "./constants.js";
 import { ViewModel } from "./io/viewmodel.js";
 import { log, init_log } from "./io/output.js";
+import { ModelStore } from "./render/models.js";
 declare var ko: KnockoutStatic;
 
 (function(window: Window){
@@ -135,8 +136,13 @@ declare var ko: KnockoutStatic;
     var game = new GameState();
     var board = new BoardManager(game);
     var viewmodel = new ViewModel(game);
+    let model_store = new ModelStore();
     viewmodel.addDrone();
     viewmodel.selectDrone(0);
+    model_store.load_models().then(() => 
+    {
+        draw_board(game, board, model_store);
+    });
 
     GenerateTiles(game, 16, 16);
 
@@ -148,6 +154,4 @@ declare var ko: KnockoutStatic;
 
     ko.applyBindings(viewmodel);
     log("Done setting up!");
-
-    draw_board(game, board);
 })(window);

@@ -49,6 +49,7 @@ body * {
   #left-panel {
     width: 100%;
     max-width: none;
+    min-width: none;
   }
 }
 #right-panel {

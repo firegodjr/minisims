@@ -1,7 +1,8 @@
 import { Tiles } from "../constants.js";
-import { Table } from "../util/util.js";
+import { Table } from "../util/table.js";
 import { GameState, ICoords, Tile, TileCreator } from "../game/game.js";
 import { Coords } from "../game/game.js";
+import { ModelStore, json_to_zdog } from "./models.js";
 declare var Zdog: any;
 
 const TILE_SIZE = 40;
@@ -114,84 +115,19 @@ function create_grass_from_tile(tile: Tile, x: number, y: number, half_board: nu
 function create_tile(color: string, x: number, y: number, half_board: number, anchor: any, tileType: number = -1, fill: boolean = true, stroke: number = 1, box: boolean = false)
 {
     let tile_surface;
-    if(box)
-    {
-        let box_translation: {x: number, y: number, z: number} = {x: 0, y: 0, z: 0};
-        let tile_location = get_tile_pos(x, y, half_board);
-        box_translation.x = tile_location.x;
-        box_translation.z = tile_location.z;
-        box_translation.y += TILE_SIZE / 4;
 
-        tile_surface = new Zdog.Box({
-            tileType: tileType,
-            addTo: anchor,
-            color: color,
-            topFace: color,
-            width: TILE_SIZE,
-            height: TILE_SIZE,
-            depth: TILE_SIZE/2,
-            stroke: stroke,
-            fill: fill,
-            translate: box_translation,
-            rotate: { x: Zdog.TAU / 4 }
-        });
-    }
-    else
-    {
-        tile_surface = new Zdog.Rect({
-            tileType: tileType,
-            addTo: anchor,
-            color: color,
-            width: TILE_SIZE,
-            height: TILE_SIZE,
-            stroke: stroke,
-            fill: fill,
-            translate: get_tile_pos(x, y, half_board),
-            rotate: { x: Zdog.TAU / 4 }
-        });
-    }
+    tile_surface = new Zdog.Rect({
+        addTo: anchor,
+        color: color,
+        width: TILE_SIZE,
+        height: TILE_SIZE,
+        stroke: stroke,
+        fill: fill,
+        translate: get_tile_pos(x, y, half_board),
+        rotate: { x: Zdog.TAU / 4 }
+    });
 
     return tile_surface;
-}
-
-function create_drone(x: number, y: number, anchor: any)
-{
-    var stroke = TILE_SIZE / 2;
-    var drone_group = new Zdog.Group({
-        addTo: anchor
-    });
-    new Zdog.Cone({
-        addTo: drone_group,
-        color: "#493a04",
-        diameter: TILE_SIZE / 2,
-        length: 30,
-        stroke: false,
-        fill: true,
-        rotate: {x: Zdog.TAU / 4}
-    });
-    new Zdog.Hemisphere({
-        addTo: drone_group,
-        color: "#493a04",
-        diameter: TILE_SIZE / 2,
-        length: 15,
-        stroke: false,
-        fill: true,
-        rotate: {x: Zdog.TAU / 4, y: Zdog.TAU / 2},
-        translate: {y: -18}
-    });
-    new Zdog.Shape({
-        addTo: drone_group,
-        color: "#d8ceab",
-        translate: {y: -30},
-        stroke: stroke
-    });
-    new Zdog.Shape({
-        addTo: drone_group,
-        visible: false,
-        translate: {y: -90}
-    });
-
-    return drone_group;
 }
 
 class BoardManager
@@ -242,7 +178,7 @@ class BoardManager
     }
 }
 
-export function draw_board(game: GameState, board_mgr: BoardManager)
+export function draw_board(game: GameState, board_mgr: BoardManager, model_store: ModelStore)
 {
     var canvas = document.getElementById("cvs_viewport") as HTMLCanvasElement;
     canvas.width = canvas.parentElement.clientWidth;
@@ -334,7 +270,7 @@ export function draw_board(game: GameState, board_mgr: BoardManager)
             let new_index = droneArr.length;
             let new_x = game.m_drones[new_index].m_pos_x;
             let new_y = game.m_drones[new_index].m_pos_y;
-            let new_drone = create_drone(new_x, new_y, grassArr[new_x][new_y]);
+            let new_drone = model_store.get("drone", { translate: { x: new_x, y: new_y}, addTo: grassArr[new_x][new_y]});
             new_drone.translate = {x: TILE_SIZE / 2, z: TILE_SIZE / 2}
             droneArr.push(new_drone);
             grassArr[new_x][new_y].updateGraph();

@@ -24,3 +24,7 @@ Tasks:
 	9. Add functionality to drone editor
 	10. Implement basic drone functions
 	11. Implement drone pathfinding
+
+	1. Add hooks for Serialize/Deserialize gamestate
+	2. Change gamestate retrieval to use the C# Web API
+	3. Use powershell to setup web api

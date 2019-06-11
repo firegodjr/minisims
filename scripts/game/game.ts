@@ -3,7 +3,7 @@ import { JobCitizen } from "./jobs.js";
 import { InputManager } from "../io/input.js";
 import { Tiles, TILE_DEGRADE_TABLE, Goals, Items } from "../constants.js";
 import { ChangeSelectedEvent, AddDroneEvent, ChangeGoalEvent, TickEvent } from "../event/events.js";
-import { Table } from "../util/util.js";
+import { Table } from "../util/table.js";
 declare var Zdog: any;
 
 interface ICoords
