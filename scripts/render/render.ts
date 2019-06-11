@@ -245,6 +245,9 @@ class BoardManager
 export function draw_board(game: GameState, board_mgr: BoardManager)
 {
     var canvas = document.getElementById("cvs_viewport") as HTMLCanvasElement;
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = canvas.parentElement.clientHeight;
+    
     var ctx = canvas.getContext("2d");
     var half_board = ((game.m_tiles.length - 1) * TILE_SIZE / 2);
     var full_board = game.m_tiles.length * TILE_SIZE;
