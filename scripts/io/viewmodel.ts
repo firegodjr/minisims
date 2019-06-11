@@ -1,8 +1,8 @@
-import { Drone, DroneHelper, InventoryPair } from "../drone.js";
+import { KnockoutStatic, Observable, ObservableArray } from "../../node_modules/knockout/build/output/knockout-latest.js";
 import { Items } from "../constants.js";
-import { GameState } from "../game/game.js";
+import { DroneHelper, InventoryPair } from "../drone.js";
 import { ChangeSelectedEvent } from '../event/events.js';
-import { ObservableArray, Observable, KnockoutStatic } from "../../node_modules/knockout/build/output/knockout-latest.js";
+import { GameState } from "../game/game.js";
 declare var ko: KnockoutStatic;
 
 class ViewModel
