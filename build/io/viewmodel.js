@@ -1,5 +1,5 @@
-import { DroneHelper } from "../drone.js";
 import { Items } from "../constants.js";
+import { DroneHelper } from "../drone.js";
 import { ChangeSelectedEvent } from '../event/events.js';
 var ViewModel = /** @class */ (function () {
     function ViewModel(game) {

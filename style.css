@@ -12,18 +12,25 @@ body {
 body * {
   font-family: sans-serif;
 }
-@media (max-width: 1600px) {
+@media (min-aspect-ratio: 5/3) {
   body {
     grid-template-columns: min-content 1fr 15em;
     grid-template-rows: 1fr 15em;
     grid-template-areas: "left center right" "left output output";
   }
 }
-@media (max-width: 1000px) {
+@media (max-aspect-ratio: 4/3) {
   body {
     grid-template-columns: min-content 1fr;
     grid-template-rows: 0.3fr 1fr 15em;
     grid-template-areas: "left center" "right center" "right output";
+  }
+}
+@media (max-aspect-ratio: 3/4) {
+  body {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 0.5fr 0.5fr;
+    grid-template-areas: "center center" "left right" "output output";
   }
 }
 #left-panel {
@@ -35,8 +42,14 @@ body * {
 }
 #left-panel div.panel-content {
   resize: horizontal;
-  max-width: calc(50vw - 2 * 1em);
-  min-width: calc(15em - 2 * 1em);
+  max-width: calc(48vw);
+  min-width: calc(13em);
+}
+@media (max-aspect-ratio: 3/4) {
+  #left-panel {
+    width: 100%;
+    max-width: none;
+  }
 }
 #right-panel {
   grid-area: right;
@@ -84,7 +97,7 @@ body * {
   box-shadow: #777 0 0 0.5em inset;
   overflow: hidden;
 }
-@media (max-width: 1000px) {
+@media (max-aspect-ratio: 4/3) {
   .panel {
     min-height: 50vh;
   }
@@ -108,7 +121,7 @@ body * {
   margin: 0;
   text-shadow: 1px 1px 0 #aaa;
 }
-@media (max-width: 1000px) {
+@media (max-aspect-ratio: 4/3) {
   .panel h1 {
     font-size: large;
   }

@@ -1,8 +1,8 @@
 import { Drone } from "../drone.js";
 import { JobCitizen } from "./jobs.js";
-import { InputManager } from "../input/input.js";
-import { Tiles, TILE_DEGRADE_TABLE } from "../constants.js";
-import { ChangeSelectedEvent, AddDroneEvent } from "../event/events.js";
+import { InputManager } from "../io/input.js";
+import { Tiles, TILE_DEGRADE_TABLE, Goals, Items } from "../constants.js";
+import { ChangeSelectedEvent, AddDroneEvent, ChangeGoalEvent, TickEvent } from "../event/events.js";
 import { Table } from "../util/util.js";
 var Coords = /** @class */ (function () {
     function Coords(x, y) {
@@ -12,14 +12,15 @@ var Coords = /** @class */ (function () {
     return Coords;
 }());
 var Tile = /** @class */ (function () {
-    function Tile(type, color, stroke, density, height, height_variation, optimize, color_offset, grass_color) {
+    function Tile(type, color, grass_stroke, grass_density, grass_height, height_variation, optimize_grass, height, color_offset, grass_color) {
         this.type = type;
         this.color = color;
-        this.stroke = stroke;
-        this.density = density;
+        this.stroke = grass_stroke;
         this.height = height;
-        this.height_variation = height_variation;
-        this.optimize = optimize;
+        this.grass_density = grass_density;
+        this.grass_height = grass_height;
+        this.grass_height_variation = height_variation;
+        this.optimize_grass = optimize_grass;
         this.color_offset = color_offset;
         this.grass_color = grass_color;
     }
@@ -50,7 +51,7 @@ var TileCreator = /** @class */ (function () {
             { key: Tiles.WATER, value: { r: 110, g: 210, b: 190, v: 0 } }
         ]);
         this.densityTable = new Table([
-            { key: Tiles.GRASS, value: 8 },
+            { key: Tiles.GRASS, value: 6 },
             { key: Tiles.WHEAT_RIPE, value: 5 },
             { key: Tiles.ORE_RIPE, value: 2 },
             { key: Tiles.WHEAT, value: 0 },
@@ -74,7 +75,7 @@ var TileCreator = /** @class */ (function () {
         ]);
     }
     TileCreator.prototype.create = function (type) {
-        var tile = new Tile(type, Object.assign({}, this.colorTable.get(type)), 4, this.densityTable.get(type), this.heightTable.get(type), this.variationTable.get(type), this.optimizeTable.get(type), undefined, this.grassColorTable.get(type));
+        var tile = new Tile(type, Object.assign({}, this.colorTable.get(type)), 4, this.densityTable.get(type), this.heightTable.get(type), this.variationTable.get(type), this.optimizeTable.get(type), 0, undefined, this.grassColorTable.get(type));
         return tile;
     };
     return TileCreator;
@@ -116,6 +117,44 @@ var GameState = /** @class */ (function () {
     };
     return GameState;
 }());
+function update_ai(game, drone_helper) {
+    for (var i = 0; i < game.m_drones.length; ++i) {
+        // If the drone has no goal, we should give him one by checking his deficits
+        if (game.m_drones[i].m_goal == Goals.NONE && game.m_drones[i].m_job) {
+            var deficit = drone_helper.get_priority_deficit(game.m_drones[i]);
+            drone_helper.set_goal_from_deficit(game.m_drones[i], game, deficit, ChangeGoalEvent);
+        }
+        var initial_goal = game.m_drones[i].m_goal;
+        perform_goal(game.m_drones[i], drone_helper, game);
+        if (initial_goal != game.m_drones[i].m_goal) {
+            document.dispatchEvent(ChangeGoalEvent(i, game.m_drones[i].m_goal));
+        }
+    }
+}
+function do_tick(game, drone_helper) {
+    update_ai(game, drone_helper);
+    document.dispatchEvent(TickEvent());
+}
+var DRONE_HUNGER = 1; // Amount of food (wheat) each drone eats
+var DRONE_ENERGY_RECOVER = 50; // Amount of energy recovered from eating TODO make random
+function perform_goal(drone, drone_helper, game) {
+    drone_helper.change_energy(drone, -10);
+    if (drone.m_goal == Goals.EAT) {
+        var wheat_index = drone_helper.find_in_inventory(drone, Items.WHEAT);
+        if (drone.m_inventory[wheat_index] && drone.m_inventory[wheat_index].m_count >= DRONE_HUNGER) {
+            drone_helper.add_item(drone, Items.WHEAT, -DRONE_HUNGER);
+            drone_helper.change_energy(drone, DRONE_ENERGY_RECOVER);
+            drone.m_goal = Goals.NONE;
+        }
+    }
+    else if (drone.m_goal == Goals.HARVEST) {
+        if (game.m_tiles[drone.m_pos_x][drone.m_pos_y].type == Tiles.WHEAT) {
+            game.harvest(drone.m_pos_x, drone.m_pos_y);
+            drone_helper.add_item(drone, Items.WHEAT, 1);
+        }
+        //TODO: pathfinding
+    }
+}
 function semi_random_color(r, g, b, variation) {
     if (variation === void 0) { variation = 10; }
     return "rgb(" + Zdog.lerp(r - variation, r + variation, Math.random()) + ", " + Zdog.lerp(g - variation, g + variation, Math.random()) + ", " + Zdog.lerp(b - variation, b + variation, Math.random());
@@ -123,4 +162,4 @@ function semi_random_color(r, g, b, variation) {
 function varied_color(color) {
     return semi_random_color(color.r, color.g, color.b, color.v);
 }
-export { Coords, GameState, Tile, TileCreator };
+export { Coords, GameState, Tile, TileCreator, do_tick };

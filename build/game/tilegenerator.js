@@ -21,6 +21,12 @@ export function GenerateTiles(game, width, height) {
                     new_tile.color.r += (water_level - WATER_LEVEL_RANGES[tl].min - 0.5) * 80;
                     new_tile.color.g += (water_level - WATER_LEVEL_RANGES[tl].min - 0.5) * 80;
                     new_tile.color.b += (water_level - WATER_LEVEL_RANGES[tl].min - 0.5) * 80;
+                    if (new_tile.type != Tiles.WATER) {
+                        new_tile.height = water_level - 0.35;
+                    }
+                    else {
+                        new_tile.height = WATER_LEVEL_RANGES[tl].min;
+                    }
                     tiles[i].push(new_tile);
                     break;
                 }
@@ -28,7 +34,9 @@ export function GenerateTiles(game, width, height) {
             var crop_noise = (noise.perlin2((i + 5) / 5, (j + 5) / 5) + 1) / 2;
             if (crop_noise > WHEAT_MIN) {
                 if (tiles[i][j].type == Tiles.GRASS) {
+                    var height_1 = tiles[i][j].height;
                     tiles[i][j] = game.m_tile_creator.create(Tiles.WHEAT_RIPE);
+                    tiles[i][j].height = height_1;
                 }
             }
         }

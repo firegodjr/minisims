@@ -16,8 +16,9 @@
 @block-small-shadow: ~"1px 1px 0px #ccc";
 @block-small-shading: ~"1px 1px 0px #eee inset, 1px 1px 0px #ccc";
 
-@small-width: ~"(max-width: 1000px)";
-@med-width: ~"(max-width: 1600px)";
+@small-width: ~"(max-aspect-ratio: 4/3)";
+@med-width: ~"(min-aspect-ratio: 5/3)";
+@tall-ratio: ~"(max-aspect-ratio: 3/4)";
 
 @content-pad: 1em;
 
@@ -81,6 +82,13 @@ body
         grid-template-rows: 0.3fr 1fr 15em;
         grid-template-areas: "left center" "right center" "right output";
     }
+
+    @media @tall-ratio
+    {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 0.5fr 0.5fr;
+        grid-template-areas: "center center" "left right" "output output";
+    }
 }
 
 #left-panel
@@ -95,6 +103,12 @@ body
         resize: horizontal;
         max-width: calc(50vw - 2 * @content-pad);
         min-width: calc(15em - 2 * @content-pad);
+    }
+
+    @media @tall-ratio
+    {
+        width: 100%;
+        max-width: none;
     }
 }
 

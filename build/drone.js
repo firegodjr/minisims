@@ -1,5 +1,5 @@
-import { Goals, Deficits } from "./constants.js";
-import { ChangeEnergyEvent, AddItemEvent } from "./event/events.js";
+import { Deficits, Goals } from "./constants.js";
+import { AddItemEvent, ChangeEnergyEvent } from "./event/events.js";
 var InventoryPair = /** @class */ (function () {
     function InventoryPair(item, count) {
         this.m_item = item;
@@ -108,6 +108,11 @@ var Dronef = /** @class */ (function () {
     Dronef.prototype.change_energy = function (drone, change) {
         drone.m_energy += change;
         document.dispatchEvent(ChangeEnergyEvent(drone.m_index, change));
+    };
+    Dronef.prototype.move = function (drone, moveX, moveY) {
+        drone.m_pos_x += moveX;
+        drone.m_pos_y += moveY;
+        drone.m_moved = true;
     };
     return Dronef;
 }());

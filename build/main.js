@@ -1,40 +1,15 @@
 import { DroneHelper } from "./drone.js";
 import { EventPublisher, EventPublisherHelper } from './event/eventpublisher.js';
-import { Events, AddDroneEvent, TickEvent, ChangeGoalEvent } from './event/events.js';
-import { GameState } from "./game/game.js";
+import { Events, AddDroneEvent, TickEvent } from './event/events.js';
+import { GameState, do_tick } from "./game/game.js";
 import { GenerateTiles } from "./game/tilegenerator.js";
-import { drawBoard, BoardManager } from "./render/render.js";
-import { Table } from "./util/util.js";
-import { InputManager, InputManagerHelper } from "./input/input.js";
-import { Tiles, Items, Goals, ItemStrings, GoalStrings } from "./constants.js";
-import { ViewModel } from "./input/viewmodel.js";
-(function (/**Window */ window) {
+import { draw_board, BoardManager } from "./render/render.js";
+import { InputManager, InputManagerHelper } from "./io/input.js";
+import { ItemStrings, GoalStrings } from "./constants.js";
+import { ViewModel } from "./io/viewmodel.js";
+import { log, init_log } from "./io/output.js";
+(function (window) {
     var document = window.document;
-    var DRONE_HUNGER = 1; // Amount of food (wheat) each drone eats
-    var DRONE_ENERGY_RECOVER = 50; // Amount of energy recovered from eating TODO make random
-    /* Allows converting crop to the tile it's obtained from */
-    var CROP_TABLE = new Table([
-        { key: Items.WHEAT, value: Tiles.WHEAT_RIPE },
-        { key: Items.ORE, value: Tiles.ORE_RIPE }
-    ]);
-    var TILE_REGROW_TABLE = new Table([
-        { key: Tiles.WHEAT, value: Tiles.WHEAT_RIPE },
-        { key: Tiles.ORE, value: Tiles.ORE_RIPE }
-    ]);
-    function update_ai(game, drone_helper) {
-        for (var i = 0; i < game.m_drones.length; ++i) {
-            // If the drone has no goal, we should give him one by checking his deficits
-            if (game.m_drones[i].m_goal == Goals.NONE && game.m_drones[i].m_job) {
-                var deficit = drone_helper.get_priority_deficit(game.m_drones[i]);
-                drone_helper.set_goal_from_deficit(game.m_drones[i], game, deficit, ChangeGoalEvent);
-            }
-            var initial_goal = game.m_drones[i].m_goal;
-            perform_goal(game.m_drones[i], drone_helper, game);
-            if (initial_goal != game.m_drones[i].m_goal) {
-                document.dispatchEvent(ChangeGoalEvent(i, game.m_drones[i].m_goal));
-            }
-        }
-    }
     function click_helper(document, btn_id, event, args) {
         if (args === void 0) { args = []; }
         document.getElementById(btn_id).addEventListener("click", function (e) {
@@ -59,7 +34,6 @@ import { ViewModel } from "./input/viewmodel.js";
         });
         viewport.addEventListener(Events.ON_TICK, function (e) {
             do_tick(game, drone_helper);
-            game.m_tiles[0][1] = Tiles.GRASS;
             game.m_dirty_tiles.push({ x: 0, y: 1 });
         });
         var mousewheel_handler = function (e) {
@@ -113,45 +87,6 @@ import { ViewModel } from "./input/viewmodel.js";
             board.selectTile(game.m_drones[e.detail.drone].m_pos_x, game.m_drones[e.detail.drone].m_pos_y);
         });
     }
-    function init_log() {
-        var console = document.getElementById("console");
-        console.value = "";
-    }
-    function log(str) {
-        var console = document.getElementById("console");
-        var date = new Date();
-        // add a newline if anything is in the console already
-        if (console.value != "") {
-            console.value += "\n";
-        }
-        var hrs = (date.getHours() + "").padStart(2, "0");
-        var mins = (date.getMinutes() + "").padStart(2, "0");
-        var secs = (date.getSeconds() + "").padStart(2, "0");
-        console.value += ("[" + hrs + ":" + mins + ":" + secs + "] " + str);
-        console.scrollTop = console.scrollHeight;
-    }
-    function do_tick(game, drone_helper) {
-        update_ai(game, drone_helper);
-    }
-    function perform_goal(drone, drone_helper, game) {
-        var drone_index = drone_helper.to_index(drone, game);
-        drone_helper.change_energy(drone, -10);
-        if (drone.m_goal == Goals.EAT) {
-            var wheat_index = drone_helper.find_in_inventory(drone, Items.WHEAT);
-            if (drone.m_inventory[wheat_index] && drone.m_inventory[wheat_index].m_count >= DRONE_HUNGER) {
-                drone_helper.add_item(drone, Items.WHEAT, -DRONE_HUNGER);
-                drone_helper.change_energy(drone, DRONE_ENERGY_RECOVER);
-                drone.m_goal = Goals.NONE;
-            }
-        }
-        else if (drone.m_goal == Goals.HARVEST) {
-            if (game.m_tiles[drone.m_pos_x][drone.m_pos_y] == Tiles.WHEAT) {
-                game.harvest(drone.m_pos_x, drone.m_pos_y);
-                drone_helper.add_item(drone, Items.WHEAT, 1);
-            }
-            //TODO: pathfinding
-        }
-    }
     /* Entry point */
     var drone_helper = new DroneHelper();
     var epublisher = new EventPublisher();
@@ -163,12 +98,6 @@ import { ViewModel } from "./input/viewmodel.js";
     var viewmodel = new ViewModel(game);
     viewmodel.addDrone();
     viewmodel.selectDrone(0);
-    game.m_tiles = [
-        [Tiles.GRASS, Tiles.ORE, Tiles.GRASS, Tiles.WHEAT_RIPE],
-        [Tiles.GRASS, Tiles.ORE, Tiles.ORE, Tiles.WHEAT_RIPE],
-        [Tiles.GRASS, Tiles.GRASS, Tiles.ORE, Tiles.WHEAT_RIPE],
-        [Tiles.WHEAT_RIPE, Tiles.WHEAT_RIPE, Tiles.ORE, Tiles.WHEAT_RIPE]
-    ];
     GenerateTiles(game, 16, 16);
     var events_to_listen = Events + "load" + "mousewheel" + "DOMMouseScroll";
     epublisher_helper.register_listeners(epublisher);
@@ -177,5 +106,5 @@ import { ViewModel } from "./input/viewmodel.js";
     init_log();
     ko.applyBindings(viewmodel);
     log("Done setting up!");
-    drawBoard(game, board);
+    draw_board(game, board);
 })(window);

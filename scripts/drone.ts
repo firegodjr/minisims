@@ -1,8 +1,7 @@
-import { Goals, Deficits } from "./constants.js";
+import { Deficits, Goals, Items } from "./constants.js";
+import { AddItemEvent, ChangeEnergyEvent } from "./event/events.js";
 import { GameState } from "./game/game.js";
 import { Job } from "./game/jobs.js";
-import { Items } from "./constants.js";
-import { ChangeEnergyEvent, AddItemEvent } from "./event/events.js";
 
 class InventoryPair
 {
@@ -25,6 +24,7 @@ class Drone
     m_inventory: Array<InventoryPair>;
     m_job: Job;
     m_goal: Goals;
+    m_moved: boolean;
 
     constructor(index: number, pos_x: number, pos_y: number, job: Job)
     {
@@ -161,6 +161,13 @@ class Dronef
     {
         drone.m_energy += change;
         document.dispatchEvent(ChangeEnergyEvent(drone.m_index, change));
+    }
+
+    move(drone: Drone, moveX: number, moveY: number)
+    {
+        drone.m_pos_x += moveX;
+        drone.m_pos_y += moveY;
+        drone.m_moved = true;
     }
 }
 
