@@ -265,11 +265,11 @@ body * {
   box-shadow: 1px 1px 0px #ccc inset, 1px 1px 0px #ccc;
 }
 .panel .content-group > * {
-  margin-top: 0;
-  margin-bottom: 1em;
-}
-.panel .content-group > *:last-child {
+  margin-top: 1em;
   margin-bottom: 0;
+}
+.panel .content-group > *:first-child {
+  margin-top: 0;
 }
 .panel .content-group::before {
   content: attr(title);
