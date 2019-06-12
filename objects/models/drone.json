@@ -1,0 +1,29 @@
+{
+    "name": "drone",
+    "type": "Group",
+    "Cone":
+    {
+        "color": "#493a04",
+        "diameter": 20,
+        "length": 30,
+        "stroke": false,
+        "fill": true,
+        "rotate": { "x": 90 }
+    },
+    "Hemisphere":
+    {
+        "color": "#493a04",
+        "diameter": 20,
+        "length": 15,
+        "stroke": false,
+        "fill": true,
+        "rotate": { "x": 90, "y": 180 },
+        "translate": { "y": -18 }
+    },
+    "Shape":
+    {
+        "color": "#d8ceab",
+        "translate": { "y": -30 },
+        "stroke": 20
+    }
+}

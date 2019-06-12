@@ -90,83 +90,23 @@ function create_tile(color, x, y, half_board, anchor, tileType, fill, stroke, bo
     if (stroke === void 0) { stroke = 1; }
     if (box === void 0) { box = false; }
     var tile_surface;
-    if (box) {
-        var box_translation = { x: 0, y: 0, z: 0 };
-        var tile_location = get_tile_pos(x, y, half_board);
-        box_translation.x = tile_location.x;
-        box_translation.z = tile_location.z;
-        box_translation.y += TILE_SIZE / 4;
-        tile_surface = new Zdog.Box({
-            tileType: tileType,
-            addTo: anchor,
-            color: color,
-            topFace: color,
-            width: TILE_SIZE,
-            height: TILE_SIZE,
-            depth: TILE_SIZE / 2,
-            stroke: stroke,
-            fill: fill,
-            translate: box_translation,
-            rotate: { x: Zdog.TAU / 4 }
-        });
-    }
-    else {
-        tile_surface = new Zdog.Rect({
-            tileType: tileType,
-            addTo: anchor,
-            color: color,
-            width: TILE_SIZE,
-            height: TILE_SIZE,
-            stroke: stroke,
-            fill: fill,
-            translate: get_tile_pos(x, y, half_board),
-            rotate: { x: Zdog.TAU / 4 }
-        });
-    }
-    return tile_surface;
-}
-function create_drone(x, y, anchor) {
-    var stroke = TILE_SIZE / 2;
-    var drone_group = new Zdog.Group({
-        addTo: anchor
-    });
-    new Zdog.Cone({
-        addTo: drone_group,
-        color: "#493a04",
-        diameter: TILE_SIZE / 2,
-        length: 30,
-        stroke: false,
-        fill: true,
+    tile_surface = new Zdog.Rect({
+        addTo: anchor,
+        color: color,
+        width: TILE_SIZE,
+        height: TILE_SIZE,
+        stroke: stroke,
+        fill: fill,
+        translate: get_tile_pos(x, y, half_board),
         rotate: { x: Zdog.TAU / 4 }
     });
-    new Zdog.Hemisphere({
-        addTo: drone_group,
-        color: "#493a04",
-        diameter: TILE_SIZE / 2,
-        length: 15,
-        stroke: false,
-        fill: true,
-        rotate: { x: Zdog.TAU / 4, y: Zdog.TAU / 2 },
-        translate: { y: -18 }
-    });
-    new Zdog.Shape({
-        addTo: drone_group,
-        color: "#d8ceab",
-        translate: { y: -30 },
-        stroke: stroke
-    });
-    new Zdog.Shape({
-        addTo: drone_group,
-        visible: false,
-        translate: { y: -90 }
-    });
-    return drone_group;
+    return tile_surface;
 }
 var BoardManager = /** @class */ (function () {
     function BoardManager(game) {
         this.pitch_offset = -Zdog.TAU / 12;
         this.pitch_buf = 0;
-        this.rot_offset = -Zdog.TAU / 8;
+        this.rot_offset = Zdog.TAU * 7 / 8;
         this.rot_buf = 0;
         this.pitch_offset = -Zdog.TAU / 12;
         this.pitch_buf = 0;
@@ -174,37 +114,44 @@ var BoardManager = /** @class */ (function () {
         this.game = game;
     }
     BoardManager.prototype.dragStart = function (pointer) {
+        this.is_dragged = true;
     };
     BoardManager.prototype.dragMove = function (pointer, moveX, moveY) {
-        this.game.m_pitch = Math.max(-Zdog.TAU / 4, Math.min(-Zdog.TAU / 20, -Zdog.TAU * moveY / 2000 + this.pitch_offset));
+        this.game.m_pitch = Math.max(-Zdog.TAU / 5, Math.min(-Zdog.TAU / 20, -Zdog.TAU * moveY / 2000 + this.pitch_offset));
         this.pitch_buf = this.game.m_pitch;
         this.game.m_rotation = -Zdog.TAU * moveX / 1000 + this.rot_offset;
+        this.game.m_rotation = normalize_rotation(this.game.m_rotation);
         this.rot_buf = this.game.m_rotation;
     };
     BoardManager.prototype.dragEnd = function () {
-        this.rot_offset = this.rot_buf;
-        this.pitch_offset = this.pitch_buf;
+        this.rot_offset = this.game.m_rotation % Zdog.TAU;
+        this.pitch_offset = this.game.m_pitch;
+        this.game.m_rotation = normalize_rotation(this.game.m_rotation);
+        this.is_dragged = false;
     };
     BoardManager.prototype.selectTile = function (x, y) {
         this.selected_tile = new Coords(x, y);
     };
     return BoardManager;
 }());
-export function draw_board(game, board_mgr) {
-    var canvas = document.getElementById("cvs_viewport");
-    var ctx = canvas.getContext("2d");
+function init_illustration(game, board_mgr) {
     var half_board = ((game.m_tiles.length - 1) * TILE_SIZE / 2);
-    var full_board = game.m_tiles.length * TILE_SIZE;
-    var board = new Zdog.Illustration({
-        element: "#cvs_viewport",
-        color: "rgb(110, 210, 190)",
-        resize: true,
-        dragRotate: true,
-        onDragStart: function (p) { return board_mgr.dragStart(p); },
-        onDragMove: function (p, mx, my) { return board_mgr.dragMove(p, mx, my); },
-        onDragEnd: function () { return board_mgr.dragEnd(); },
-        rotate: { x: -Zdog.TAU / 12, y: -Zdog.TAU / 8 }
-    });
+    if (!board) // Reuse existing illustration if possible, because draggable objects can't be garbage-collected
+     {
+        board = new Zdog.Illustration({
+            element: "#cvs_viewport",
+            color: "rgb(110, 210, 190)",
+            resize: true,
+            dragRotate: true,
+            onDragStart: function (p) { return board_mgr.dragStart(p); },
+            onDragMove: function (p, mx, my) { return board_mgr.dragMove(p, mx, my); },
+            onDragEnd: function () { return board_mgr.dragEnd(); },
+            rotate: { x: -Zdog.TAU / 12, y: -Zdog.TAU / 8 }
+        });
+    }
+    for (var i = 0; i < board.children.length; ++i) {
+        board.removeChild(board.children[i]);
+    }
     var root = new Zdog.Group({
         addTo: board
     });
@@ -223,7 +170,6 @@ export function draw_board(game, board_mgr) {
     var tileArr = [];
     var highlightArr = [];
     var grassArr = [];
-    var droneArr = [];
     for (var i = 0; i < game.m_tiles.length; ++i) {
         var TILE_HEIGHT_AMNT = TILE_SIZE * 0;
         tileArr.push([]);
@@ -243,25 +189,54 @@ export function draw_board(game, board_mgr) {
             grassArr[i].push(tile_grass);
         }
     }
-    var last_timestamp = 0;
+    return { tiles: tiles, highlights: highlights, grass: grass, tileArr: tileArr, highlightArr: highlightArr, grassArr: grassArr };
+}
+var board;
+var layers;
+var droneArr = [];
+var game;
+// Variables for rotation correction on drag release
+var last_timestamp = 0;
+var was_dragged = true;
+var release_timestamp = 0;
+var release_rotation = 0;
+var nearest_corner = 0;
+export function reset_board(game_state, board_mgr) {
+    game = game_state;
+    layers = init_illustration(game, board_mgr);
+    remove_drones();
+    nearest_corner = game.m_rotation;
+}
+function remove_drones() {
+    for (var i = 0; i < droneArr.length; ++i) {
+        droneArr[i].remove();
+    }
+    droneArr = [];
+}
+function normalize_rotation(rot) {
+    return ((rot % Zdog.TAU) + Zdog.TAU) % Zdog.TAU;
+}
+export function draw_board(game_state, board_mgr, model_store) {
+    game = game_state;
+    var canvas = document.getElementById("cvs_viewport");
+    canvas.width = canvas.parentElement.clientWidth;
+    canvas.height = canvas.parentElement.clientHeight;
+    var ctx = canvas.getContext("2d");
+    var half_board = ((game.m_tiles.length - 1) * TILE_SIZE / 2);
+    layers = init_illustration(game, board_mgr);
+    game = game_state;
     function draw(timestamp) {
         var delta = timestamp - last_timestamp;
-        if (game.m_zoom < GRASS_THRESHOLD) {
-            grass.visible = false;
-        }
-        else {
-            grass.visible = true;
-        }
         // Update drones
         var refreshed = false;
         while (droneArr.length < game.m_drones.length) {
             var new_index = droneArr.length;
             var new_x = game.m_drones[new_index].m_pos_x;
             var new_y = game.m_drones[new_index].m_pos_y;
-            var new_drone = create_drone(new_x, new_y, grassArr[new_x][new_y]);
+            var new_drone = model_store.get("drone", { translate: { x: new_x, y: new_y }, addTo: layers.grassArr[new_x][new_y] });
             new_drone.translate = { x: TILE_SIZE / 2, z: TILE_SIZE / 2 };
             droneArr.push(new_drone);
-            grassArr[new_x][new_y].updateGraph();
+            layers.grassArr[new_x][new_y].updateGraph();
             refreshed = true;
         }
         for (var i = 0; i < game.m_drones.length; ++i) {
@@ -269,45 +244,68 @@ export function draw_board(game, board_mgr) {
                 droneArr[i].remove();
                 var x = game.m_drones[i].m_pos_x;
                 var y = game.m_drones[i].m_pos_y;
-                grassArr[x][y].addChild(droneArr[i]);
-                grassArr[x][y].updateGraph();
+                layers.grassArr[x][y].addChild(droneArr[i]);
+                layers.grassArr[x][y].updateGraph();
                 refreshed = true;
             }
         }
         if (refreshed) {
-            grass.updateGraph();
+            layers.grass.updateGraph();
         }
         // Update dirty tiles
         for (var i = 0; i < game.m_dirty_tiles.length; ++i) {
             var pair = game.m_dirty_tiles[i];
-            tileArr[pair.x][pair.y].remove();
-            tileArr[pair.x][pair.y].visible = false;
-            grassArr[pair.x][pair.y].remove();
-            grassArr[pair.x][pair.y].visible = false;
-            var newTile = create_tile_from_object(game.m_tiles[pair.x][pair.y], pair.x, pair.y, half_board, tiles);
-            tileArr[pair.x][pair.y] = newTile;
-            grassArr[pair.x][pair.y] = add_grass(i, j, half_board, grass, newTile.color, tile.grass_density, tile.grass_height, tile.grass_height_variation, tile.optimize_grass);
+            layers.tileArr[pair.x][pair.y].remove();
+            layers.tileArr[pair.x][pair.y].visible = false;
+            layers.grassArr[pair.x][pair.y].remove();
+            layers.grassArr[pair.x][pair.y].visible = false;
+            var newTile = create_tile_from_object(game.m_tiles[pair.x][pair.y], pair.x, pair.y, half_board, layers.tiles);
+            layers.tileArr[pair.x][pair.y] = newTile;
+            layers.grassArr[pair.x][pair.y] = add_grass(pair.x, pair.y, half_board, layers.grass, newTile.color, newTile.grass_density, newTile.grass_height, newTile.grass_height_variation, newTile.optimize_grass);
         }
         if (game.m_dirty_tiles.length > 0) {
-            tiles.updateGraph();
-            grass.updateGraph();
+            layers.tiles.updateGraph();
+            layers.grass.updateGraph();
         }
         game.m_dirty_tiles = [];
         // Update selections
-        highlightArr.map(function (arr) {
+        layers.highlightArr.map(function (arr) {
             arr.map(function (tile) {
                 tile.visible = false;
             });
         });
         if (board_mgr.selected_tile.x != -1 && board_mgr.selected_tile.y != -1) {
-            highlightArr[board_mgr.selected_tile.x][board_mgr.selected_tile.y].visible = true;
+            layers.highlightArr[board_mgr.selected_tile.x][board_mgr.selected_tile.y].visible = true;
         }
-        // Do drawing
+        // Correct if angle isn't perfect 45deg
+        var CORRECTION_DELAY = 1000;
+        if (!board_mgr.is_dragged) {
+            if (was_dragged) {
+                release_timestamp = timestamp;
+                release_rotation = game.m_rotation;
+                var corner_offset = game.m_rotation % (Zdog.TAU / 4);
+                nearest_corner = game.m_rotation - corner_offset + Zdog.TAU / 8;
+                nearest_corner = normalize_rotation(nearest_corner);
+                was_dragged = false;
+            }
+            if (Math.abs(game.m_rotation - nearest_corner) > 0.0001) {
+                game.m_rotation = Zdog.lerp(game.m_rotation, nearest_corner, 0.4);
+                game.m_rotation = normalize_rotation(game.m_rotation);
+            }
+            board_mgr.rot_offset = game.m_rotation;
+            board_mgr.pitch_offset = game.m_pitch;
+        }
+        else {
+            was_dragged = true;
+        }
+        // Rotate board to match game state
         board.zoom = game.m_zoom;
         board.rotate.x = game.m_pitch;
         board.rotate.y = game.m_rotation;
         board.updateRenderGraph();
         ctx.fillText("FPS: " + 1000 / delta, 50, 50);
+        ctx.fillText("Rotation: " + (game.m_rotation * 360 / Zdog.TAU), 50, 75);
+        ctx.fillText("Nearest Corner: " + (nearest_corner * 360 / Zdog.TAU), 50, 100);
         //document.dispatchEvent(new event(game, delta));
         last_timestamp = timestamp;
         requestAnimationFrame(draw);

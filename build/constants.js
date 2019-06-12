@@ -1,4 +1,4 @@
-import { Table } from "./util/util.js";
+import { Table } from "./util/table.js";
 /* Drone Goals */
 var Goals;
 (function (Goals) {

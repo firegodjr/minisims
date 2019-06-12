@@ -1,4 +1,4 @@
-import { Table } from "../util/util.js";
+import { Table } from "../util/table.js";
 import { Deficits, Goals, Items } from "../constants.js";
 /**
  * Constructor. A task assigned to a drone.

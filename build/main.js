@@ -8,6 +8,7 @@ import { InputManager, InputManagerHelper } from "./io/input.js";
 import { ItemStrings, GoalStrings } from "./constants.js";
 import { ViewModel } from "./io/viewmodel.js";
 import { log, init_log } from "./io/output.js";
+import { ModelStore } from "./render/models.js";
 (function (window) {
     var document = window.document;
     function click_helper(document, btn_id, event, args) {
@@ -95,10 +96,16 @@ import { log, init_log } from "./io/output.js";
     var input_mgr_helper = new InputManagerHelper();
     var game = new GameState();
     var board = new BoardManager(game);
-    var viewmodel = new ViewModel(game);
+    var viewmodel = new ViewModel(game, board);
+    var model_store = new ModelStore();
     viewmodel.addDrone();
     viewmodel.selectDrone(0);
-    GenerateTiles(game, 16, 16);
+    viewmodel.loadGamesFromManifest();
+    viewmodel.loadGamesFromLocalStorage();
+    model_store.load_models().then(function () {
+        GenerateTiles(game, 16, 16);
+        draw_board(game, board, model_store);
+    });
     var events_to_listen = Events + "load" + "mousewheel" + "DOMMouseScroll";
     epublisher_helper.register_listeners(epublisher);
     init_event_dispatchers(document, game);
@@ -106,5 +113,5 @@ import { log, init_log } from "./io/output.js";
     init_log();
     ko.applyBindings(viewmodel);
     log("Done setting up!");
-    draw_board(game, board);
+    console.log(game.serialize());
 })(window);

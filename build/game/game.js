@@ -3,7 +3,8 @@ import { JobCitizen } from "./jobs.js";
 import { InputManager } from "../io/input.js";
 import { Tiles, TILE_DEGRADE_TABLE, Goals, Items } from "../constants.js";
 import { ChangeSelectedEvent, AddDroneEvent, ChangeGoalEvent, TickEvent } from "../event/events.js";
-import { Table } from "../util/util.js";
+import { Table } from "../util/table.js";
+import { GenerateTiles } from './tilegenerator.js';
 var Coords = /** @class */ (function () {
     function Coords(x, y) {
         this.x = x;
@@ -81,16 +82,27 @@ var TileCreator = /** @class */ (function () {
     return TileCreator;
 }());
 var GameState = /** @class */ (function () {
-    function GameState() {
+    function GameState(name, obj) {
+        if (name === void 0) { name = "default"; }
+        this.m_name = name;
         this.m_tiles = [];
         this.m_drones = [];
         this.m_selected_drone = 0;
         this.m_zoom = 1;
         this.m_pitch = -Zdog.TAU / 12;
-        this.m_rotation = -Zdog.TAU / 8;
+        this.m_rotation = Zdog.TAU * 7 / 8;
         this.m_dirty_tiles = [];
         this.m_input_mgr = new InputManager();
         this.m_tile_creator = new TileCreator();
+        if (obj) {
+            GenerateTiles(this, obj.m_tiles.length, obj.m_tiles[0].length, obj.m_tiles);
+            this.m_name = obj.m_name;
+            this.m_drones = obj.m_drones;
+            this.m_pitch = obj.m_pitch;
+            this.m_rotation = obj.m_rotation;
+            this.m_zoom = obj.m_zoom;
+            this.m_selected_drone = obj.m_selected_drone;
+        }
     }
     GameState.prototype.harvest = function (x, y) {
         this.m_tiles[x][y] = this.m_tile_creator.create(TILE_DEGRADE_TABLE.get(this.m_tiles[x][y].type));
@@ -114,6 +126,35 @@ var GameState = /** @class */ (function () {
         var drone_index = this.m_drones.length;
         this.m_drones.push(new Drone(drone_index, pos_x, pos_y, JobCitizen()));
         document.dispatchEvent(AddDroneEvent(pos_x, pos_y));
+    };
+    GameState.prototype.serialize = function () {
+        var serial_tiles = [];
+        for (var i = 0; i < this.m_tiles.length; ++i) {
+            serial_tiles.push([]);
+            for (var j = 0; j < this.m_tiles[i].length; ++j) {
+                serial_tiles[i].push({ type: this.m_tiles[i][j].type, height: this.m_tiles[i][j].height });
+            }
+        }
+        var serial = {
+            m_name: this.m_name,
+            m_tiles: serial_tiles,
+            m_drones: this.m_drones,
+            m_pitch: this.m_pitch,
+            m_rotation: this.m_rotation,
+            m_zoom: this.m_zoom,
+            m_selected_drone: this.m_selected_drone
+        };
+        return JSON.stringify(serial);
+    };
+    GameState.prototype.deserialize = function (serial) {
+        var parsed = JSON.parse(serial);
+        // Takes care of m_tiles
+        GenerateTiles(this, parsed.m_tiles.length, parsed.m_tiles[0].length, parsed.m_tiles);
+        this.m_drones = parsed.m_drones;
+        this.m_pitch = parsed.m_pitch;
+        this.m_rotation = parsed.m_rotation;
+        this.m_zoom = parsed.m_zoom;
+        this.m_selected_drone = parsed.m_selected_drone;
     };
     return GameState;
 }());

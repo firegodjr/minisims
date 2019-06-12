@@ -1,4 +1,4 @@
-import { Table } from "../util/util.js";
+import { Table } from "../util/table.js";
 var InputManager = /** @class */ (function () {
     function InputManager(keys) {
         if (keys === void 0) { keys = []; }
