@@ -10,6 +10,7 @@ import { ItemStrings, GoalStrings } from "./constants.js";
 import { ViewModel } from "./io/viewmodel.js";
 import { log, init_log } from "./io/output.js";
 import { ModelStore } from "./render/models.js";
+import { load_json, load_text } from "./network.js";
 declare var ko: KnockoutStatic;
 
 (function(window: Window){
@@ -135,16 +136,18 @@ declare var ko: KnockoutStatic;
     var input_mgr_helper = new InputManagerHelper();
     var game = new GameState();
     var board = new BoardManager(game);
-    var viewmodel = new ViewModel(game);
+    var viewmodel = new ViewModel(game, board);
     let model_store = new ModelStore();
     viewmodel.addDrone();
     viewmodel.selectDrone(0);
+    viewmodel.loadGamesFromManifest();
+    viewmodel.loadGamesFromLocalStorage();
     model_store.load_models().then(() => 
     {
+        GenerateTiles(game, 16, 16);
+
         draw_board(game, board, model_store);
     });
-
-    GenerateTiles(game, 16, 16);
 
     var events_to_listen = Events + "load" + "mousewheel" + "DOMMouseScroll";
     epublisher_helper.register_listeners(epublisher);
@@ -154,4 +157,6 @@ declare var ko: KnockoutStatic;
 
     ko.applyBindings(viewmodel);
     log("Done setting up!");
+
+    console.log(game.serialize());
 })(window);

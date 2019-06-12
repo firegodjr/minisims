@@ -38,10 +38,17 @@
                 </ul>
             </div>
             <button id="btn_dotick">Next Turn</button>
-            <h2>All Drones</h2>
-            <ul class="dynamic-content" data-bind="foreach: drones">
-                <li><button data-bind="click: $parent.selectDrone.bind($parent, $data), text: 'Drone: ' + $data"></button></li>
-            </ul>
+            <div class="content-group" title="Games">
+                <button data-bind="click: saveGame">Save Game</button>
+                <ul data-bind="foreach: games">
+                    <li><button data-bind="click: $parent.loadGame.bind($parent, $index()), text: 'Game ' + $data.m_name"></button></li>
+                </ul>
+            </div>
+            <div class="content-group" title="All Drones">
+                <ul class="dynamic-content" data-bind="foreach: drones">
+                    <li><button data-bind="click: $parent.selectDrone.bind($parent, $data), text: 'Drone: ' + $data"></button></li>
+                </ul>
+            </div>
         </div>
     </div>
 

@@ -4,6 +4,7 @@ import { InputManager } from "../io/input.js";
 import { Tiles, TILE_DEGRADE_TABLE, Goals, Items } from "../constants.js";
 import { ChangeSelectedEvent, AddDroneEvent, ChangeGoalEvent, TickEvent } from "../event/events.js";
 import { Table } from "../util/table.js";
+import { GenerateTiles } from './tilegenerator.js';
 declare var Zdog: any;
 
 interface ICoords
@@ -31,7 +32,7 @@ interface IVariedColor
     v?: number
 }
 
-class Tile
+class Tile implements SerialTile
 {
     type: Tiles;
     color: IVariedColor;
@@ -121,8 +122,26 @@ class TileCreator
     }
 }
 
+interface SerialGameState
+{
+    m_name: string;
+    m_tiles: Array<Array<SerialTile>>;
+    m_drones: Array<Drone>;
+    m_selected_drone: number;
+    m_zoom: number;
+    m_pitch: number;
+    m_rotation: number;
+}
+
+interface SerialTile
+{
+    type: number;
+    height: number;
+}
+
 class GameState
 {
+    m_name: string;
     m_tiles: Array<Array<Tile>>;
     m_drones: Array<Drone>;
     m_selected_drone: number;
@@ -133,17 +152,30 @@ class GameState
     m_input_mgr: InputManager;
     m_tile_creator: TileCreator;
 
-    constructor()
+    constructor(name: string = "default", obj?: SerialGameState)
     {
+        this.m_name = name;
         this.m_tiles = [];
         this.m_drones = [];
         this.m_selected_drone = 0;
         this.m_zoom = 1;
         this.m_pitch = -Zdog.TAU / 12;
-        this.m_rotation = -Zdog.TAU / 8;
+        this.m_rotation = Zdog.TAU * 7 / 8;
         this.m_dirty_tiles = [];
         this.m_input_mgr = new InputManager();
         this.m_tile_creator = new TileCreator();
+
+        if(obj)
+        {
+            GenerateTiles(this, obj.m_tiles.length, obj.m_tiles[0].length, obj.m_tiles);
+
+            this.m_name = obj.m_name;
+            this.m_drones = obj.m_drones;
+            this.m_pitch = obj.m_pitch;
+            this.m_rotation = obj.m_rotation;
+            this.m_zoom = obj.m_zoom;
+            this.m_selected_drone = obj.m_selected_drone;
+        }
     }
 
     harvest(x: number, y: number)
@@ -174,6 +206,45 @@ class GameState
         var drone_index = this.m_drones.length;
         this.m_drones.push(new Drone(drone_index, pos_x, pos_y, JobCitizen()));
         document.dispatchEvent(AddDroneEvent(pos_x, pos_y));
+    }
+
+    serialize()
+    {
+        let serial_tiles = [];
+        for(let i = 0; i < this.m_tiles.length; ++i)
+        {
+            serial_tiles.push([])
+            for(let j = 0; j < this.m_tiles[i].length; ++j)
+            {
+                serial_tiles[i].push({ type: this.m_tiles[i][j].type, height: this.m_tiles[i][j].height });
+            }
+        }
+
+        let serial: SerialGameState = 
+        {
+            m_name: this.m_name,
+            m_tiles: serial_tiles,
+            m_drones: this.m_drones,
+            m_pitch: this.m_pitch,
+            m_rotation: this.m_rotation,
+            m_zoom: this.m_zoom,
+            m_selected_drone: this.m_selected_drone
+        };
+
+        return JSON.stringify(serial);
+    }
+
+    deserialize(serial: string)
+    {
+        let parsed = JSON.parse(serial);
+        // Takes care of m_tiles
+        GenerateTiles(this, parsed.m_tiles.length, parsed.m_tiles[0].length, parsed.m_tiles);
+
+        this.m_drones = parsed.m_drones;
+        this.m_pitch = parsed.m_pitch;
+        this.m_rotation = parsed.m_rotation;
+        this.m_zoom = parsed.m_zoom;
+        this.m_selected_drone = parsed.m_selected_drone;
     }
 }
 
@@ -240,4 +311,4 @@ function varied_color(color: IVariedColor)
     return semi_random_color(color.r, color.g, color.b, color.v);
 }
 
-export { Coords, ICoords, GameState, Tile, TileCreator, do_tick };
+export { Coords, ICoords, GameState, Tile, TileCreator, do_tick, SerialGameState, SerialTile };
