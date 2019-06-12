@@ -393,7 +393,7 @@ body
     {
         .group-bordered();
 
-        ul
+        & > *
         {
             margin-top: 0;
             margin-bottom: 1em;
@@ -411,13 +411,14 @@ body
             display: block;
             color: black;
             text-shadow: @block-small-shadow;
+            font-weight: bold;
             background-color: @edit-pane-bg;
             width: min-content;
             white-space: nowrap;
             padding-left: 0.3em;
             padding-right: 0.3em;
-            top: -0.8em;
-            height: 0.5em;
+            top: -1em;
+            height: 0.6em;
         }
     }
 

@@ -264,11 +264,11 @@ body * {
   border: 1px solid #777;
   box-shadow: 1px 1px 0px #ccc inset, 1px 1px 0px #ccc;
 }
-.panel .content-group ul {
+.panel .content-group > * {
   margin-top: 0;
   margin-bottom: 1em;
 }
-.panel .content-group ul:last-child {
+.panel .content-group > *:last-child {
   margin-bottom: 0;
 }
 .panel .content-group::before {
@@ -277,13 +277,14 @@ body * {
   display: block;
   color: black;
   text-shadow: 1px 1px 0px #ccc;
+  font-weight: bold;
   background-color: #aaa;
   width: min-content;
   white-space: nowrap;
   padding-left: 0.3em;
   padding-right: 0.3em;
-  top: -0.8em;
-  height: 0.5em;
+  top: -1em;
+  height: 0.6em;
 }
 .panel .flex-menu {
   border-radius: 0.2em;
