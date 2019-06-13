@@ -12,6 +12,7 @@ a menu panel allows adding and removing drones
 a text output reports when each drone starts/completes a goal
 
 Tasks:
+	Functionality:
 	1. (Done) Arrange UI elements
 		1a: Add javascript for dropdown menus
 	2. (Done) Set up main loop
@@ -25,6 +26,14 @@ Tasks:
 	10. Implement basic drone functions
 	11. Implement drone pathfinding
 
-	1. Add hooks for Serialize/Deserialize gamestate
+	Learning:
+	1. (Done) Add hooks for Serialize/Deserialize gamestate
 	2. Change gamestate retrieval to use the C# Web API
 	3. Use powershell to setup web api
+
+	Cleanup:
+	1. Document files thoroughly
+		Done:	models.ts
+				table.ts
+				network.ts
+				game.ts

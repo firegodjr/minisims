@@ -10,11 +10,11 @@ interface Manifest
  * Returns a promise for a parsed JSON object, loaded from the provided path
  * @param path 
  */
-function load_json(path: string): Promise<Object>
+function load_json<T>(path: string): Promise<T>
 {
     let promise = make_request(OBJECTS_PATH + path).then((req: XMLHttpRequest) => 
     {
-        return JSON.parse(req.responseText);
+        return JSON.parse(req.responseText) as T;
     });
 
     return promise;
@@ -32,18 +32,30 @@ function load_text(path: string): Promise<Object>
     });
 
     return promise;
-}    
+}
 
-async function load_from_manifest(path: string, callback: Function, names?: string[])
+interface ThenFunction<T>
+{
+    (value: Object): T | PromiseLike<T>
+}
+
+/**
+ * Generic function for loading files from a manifest
+ * @param path Manifest path
+ * @param callback Callback that runs on every object as it is loaded
+ * @param names Whitelist of paths to use from the manifest. Paths not found in the manifest are ignored.
+ * @returns Promise of an array containing either T or whatever the given callback returns
+ */
+async function load_from_manifest<T>(path: string, callback?: ThenFunction<T>, names?: string[])
 {
     let man = await load_json(path + "manifest.json") as Manifest;
     
-    let obj_arr: Promise<Object>[] = [];
+    let obj_arr: Promise<T>[] = [];
     for(let i = 0; i < man.paths.length; ++i)
     {
         if((names && names.includes(man.paths[i])) || !names)
         {
-            obj_arr.push(load_json(path + man.paths[i]));
+            obj_arr.push(load_json(path + man.paths[i]).then(callback? callback : (v: T) => { return v }));
         }
     }
 

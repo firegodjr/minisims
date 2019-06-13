@@ -46,13 +46,13 @@ class Dronef
      */
     get_priority_deficit(drone: Drone){
         let energy_deficit = this.has_energy_deficit(drone, drone.m_energy_threshold);
-        let crop_deficit = this.has_crop_deficit(drone, drone.m_job.m_crop_threshold);
+        let crop_deficit = this.has_crop_deficit(drone, drone.m_job.crop_threshold);
 
         if(drone.m_job)
         {
-            for(let i = 0; i < drone.m_job.m_deficit_priority.length; ++i)
+            for(let i = 0; i < drone.m_job.deficit_priority.length; ++i)
             {
-                if(drone.m_job.m_deficit_priority[i] === Deficits.ENERGY)
+                if(drone.m_job.deficit_priority[i] === Deficits.ENERGY)
                 {
                     // TODO there has to be a better way
                     if(energy_deficit)
@@ -60,7 +60,7 @@ class Dronef
                         return Deficits.ENERGY;
                     }
                 }
-                else if(drone.m_job.m_deficit_priority[i] === Deficits.LOW_CROP)
+                else if(drone.m_job.deficit_priority[i] === Deficits.LOW_CROP)
                 {
                     // TODO there has to be a better way
                     if(crop_deficit)
@@ -68,7 +68,7 @@ class Dronef
                         return Deficits.LOW_CROP;
                     }
                 }
-                else if(drone.m_job.m_deficit_priority[i] === Deficits.ENOUGH_CROP)
+                else if(drone.m_job.deficit_priority[i] === Deficits.ENOUGH_CROP)
                 {
                     if(!crop_deficit)
                     {
@@ -96,7 +96,7 @@ class Dronef
         let initial_goal = drone.m_goal;
         if(deficit != Deficits.NONE)
         {
-            drone.m_goal = drone.m_job.m_goal_table.get(deficit);
+            drone.m_goal = drone.m_job.goal_table.get(deficit);
         }
         else
         {

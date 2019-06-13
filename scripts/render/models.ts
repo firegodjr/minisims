@@ -1,26 +1,39 @@
 import { Table, make_pair } from "../util/table.js";
 import { load_json } from "../network.js";
+import { ZdogTypes } from "../zDog/zdog.js";
 declare var Zdog: any;
 
 const MODELS_PATH = "models/";
 const MANIFEST_PATH = MODELS_PATH + "manifest.json";
 
-enum Models
-{
-    DRONE = "drone",
-}
-
+/**
+ * Represents a parsed manifest file, containing paths to other files
+ */
 interface ModelManifest extends Object
 {
     paths: Array<string>;
 }
 
+/**
+ * Represents a parsed JSON Zdog model
+ */
 interface JSONModel extends Object
 {
-    name: string;
+    name?: string;
     [key: string]: any; // any = Zdog.Anchor
 }
 
+/**
+ * Represents an option bag of parameters for initializing Zdog objects
+ */
+interface ZdogParams
+{
+    [key: string]: any;
+}
+
+/**
+ * Manages loading and storage of Zdog models
+ */
 class ModelStore
 {
     models: Table<any>;
@@ -39,7 +52,7 @@ class ModelStore
             {
                 model_arr.push(load_json(MODELS_PATH + man.paths[i]).then(function(model: JSONModel){
                     console.log("Loaded model " + man.paths[i]);
-                    this.models.add(model.name, json_to_zdog(model));
+                    this.models.set(model.name, json_to_zdog(model));
                 }.bind(this)) as Promise<JSONModel>);
             }
         }
@@ -47,6 +60,11 @@ class ModelStore
         return await Promise.all(model_arr);
     }
 
+    /**
+     * 
+     * @param name Name of the model
+     * @param options Overrides for the model's default options
+     */
     get(name: string, options: Object = {})
     {
         return this.models.get(name).copyGraph(options);
@@ -58,25 +76,11 @@ class ModelStore
     }
 }
 
-interface ZdogVector
-{
-    x: number,
-    y: number,
-    z: number
-}
-
-interface ZdogAnchorParams
-{
-    translate: ZdogVector,
-    rotate: ZdogVector
-}
-
-interface ZdogGroupParams extends ZdogAnchorParams
-{
-    color?: string,
-    updateSort?: boolean,
-}
-
+/**
+ * Instantiates a Zdog class given a key and option bag
+ * @param key Name of Zdog class to instantiate
+ * @param params Option bag of params for Zdog class
+ */
 function anchor_from_key(key: string, params: Object)
 {
     let anchor = new Zdog[key](params);
@@ -86,10 +90,15 @@ function anchor_from_key(key: string, params: Object)
     return anchor;
 }
 
-function json_to_zdog(obj: Object, root_key: string = "Group")
+/**
+ * Recursively converts a parsed JSONModel into properly instantiated Zdog classes
+ * @param obj Parsed JSONModel
+ * @param root_key Fallback classname to use for the root element of the model, if none is provided
+ */
+function json_to_zdog(obj: JSONModel, root_key: string = "Group")
 {
-    let children: any[] = [];
-    let params = {};
+    let children: JSONModel[] = [];
+    let params: ZdogParams = {};
 
     Object.keys(obj).forEach(key => 
     {

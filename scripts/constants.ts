@@ -1,4 +1,4 @@
-import { Table } from "./util/table.js";
+import { Table, make_pair } from "./util/table.js";
 
 /* Drone Goals */
 enum Goals
@@ -65,6 +65,11 @@ const TILE_DEGRADE_TABLE = new Table([
     { key: Tiles.WHEAT, value: Tiles.ORE }
 ]);
 
+const TILE_HARVEST_TABLE = new Table([
+    make_pair(Tiles.WHEAT_RIPE, Items.WHEAT),
+    make_pair(Tiles.ORE_RIPE, Items.ORE)
+])
+
 export { Goals, Tiles, Items, Deficits };
 export { GoalStrings, TileStrings, ItemStrings };
-export { TILE_DEGRADE_TABLE };
+export { TILE_DEGRADE_TABLE, TILE_HARVEST_TABLE };

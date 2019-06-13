@@ -1,12 +1,15 @@
 import { Drone, DroneHelper } from "../drone.js";
 import { JobCitizen } from "./jobs.js";
 import { InputManager } from "../io/input.js";
-import { Tiles, TILE_DEGRADE_TABLE, Goals, Items } from "../constants.js";
+import { Tiles, TILE_DEGRADE_TABLE, Goals, Items, TILE_HARVEST_TABLE } from "../constants.js";
 import { ChangeSelectedEvent, AddDroneEvent, ChangeGoalEvent, TickEvent } from "../event/events.js";
 import { Table } from "../util/table.js";
 import { GenerateTiles } from './tilegenerator.js';
 declare var Zdog: any;
 
+/**
+ * Represents any object containing numeric x and y properties
+ */
 interface ICoords
 {
     x: number;
@@ -24,6 +27,9 @@ class Coords
     }
 }
 
+/**
+ * An object that contains color data, and optional amount of noise variation
+ */
 interface IVariedColor
 {
     r: number,
@@ -77,6 +83,9 @@ class Tile implements SerialTile
     }
 }
 
+/**
+ * Generates tile objects from tile type
+ */
 class TileCreator
 {
     colorTable = new Table([
@@ -116,12 +125,20 @@ class TileCreator
     optimizeTable = new Table([
         { key: Tiles.WHEAT_RIPE, value: false }
     ]);
+
+    /**
+     * Creates a Tile object given a single tile type
+     * @param type 
+     */
     create(type: Tiles) : Tile
     {   let tile = new Tile(type, Object.assign({}, this.colorTable.get(type)), 4, this.densityTable.get(type), this.heightTable.get(type), this.variationTable.get(type), this.optimizeTable.get(type), 0, undefined, this.grassColorTable.get(type));
         return tile;
     }
 }
 
+/**
+ * The bare essentials required to (de)serialize a GameState object
+ */
 interface SerialGameState
 {
     m_name: string;
@@ -133,12 +150,18 @@ interface SerialGameState
     m_rotation: number;
 }
 
+/**
+ * The bare essentials required to (de)serialize a Tile object
+ */
 interface SerialTile
 {
     type: number;
     height: number;
 }
 
+/**
+ * The representation of the game currently being played
+ */
 class GameState
 {
     m_name: string;
@@ -178,36 +201,67 @@ class GameState
         }
     }
 
-    harvest(x: number, y: number)
+    /**
+     * Harvests the given tile and optionally gives the spoils to a drone
+     * @param x 
+     * @param y 
+     */
+    harvest(x: number, y: number, harvester?: Drone, drone_helper?: DroneHelper)
     {
+        if(harvester && drone_helper)
+        {
+            drone_helper.add_item(harvester, TILE_HARVEST_TABLE.get(this.m_tiles[x][y].type));
+        }
+
         this.m_tiles[x][y] = this.m_tile_creator.create(TILE_DEGRADE_TABLE.get(this.m_tiles[x][y].type));
         this.m_dirty_tiles.push(new Coords(x, y));
     }
 
+    /**
+     * Selects the drone at the given index in the game's list of drones
+     * @param index 
+     */
     select_drone(index: number)
     {
         this.m_selected_drone = index;
         document.dispatchEvent(ChangeSelectedEvent(index));
     }
 
-    add_drone(pos_x: number = 0, pos_y: number = 0)
+    /**
+     * Adds a drone at the given position
+     * @param pos_x 
+     * @param pos_y 
+     */
+    add_drone(pos_x?: number, pos_y?: number)
     {
-        if(this.m_tiles && this.m_tiles.length > 0)
+        if(!pos_x && !pos_y)
         {
-            pos_x = Math.floor(Math.random() * this.m_tiles.length);
-            pos_y = Math.floor(Math.random() * this.m_tiles[0].length);
-            
-            while(this.m_tiles[pos_x][pos_y].type == Tiles.WATER)
+            if(this.m_tiles && this.m_tiles.length > 0)
             {
                 pos_x = Math.floor(Math.random() * this.m_tiles.length);
                 pos_y = Math.floor(Math.random() * this.m_tiles[0].length);
+                
+                while(this.m_tiles[pos_x][pos_y].type == Tiles.WATER)
+                {
+                    pos_x = Math.floor(Math.random() * this.m_tiles.length);
+                    pos_y = Math.floor(Math.random() * this.m_tiles[0].length);
+                }
+            }
+            else
+            {
+                pos_x = 0;
+                pos_y = 0;
             }
         }
+
         var drone_index = this.m_drones.length;
         this.m_drones.push(new Drone(drone_index, pos_x, pos_y, JobCitizen()));
         document.dispatchEvent(AddDroneEvent(pos_x, pos_y));
     }
 
+    /**
+     * @returns A stripped-down JSON string containing only essential GameState information
+     */
     serialize()
     {
         let serial_tiles = [];
@@ -234,6 +288,10 @@ class GameState
         return JSON.stringify(serial);
     }
 
+    /**
+     * Parses a stripped-down JSON GameState and loads it into this full GameState object
+     * @param serial 
+     */
     deserialize(serial: string)
     {
         let parsed = JSON.parse(serial);
@@ -248,6 +306,11 @@ class GameState
     }
 }
 
+/**
+ * Updates each drone in the GameState
+ * @param game 
+ * @param drone_helper 
+ */
 function update_ai(game: GameState, drone_helper: DroneHelper)
 {
     for(var i = 0; i < game.m_drones.length; ++i)
@@ -268,6 +331,11 @@ function update_ai(game: GameState, drone_helper: DroneHelper)
     }
 }
 
+/**
+ * Performs a logic update
+ * @param game 
+ * @param drone_helper 
+ */
 function do_tick(game: GameState, drone_helper: DroneHelper)
 {
     update_ai(game, drone_helper);
@@ -301,14 +369,25 @@ function perform_goal(drone: Drone, drone_helper: DroneHelper, game: GameState)
     }
 }
 
-function semi_random_color(r: number, g: number, b: number, variation: number = 10)
+/**
+ * Produces a color with an optional amount of noise variation
+ * @param r 
+ * @param g 
+ * @param b 
+ * @param variation 
+ */
+function raw_varied_color(r: number, g: number, b: number, variation: number = 0)
 {
     return `rgb(${Zdog.lerp(r-variation, r+variation, Math.random())}, ${Zdog.lerp(g-variation, g+variation, Math.random())}, ${Zdog.lerp(b-variation, b+variation, Math.random())}`;
 }
 
+/**
+ * Converts raw IVariedColor information into an HTML color string
+ * @param color 
+ */
 function varied_color(color: IVariedColor)
 {
-    return semi_random_color(color.r, color.g, color.b, color.v);
+    return raw_varied_color(color.r, color.g, color.b, color.v);
 }
 
 export { Coords, ICoords, GameState, Tile, TileCreator, do_tick, SerialGameState, SerialTile };

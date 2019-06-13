@@ -12,19 +12,19 @@ import { Deficits, Goals, Items } from "../constants.js";
  */
 class Job
 {
-    m_crop: Items;
-    m_crop_threshold: number;
-    m_do_harvest: Boolean;
-    m_goal_table: Table<Goals>;
-    m_deficit_priority: Array<Deficits>;
+    crop: Items;
+    crop_threshold: number;
+    do_harvest: Boolean;
+    goal_table: Table<Goals>;
+    deficit_priority: Array<Deficits>;
 
     constructor(goal_table: Table<Goals>, deficit_priority: Array<Deficits>, crop_needed: Items, do_tile_harvest: Boolean, crop_threshold: number)
     {
-        this.m_crop = crop_needed;
-        this.m_crop_threshold = crop_threshold;
-        this.m_do_harvest = do_tile_harvest
-        this.m_goal_table = goal_table;
-        this.m_deficit_priority = deficit_priority;
+        this.crop = crop_needed;
+        this.crop_threshold = crop_threshold;
+        this.do_harvest = do_tile_harvest
+        this.goal_table = goal_table;
+        this.deficit_priority = deficit_priority;
     }
 }
 

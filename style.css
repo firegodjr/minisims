@@ -181,6 +181,9 @@ body * {
   transition: padding-left 0.1s;
   box-shadow: 1px 1px 0px #eee inset;
 }
+.panel ul button button {
+  max-width: min-content;
+}
 .panel ul button.dropdown {
   padding-left: 0.3em;
 }

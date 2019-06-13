@@ -69,21 +69,6 @@ class ViewModel
         return await Promise.all(game_arr).then((arr: SerialGameState[]) => { this.games(this.games().concat(arr)) } );
     }
 
-    saveGame()
-    {
-        let games: string[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
-
-        if(!games)
-        {
-            games = [];
-        }
-
-        games.push(this.game.serialize());
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(games));
-
-        this.games.push(JSON.parse(this.game.serialize()));
-    }
-
     loadGamesFromLocalStorage()
     {
         let games: string[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
@@ -100,27 +85,54 @@ class ViewModel
 
     }
 
+    saveGame()
+    {
+        let games: string[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+
+        if(!games)
+        {
+            games = [];
+        }
+
+        games.push(this.game.serialize());
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(games));
+
+        this.games.push(JSON.parse(this.game.serialize()));
+    }
+
+    deleteGame(index: number)
+    {
+        let games: string[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+
+        if(games)
+        {
+            games.splice(index);
+            this.games.splice(index);
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(games));
+        }
+    }
+
     addItem(item: Items, count: number = 1)
     {
         this.drone_helper.add_item(this.game.m_drones[this.drone()], item, count);
-    };
+    }
 
     addWheat(count: number = 1)
     {
         this.addItem(Items.WHEAT, count);
-    };
+    }
 
     addOre(count: number = 1)
     {
         this.addItem(Items.ORE, count);
-    };
+    }
 
     addDrone()
     {
         var drone_index = this.game.m_drones.length;
         this.game.add_drone(); //FIXME the drone y coordinate is undefined sometimes, why?
         this.drones.push(drone_index);
-    };
+    }
 
     loadGame(index: number)
     {
@@ -136,7 +148,7 @@ class ViewModel
         this.game.select_drone(index);
         this.drone(index);
         document.dispatchEvent(ChangeSelectedEvent(index));
-    };
+    }
 }
 
 export { ViewModel };

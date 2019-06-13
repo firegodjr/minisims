@@ -41,7 +41,11 @@
             <div class="content-group" title="Games">
                 <button data-bind="click: saveGame">Save Game</button>
                 <ul data-bind="foreach: games">
-                    <li><button data-bind="click: $parent.loadGame.bind($parent, $index()), text: 'Game ' + $data.m_name"></button></li>
+                    <li>
+                        <button data-bind="click: function() { $parent.loadGame($index()) }, text: 'Game ' + $data.m_name">
+                                <button data-bind="click: $parent.deleteGame.bind($parent, $index())">x</button>
+                        </button>
+                    </li>
                 </ul>
             </div>
             <div class="content-group" title="All Drones">

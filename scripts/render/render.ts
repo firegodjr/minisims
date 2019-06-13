@@ -1,146 +1,45 @@
 import { Tiles } from "../constants.js";
 import { Table } from "../util/table.js";
-import { GameState, ICoords, Tile, TileCreator } from "../game/game.js";
+import { GameState, ICoords, TileCreator } from "../game/game.js";
 import { Coords } from "../game/game.js";
 import { ModelStore, json_to_zdog } from "./models.js";
-import { Zdog, ZdogTypes } from '../zDog/zdog';
-declare var Zdog: any;
+import { ZdogTypes } from '../zDog/zdog';
+import { create_tile_from_object, create_tile, add_grass } from "./add_detail.js";
+export declare var Zdog: any;
 
-const TILE_SIZE = 40;
+export const TILE_SIZE = 40;
 const GRASS_THRESHOLD = 0.5;
 
-interface IVariedColor
+/**
+ * An object containing references to the scene layers and the tiles that make them up
+ */
+interface GridLayers
 {
-    r: number,
-    g: number,
-    b: number,
-    v?: number
+    tiles: ZdogTypes.ZdogGroup;
+    highlights: ZdogTypes.ZdogGroup;
+    grass: ZdogTypes.ZdogGroup;
+    tileArr: ZdogTypes.ZdogShape[][];
+    highlightArr: ZdogTypes.ZdogShape[][];
+    grassArr: ZdogTypes.ZdogGroup[][];
 }
 
-enum GrassColorType
-{
-    Inherit,
-    Custom
-}
-
-function add_detail(x: number, y: number, half_board: number, anchor: ZdogTypes.ZdogAnchor, color: string, stroke: number = 4, density: number = 20, height = 20, height_variation = 1, height_offset_x = 0, height_offset_z = 0, random_variation = false, optimize = true)
-{
-    var root_pos = get_tile_pos(x, y, half_board);
-    root_pos.x -= TILE_SIZE/2;
-    root_pos.z -= TILE_SIZE/2;
-    var path = [];
-    for(var i = 0; i < density; ++i)
-    {
-        for(var j = 0; j < density; ++j)
-        {
-            if(optimize && !random_variation && (j > 1 && j < density - 2) && (i > 1 && i < density - 2))
-            {
-                continue;
-            }
-
-            var x_variation = Math.random() * 0.5 * TILE_SIZE / density;
-            var z_variation = Math.random() * 0.5 * TILE_SIZE / density;
-            var pos_x;
-            var pos_y = -stroke/2;
-            var pos_z;
-
-            if(random_variation)
-            {
-                pos_x = Zdog.lerp(stroke, TILE_SIZE - stroke, Math.random());
-                pos_z = Zdog.lerp(stroke, TILE_SIZE - stroke, Math.random());
-            }
-            else
-            {
-                pos_x = x_variation + Zdog.lerp(0, TILE_SIZE, i/density);
-                pos_z = z_variation + Zdog.lerp(0, TILE_SIZE, j/density);
-            }
-
-            path.push({
-                move: {
-                    x: pos_x,
-                    y: pos_y,
-                    z: pos_z
-                }
-            },
-            {
-                line: {
-                    x: pos_x + height_offset_x,
-                    y: pos_y + Math.random() * height_variation * height - height,
-                    z: pos_z + height_offset_z
-                }
-            });
-        }
-    }
-
-    var grass_container = new Zdog.Group({
-        addTo: anchor,
-        translate: {x: root_pos.x, z: root_pos.z }
-    })
-    
-    new Zdog.Shape({
-        addTo: grass_container,
-        stroke: stroke,
-        color: color,
-        visible: path.length == 0 ? false : true,
-        path: path.length == 0 ? [{move: {x: 0, y: 0, z: 0}}] : path
-    });
-
-    return grass_container;
-}
-
-function add_grass(x: number, y: number, half_board: number, anchor: ZdogTypes.ZdogAnchor, color: string, density: number = 20, height: number = 20, variation: number = 1, optimize: boolean = true)
-{
-    return add_detail(x, y, half_board, anchor, color, 4, density, height, variation, 0, 0, false, optimize);
-}
-
-function add_mineral(x: number, y: number, half_board: number, anchor: any, color: string, density: number)
-{
-    return add_detail(x, y, half_board, anchor, color, 8, density, 0, 0, 1, 0, true);
-}
-
-function get_tile_pos(x: number, y: number, half_board: number)
-{
-    return {x: x * TILE_SIZE - half_board, z: y * TILE_SIZE - half_board};
-}
-
-function create_tile_from_object(tile: Tile, x: number, y: number, half_board: number, anchor: any)
-{
-    return create_tile(tile.get_color(), x, y, half_board, anchor, tile.type, true, 1, false);
-}
-
-function create_grass_from_tile(tile: Tile, x: number, y: number, half_board: number, anchor: any)
-{
-    return add_grass(x, y, half_board, anchor, tile.grass_color, tile.grass_density, tile.grass_height, tile.grass_height_variation, tile.optimize_grass);
-}
-
-function create_tile(color: string, x: number, y: number, half_board: number, anchor: any, tileType: number = -1, fill: boolean = true, stroke: number = 1, box: boolean = false)
-{
-    let tile_surface;
-
-    tile_surface = new Zdog.Rect({
-        addTo: anchor,
-        color: color,
-        width: TILE_SIZE,
-        height: TILE_SIZE,
-        stroke: stroke,
-        fill: fill,
-        translate: get_tile_pos(x, y, half_board),
-        rotate: { x: Zdog.TAU / 4 }
-    });
-
-    return tile_surface;
-}
-
+/**
+ * Manages functionality and interactivity of the canvas game board, synchronizing it with the gamestate for ease of access
+ */
 class BoardManager
 {
     rot_offset: number;
     rot_buf: number;
-    pitch_offset = -Zdog.TAU / 12;
-    pitch_buf = 0;
+    pitch_offset: number;
+    pitch_buf: number;
     selected_tile: ICoords;
     is_dragged: boolean;
     game: GameState;
 
+    /**
+     * 
+     * @param game The gamestate to save rotation values to
+     */
     constructor(game: GameState)
     {
         this.rot_offset = Zdog.TAU * 7 / 8;
@@ -151,11 +50,21 @@ class BoardManager
         this.game = game;
     }
 
+    /**
+     * Handler for the Zdog dragStart event
+     * @param pointer Mouse pointer coordinates
+     */
     dragStart(pointer: ICoords)
     {
         this.is_dragged = true;
     }
 
+    /**
+     * Handler for the Zdog dragMove event
+     * @param pointer Mouse pointer coordinates
+     * @param moveX Total amount of x movement in this drag
+     * @param moveY Total amount of y movement in this drag
+     */
     dragMove(pointer: ICoords, moveX: number, moveY: number)
     {
         this.game.m_pitch = Math.max(
@@ -169,6 +78,9 @@ class BoardManager
         this.rot_buf = this.game.m_rotation;
     }
 
+    /**
+     * Handler for the Zdog dragEnd event
+     */
     dragEnd()
     {
         this.rot_offset = this.game.m_rotation % Zdog.TAU;
@@ -177,20 +89,15 @@ class BoardManager
         this.is_dragged = false;
     }
 
+    /**
+     * Selects a game tile
+     * @param x X coordinate of the tile
+     * @param y Y coordinate of the tile
+     */
     selectTile(x: number, y: number)
     {
         this.selected_tile = new Coords(x, y);
     }
-}
-
-interface GridLayers
-{
-    tiles: ZdogTypes.ZdogGroup;
-    highlights: ZdogTypes.ZdogGroup;
-    grass: ZdogTypes.ZdogGroup;
-    tileArr: ZdogTypes.ZdogShape[][];
-    highlightArr: ZdogTypes.ZdogShape[][];
-    grassArr: ZdogTypes.ZdogGroup[][];
 }
 
 function init_illustration(game: GameState, board_mgr: BoardManager): GridLayers
@@ -276,8 +183,6 @@ let game: GameState;
 // Variables for rotation correction on drag release
 let last_timestamp = 0;
 let was_dragged = true;
-let release_timestamp = 0;
-let release_rotation = 0;
 let nearest_corner = 0;
 export function reset_board(game_state: GameState, board_mgr: BoardManager)
 {
@@ -393,9 +298,6 @@ export function draw_board(game_state: GameState, board_mgr: BoardManager, model
         {
             if(was_dragged)
             {
-                release_timestamp = timestamp;
-                release_rotation = game.m_rotation;
-
                 let corner_offset = game.m_rotation % (Zdog.TAU / 4);
 
                 nearest_corner = game.m_rotation - corner_offset + Zdog.TAU / 8;
@@ -405,7 +307,7 @@ export function draw_board(game_state: GameState, board_mgr: BoardManager, model
 
             if(Math.abs(game.m_rotation - nearest_corner) > 0.0001)
             {
-                game.m_rotation = Zdog.lerp(game.m_rotation, nearest_corner, 0.4);
+                game.m_rotation = Zdog.lerp(game.m_rotation, nearest_corner, delta/100);
                 game.m_rotation = normalize_rotation(game.m_rotation);
             }
             board_mgr.rot_offset = game.m_rotation;
