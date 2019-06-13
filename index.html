@@ -42,8 +42,9 @@
                 <button data-bind="click: saveGame">Save Game</button>
                 <ul data-bind="foreach: games">
                     <li>
-                        <button data-bind="click: () => $parent.loadGame($index()), text: 'Game ' + $data.m_name">
-                                <button data-bind="click: () => $parent.deleteGame($index())">x</button>
+                        <button data-bind="click: () => $parent.loadGame($index())">
+                                <span data-bind="text: 'Game ' + $data.m_name"></span>
+                                <button data-bind="click: () => $parent.deleteGame($index())">X</button>
                         </button>
                     </li>
                 </ul>

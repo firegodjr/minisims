@@ -245,25 +245,46 @@ body
 
         li
         {
+            display: flex;
             border-top: 1px solid @edit-pane-shadow;
 
             &:first-of-type
             {
                 border: none;
 
-                button
+                button:first-child
                 {
                     border-top-left-radius: @radius-small;
+                }
+                
+                button:last-child
+                {
                     border-top-right-radius: @radius-small;
                 }
             }
 
             &:last-of-type
             {
-                button
+                button:first-of-type
                 {
                     border-bottom-left-radius: @radius-small;
+                }
+
+                button:last-of-type
+                {
                     border-bottom-right-radius: @radius-small;
+                }
+            }
+
+            button:nth-of-type(n + 2)
+            {
+                display: block;
+                width: 1.5em;
+                padding: 0.3em;
+
+                &:hover
+                {
+                    padding-left: 0.3em;
                 }
             }
         }
@@ -278,11 +299,6 @@ body
             margin: 0;
             transition: padding-left 0.1s;
             .highlight-mixin();
-
-            button
-            {
-                max-width: min-content;
-            }
 
             &.dropdown
             {

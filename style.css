@@ -158,18 +158,31 @@ body * {
   background-color: #999;
 }
 .panel ul li {
+  display: flex;
   border-top: 1px solid #777;
 }
 .panel ul li:first-of-type {
   border: none;
 }
-.panel ul li:first-of-type button {
+.panel ul li:first-of-type button:first-child {
   border-top-left-radius: 0.2em;
+}
+.panel ul li:first-of-type button:last-child {
   border-top-right-radius: 0.2em;
 }
-.panel ul li:last-of-type button {
+.panel ul li:last-of-type button:first-of-type {
   border-bottom-left-radius: 0.2em;
+}
+.panel ul li:last-of-type button:last-of-type {
   border-bottom-right-radius: 0.2em;
+}
+.panel ul li button:nth-of-type(n + 2) {
+  display: block;
+  width: 1.5em;
+  padding: 0.3em;
+}
+.panel ul li button:nth-of-type(n + 2):hover {
+  padding-left: 0.3em;
 }
 .panel ul button {
   padding-left: 2.3em;
@@ -180,9 +193,6 @@ body * {
   margin: 0;
   transition: padding-left 0.1s;
   box-shadow: 1px 1px 0px #eee inset;
-}
-.panel ul button button {
-  max-width: min-content;
 }
 .panel ul button.dropdown {
   padding-left: 0.3em;
