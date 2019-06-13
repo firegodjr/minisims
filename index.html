@@ -38,6 +38,29 @@
                 </ul>
             </div>
             <button id="btn_dotick">Next Turn</button>
+        </div>
+    </div>
+
+    <div id="center-panel">
+        <canvas id="cvs_viewport" width="240" height="999" />
+    </div>
+    <div id="output-panel">
+        <textarea id="console"></textarea>
+    </div>
+    
+
+    <div id="right-panel" class="panel">
+        <h1>Properties</h1>
+        <div class="panel-content">
+            <div class="content-group" title="Drone Stats">
+                    <h2 id="lbl_dronename" data-bind="text: drone_name">Drone Name</h2>
+                    <h3>Energy</h3>
+                    <progress data-bind="value: drone_energy" id="prgbar_energy" max="100" value="10" title="Energy"></progress>
+                    <h3>Inventory</h3>
+                    <div data-bind="foreach: drone_inventory" id="inventory-pane" class="flex-menu">
+                        <div><span data-bind="text: m_item"></span>: <span data-bind="text: m_count"></span></div>
+                    </div>
+            </div>
             <div class="content-group" title="Games">
                 <button data-bind="click: saveGame">Save Game</button>
                 <ul data-bind="foreach: games">
@@ -53,27 +76,6 @@
                 <ul class="dynamic-content" data-bind="foreach: drones">
                     <li><button data-bind="click: () => $parent.selectDrone($data), text: 'Drone: ' + $data"></button></li>
                 </ul>
-            </div>
-        </div>
-    </div>
-
-    <div id="center-panel">
-        <canvas id="cvs_viewport" width="240" height="999" />
-    </div>
-    <div id="output-panel">
-        <textarea id="console"></textarea>
-    </div>
-    
-
-    <div id="right-panel" class="panel">
-        <h1>Properties</h1>
-        <div class="panel-content">
-            <h2 id="lbl_dronename" data-bind="text: drone_name">Drone Name</h2>
-            <h3>Energy</h3>
-            <progress data-bind="value: drone_energy" id="prgbar_energy" max="100" value="10" title="Energy"></progress>
-            <h3>Inventory</h3>
-            <div data-bind="foreach: drone_inventory" id="inventory-pane" class="flex-menu">
-                <div><span data-bind="text: m_item"></span>: <span data-bind="text: m_count"></span></div>
             </div>
         </div>
     </div>
