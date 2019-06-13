@@ -1,3 +1,4 @@
+import { parse_JSON_as } from "./util/jsonutil.js";
 
 const OBJECTS_PATH = "objects/";
 
@@ -14,7 +15,7 @@ function load_json<T>(path: string): Promise<T>
 {
     let promise = make_request(OBJECTS_PATH + path).then((req: XMLHttpRequest) => 
     {
-        return JSON.parse(req.responseText) as T;
+        return parse_JSON_as<T>(req.responseText);
     });
 
     return promise;
@@ -24,7 +25,7 @@ function load_json<T>(path: string): Promise<T>
  * Returns a promise for a string, loaded from the provided path
  * @param path 
  */
-function load_text(path: string): Promise<Object>
+function load_text(path: string): Promise<string>
 {
     let promise = make_request(OBJECTS_PATH + path).then((req: XMLHttpRequest) => 
     {
@@ -34,6 +35,9 @@ function load_text(path: string): Promise<Object>
     return promise;
 }
 
+/**
+ * A function usable in a promise.then() callback
+ */
 interface ThenFunction<T>
 {
     (value: Object): T | PromiseLike<T>
@@ -48,7 +52,7 @@ interface ThenFunction<T>
  */
 async function load_from_manifest<T>(path: string, callback?: ThenFunction<T>, names?: string[])
 {
-    let man = await load_json(path + "manifest.json") as Manifest;
+    let man = await load_json<Manifest>(path + "manifest.json");
     
     let obj_arr: Promise<T>[] = [];
     for(let i = 0; i < man.paths.length; ++i)

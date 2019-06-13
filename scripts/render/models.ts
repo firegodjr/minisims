@@ -50,10 +50,13 @@ class ModelStore
         {
             if((names && names.includes(man.paths[i])) || !names)
             {
-                model_arr.push(load_json(MODELS_PATH + man.paths[i]).then(function(model: JSONModel){
+                model_arr.push(load_json(MODELS_PATH + man.paths[i]).then(function(model: JSONModel)
+                {
                     console.log("Loaded model " + man.paths[i]);
-                    this.models.set(model.name, json_to_zdog(model));
-                }.bind(this)) as Promise<JSONModel>);
+                    let zdog_model = json_to_zdog(model);
+                    this.models.set(model.name, json_to_zdog(zdog_model));
+                    return zdog_model;
+                }.bind(this)));
             }
         }
 

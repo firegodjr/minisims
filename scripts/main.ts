@@ -10,7 +10,7 @@ import { ItemStrings, GoalStrings } from "./constants.js";
 import { ViewModel } from "./io/viewmodel.js";
 import { log, init_log } from "./io/output.js";
 import { ModelStore } from "./render/models.js";
-import { load_json, load_text } from "./network.js";
+import { get_element } from "./util/docutil.js";
 declare var ko: KnockoutStatic;
 
 (function(window: Window){
@@ -18,7 +18,8 @@ declare var ko: KnockoutStatic;
 
     function click_helper(document: Document, btn_id: string, event: any, args: Array<any> = [])
     {
-        document.getElementById(btn_id).addEventListener("click", (e) => {
+        get_element(document, btn_id).addEventListener("click", (e) => 
+        {
             document.dispatchEvent(new event(...args));
         });
     }
@@ -34,7 +35,7 @@ declare var ko: KnockoutStatic;
         epublisher_helper.subscribe(epublisher, "cvs_viewport");
         epublisher_helper.subscribe(epublisher, "console");
 
-        var viewport = document.getElementById("cvs_viewport") as HTMLCanvasElement;
+        var viewport = get_element<HTMLCanvasElement>(document, "cvs_viewport");
         window.addEventListener("resize", function(e)
         {
             viewport.width = viewport.parentElement.clientWidth;
@@ -83,19 +84,20 @@ declare var ko: KnockoutStatic;
             }
         });
 
-        document.getElementById("inventory-pane").addEventListener(Events.ADD_ITEM, function(e: CustomEvent)
+        get_element(document, "inventory-pane").addEventListener(Events.ADD_ITEM, function(e: CustomEvent)
         {
+            let target_element = e.target as HTMLElement;
             // If the selected drone just got an item, update the ui
             if(e.detail.drone === game.m_selected_drone)
             {
                 // clear the inventory pane
-                (e.target as HTMLElement).innerHTML = "";
+                target_element.innerHTML = "";
                 for(var i = 0; i < game.m_drones[game.m_selected_drone].m_inventory.length; ++i)
                 {
                     var new_element = document.createElement("div");
                     var inv_pair = game.m_drones[game.m_selected_drone].m_inventory[i];
                     new_element.innerHTML = inv_pair.m_item + ": " + inv_pair.m_count;
-                    (e.target as HTMLElement).appendChild(new_element);
+                    target_element.appendChild(new_element);
                 }
             }
         });

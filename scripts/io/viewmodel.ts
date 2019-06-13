@@ -4,10 +4,10 @@ import { DroneHelper, InventoryPair } from "../drone.js";
 import { ChangeSelectedEvent } from '../event/events.js';
 import { GameState, SerialGameState, do_tick } from "../game/game.js";
 import { load_text, load_json, Manifest } from "../network.js";
-import { json_to_zdog } from "../render/models.js";
 import { reset_board, BoardManager } from '../render/render.js';
 import copy from '../util/copy.js';
 import { KnockoutStatic } from "../../node_modules/knockout/build/output/knockout-latest.js";
+import { parse_JSON_as } from "../util/jsonutil.js";
 declare var ko: KnockoutStatic;
 
 const GAMES_PATH = "games/";
@@ -61,15 +61,15 @@ class ViewModel
 
     async loadGamesFromManifest()
     {
-        let man = await load_json(GAME_MANIFEST_PATH) as Manifest;
+        let man = await load_json<Manifest>(GAME_MANIFEST_PATH);
         
         let game_arr: Promise<SerialGameState>[] = [];
         for(let i = 0; i < man.paths.length; ++i)
         {
             game_arr.push(load_text(GAMES_PATH + man.paths[i]).then(function(game: string){
                 console.log("Loaded game " + man.paths[i]);
-                return JSON.parse(game);
-            }.bind(this)) as Promise<SerialGameState>);
+                return parse_JSON_as<SerialGameState>(game);
+            }.bind(this)));
         }
 
         return await Promise.all(game_arr).then((arr: SerialGameState[]) => { this.games(this.games().concat(arr)) } );
@@ -77,13 +77,13 @@ class ViewModel
 
     loadGamesFromLocalStorage()
     {
-        let games: string[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+        let games = parse_JSON_as<string[]>(localStorage.getItem(LOCAL_STORAGE_KEY));
         if(games)
         {
             let new_games: SerialGameState[] = [];
             for(var i = 0; i < games.length; ++i)
             {
-                new_games.push(JSON.parse(games[i]));
+                new_games.push(parse_JSON_as<SerialGameState>(games[i]));
             }
 
             this.games(this.games().concat(new_games));
@@ -93,7 +93,7 @@ class ViewModel
 
     saveGame()
     {
-        let games: string[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+        let games = parse_JSON_as<string[]>(localStorage.getItem(LOCAL_STORAGE_KEY));
 
         if(!games)
         {
@@ -103,12 +103,12 @@ class ViewModel
         games.push(this.game.serialize());
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(games));
 
-        this.games.push(JSON.parse(this.game.serialize()));
+        this.games.push(parse_JSON_as<SerialGameState>(this.game.serialize()));
     }
 
     deleteGame(index: number)
     {
-        let games: string[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+        let games: string[] = parse_JSON_as<string[]>(localStorage.getItem(LOCAL_STORAGE_KEY));
 
         if(games)
         {
