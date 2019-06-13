@@ -91,7 +91,7 @@ class TileCreator
     colorTable = new Table([
         { key: Tiles.GRASS, value: { r: 35, g: 135, b: 43, v: 7 }},
         { key: Tiles.WHEAT, value: { r: 100, g: 75, b: 45 }},
-        { key: Tiles.WHEAT_RIPE, value: { r: 210, g: 155, b: 94 }},
+        { key: Tiles.WHEAT_RIPE, value: { r: 210, g: 155, b: 94, v: 10 }},
         { key: Tiles.STONE, value: { r: 150, g: 150, b: 150, v: 5 }},
         { key: Tiles.ORE, value: { r: 80, g: 80, b: 80, v: 5 }},
         { key: Tiles.ORE_RIPE, value: { r: 80, g: 80, b: 80, v: 5 }},

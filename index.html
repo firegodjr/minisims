@@ -23,10 +23,10 @@
             <button id="btn_adddrone" data-bind="click: addDrone">Add a Drone</button>
             <div class="content-group" title="Selected Drone">
                 <ul>
-                    <li><button id="btn_addwheat" data-bind="click: addWheat.bind($data, 1)">Add Wheat</button></li>
-                    <li><button id="btn_delwheat" data-bind="click: addWheat.bind($data, -1)">Delete Wheat</button></li>
-                    <li><button id="btn_addore" data-bind="click: addOre.bind($data, 1)">Add Ore</button></li>
-                    <li><button id="btn_delore" data-bind="click: addOre.bind($data, -1)">Delete Ore</button></li>
+                    <li><button id="btn_addwheat" data-bind="click: () => addWheat(1)">Add Wheat</button></li>
+                    <li><button id="btn_delwheat" data-bind="click: () => addWheat(-1)">Delete Wheat</button></li>
+                    <li><button id="btn_addore" data-bind="click: () => addOre(1)">Add Ore</button></li>
+                    <li><button id="btn_delore" data-bind="click: () => addOre(-1)">Delete Ore</button></li>
                 </ul>
                 <ul>
                     <li>
@@ -42,15 +42,15 @@
                 <button data-bind="click: saveGame">Save Game</button>
                 <ul data-bind="foreach: games">
                     <li>
-                        <button data-bind="click: function() { $parent.loadGame($index()) }, text: 'Game ' + $data.m_name">
-                                <button data-bind="click: $parent.deleteGame.bind($parent, $index())">x</button>
+                        <button data-bind="click: () => $parent.loadGame($index()), text: 'Game ' + $data.m_name">
+                                <button data-bind="click: () => $parent.deleteGame($index())">x</button>
                         </button>
                     </li>
                 </ul>
             </div>
             <div class="content-group" title="All Drones">
                 <ul class="dynamic-content" data-bind="foreach: drones">
-                    <li><button data-bind="click: $parent.selectDrone.bind($parent, $data), text: 'Drone: ' + $data"></button></li>
+                    <li><button data-bind="click: () => $parent.selectDrone($data), text: 'Drone: ' + $data"></button></li>
                 </ul>
             </div>
         </div>

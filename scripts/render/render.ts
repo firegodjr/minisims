@@ -324,9 +324,9 @@ export function draw_board(game_state: GameState, board_mgr: BoardManager, model
         board.rotate.y = game.m_rotation;
 
         board.updateRenderGraph();
-        ctx.fillText("FPS: " + 1000/delta, 50, 50);
-        ctx.fillText("Rotation: " + (game.m_rotation * 360 / Zdog.TAU), 50, 75);
-        ctx.fillText("Nearest Corner: " + (nearest_corner * 360 / Zdog.TAU), 50, 100);
+        ctx.fillText("FPS: " + Math.round(1000/delta), 50, 50);
+        ctx.fillText("Rotation: " + Math.round(game.m_rotation * 360 / Zdog.TAU), 50, 75);
+        ctx.fillText("Nearest Corner: " + Math.round(nearest_corner * 360 / Zdog.TAU), 50, 100);
         //document.dispatchEvent(new event(game, delta));
         last_timestamp = timestamp;
         requestAnimationFrame(draw);

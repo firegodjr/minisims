@@ -2,13 +2,7 @@ import { Table } from "../util/table.js";
 import { Deficits, Goals, Items } from "../constants.js";
 
 /**
- * Constructor. A task assigned to a drone.
- * @param {Object} goal_table a table of goals from deficits
- * @param {Array<number>} deficit_priority an array of deficits in order of priority
- * @param {number} crop_needed the crop that a drone with this job can have a deficit in TODO need more crops at once
- * @param {boolean} [do_tile_harvest] whether or not this job requires the drone to personally harvest ripe tiles
- * @param {number} [crop_threshold] the maximum amount of crops that will return a deficit
- * @returns {Job}
+ * A task assigned to a drone
  */
 class Job
 {
@@ -18,6 +12,13 @@ class Job
     goal_table: Table<Goals>;
     deficit_priority: Array<Deficits>;
 
+    /**
+     * @param goal_table A table of goals for each deficit this drone may encounter
+     * @param deficit_priority A list of deficits in order of priority
+     * @param crop_needed The crop that this drone would like to collect
+     * @param do_tile_harvest Whether or not this drone is willing to harvest tiles to obtain crop
+     * @param crop_threshold How much crop this drone needs to be content
+     */
     constructor(goal_table: Table<Goals>, deficit_priority: Array<Deficits>, crop_needed: Items, do_tile_harvest: Boolean, crop_threshold: number)
     {
         this.crop = crop_needed;
