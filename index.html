@@ -37,7 +37,7 @@
                     <li><button>Clear Goal</button></li>
                 </ul>
             </div>
-            <button id="btn_dotick">Next Turn</button>
+            <button id="btn_dotick" data-bind="click: () => doTick()">Next Turn</button>
         </div>
     </div>
 
@@ -61,6 +61,11 @@
                         <div><span data-bind="text: m_item"></span>: <span data-bind="text: m_count"></span></div>
                     </div>
             </div>
+            <div class="content-group" title="All Drones">
+                <ul class="dynamic-content" data-bind="foreach: drones">
+                    <li><button data-bind="click: () => $parent.selectDrone($data), text: 'Drone: ' + $data"></button></li>
+                </ul>
+            </div>
             <div class="content-group" title="Games">
                 <button data-bind="click: saveGame">Save Game</button>
                 <ul data-bind="foreach: games">
@@ -70,11 +75,6 @@
                                 <button data-bind="click: () => $parent.deleteGame($index())">X</button>
                         </button>
                     </li>
-                </ul>
-            </div>
-            <div class="content-group" title="All Drones">
-                <ul class="dynamic-content" data-bind="foreach: drones">
-                    <li><button data-bind="click: () => $parent.selectDrone($data), text: 'Drone: ' + $data"></button></li>
                 </ul>
             </div>
         </div>

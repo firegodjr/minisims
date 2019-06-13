@@ -5,6 +5,7 @@ import { Coords } from "../game/game.js";
 import { ModelStore, json_to_zdog } from "./models.js";
 import { ZdogTypes } from '../zDog/zdog';
 import { create_tile_from_object, create_tile, add_grass } from "./add_detail.js";
+import { Drone } from "../drone.js";
 export declare var Zdog: any;
 
 export const TILE_SIZE = 40;
@@ -159,7 +160,7 @@ function init_illustration(game: GameState, board_mgr: BoardManager): GridLayers
             var tile_surface = create_tile_from_object(game.m_tiles[i][j], i, j, half_board, tiles);
             tile_surface.translate.y -= tile.height * TILE_HEIGHT_AMNT;
 
-            var tile_highlight = create_tile("rgba(255, 0, 0, 0.8)", i, j, half_board, highlights, -1, false, 4); // magic numbers ree
+            var tile_highlight = create_tile("rgba(255, 0, 0, 0.8)", i, j, half_board, highlights, -1, false, 4); //TODO magic numbers ree
             tile_highlight.translate.y -= tile.height * TILE_HEIGHT_AMNT;
             tile_highlight.visible = false;
 
@@ -266,16 +267,24 @@ export function draw_board(game_state: GameState, board_mgr: BoardManager, model
             layers.grassArr[pair.x][pair.y].remove();
             layers.grassArr[pair.x][pair.y].visible = false;
 
-            let newTile = create_tile_from_object(game.m_tiles[pair.x][pair.y], pair.x, pair.y, half_board, layers.tiles);
-            layers.tileArr[pair.x][pair.y] = newTile
+            let tile = game.m_tiles[pair.x][pair.y];
+            let newTile = create_tile_from_object(tile, pair.x, pair.y, half_board, layers.tiles);
+            layers.tileArr[pair.x][pair.y] = newTile;
 
-            layers.grassArr[pair.x][pair.y] = add_grass(pair.x, pair.y, half_board, layers.grass, newTile.color, newTile.grass_density, newTile.grass_height, newTile.grass_height_variation, newTile.optimize_grass);
+            let drone = game.m_drones.find((drone: Drone) => 
+            { 
+                if(drone.m_pos_x == pair.x && drone.m_pos_y == pair.y) return drone 
+            });
+
+            layers.grassArr[pair.x][pair.y] = add_grass(pair.x, pair.y, half_board, layers.tiles, newTile.color, tile.grass_density, tile.grass_height, tile.grass_height_variation, tile.optimize_grass);
+            if(drone) drone.m_moved = true;
         }
+
         if(game.m_dirty_tiles.length > 0)
         {
             layers.tiles.updateGraph();
-            layers.grass.updateGraph();
         }
+
         game.m_dirty_tiles = [];
 
         // Update selections

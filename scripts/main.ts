@@ -49,8 +49,6 @@ declare var ko: KnockoutStatic;
 
         viewport.addEventListener(Events.ON_TICK, function(e)
         {
-            do_tick(game, drone_helper);
-
             game.m_dirty_tiles.push({x: 0, y: 1})
         });
 

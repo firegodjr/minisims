@@ -2,7 +2,7 @@ import { KnockoutStatic, Observable, ObservableArray } from "../../node_modules/
 import { Items } from "../constants.js";
 import { DroneHelper, InventoryPair } from "../drone.js";
 import { ChangeSelectedEvent } from '../event/events.js';
-import { GameState, SerialGameState } from "../game/game.js";
+import { GameState, SerialGameState, do_tick } from "../game/game.js";
 import { load_text, load_json, Manifest } from "../network.js";
 import { json_to_zdog } from "../render/models.js";
 import { reset_board, BoardManager } from '../render/render.js';
@@ -51,6 +51,11 @@ class ViewModel
         }
 
         this.drone_energy(this.game.m_drones[this.drone()].m_energy);
+    }
+
+    doTick()
+    {
+        do_tick(this.game, this.drone_helper);
     }
 
     async loadGamesFromManifest()
