@@ -1,7 +1,7 @@
 import { Table, make_pair } from "../util/table.js";
 import { load_json } from "../network.js";
-import { ZdogTypes } from "../zDog/zdog.js";
-declare var Zdog: any;
+import { Zdog } from "../zDog/zdog.js";
+declare var Zdog: Zdog;
 
 const MODELS_PATH = "models/";
 const MANIFEST_PATH = MODELS_PATH + "manifest.json";

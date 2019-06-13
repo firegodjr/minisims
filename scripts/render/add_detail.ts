@@ -1,9 +1,9 @@
 import { Tile } from "../game/game.js";
-import { ZdogTypes } from '../zDog/zdog.js';
+import { Zdog } from '../zDog/zdog.js';
 import { TILE_SIZE } from "./render.js";
-export declare var Zdog: any;
+declare var Zdog: Zdog;
 
-function add_detail(x: number, y: number, half_board: number, anchor: ZdogTypes.ZdogAnchor, color: string, stroke: number = 4, density: number = 20, height = 20, height_variation = 1, height_offset_x = 0, height_offset_z = 0, random_variation = false, optimize = true)
+function add_detail(x: number, y: number, half_board: number, anchor: Zdog.Anchor, color: string, stroke: number = 4, density: number = 20, height = 20, height_variation = 1, height_offset_x = 0, height_offset_z = 0, random_variation = false, optimize = true)
 {
     var root_pos = get_tile_pos(x, y, half_board);
     root_pos.x -= TILE_SIZE / 2;
@@ -60,7 +60,7 @@ function add_detail(x: number, y: number, half_board: number, anchor: ZdogTypes.
     });
     return grass_container;
 }
-export function add_grass(x: number, y: number, half_board: number, anchor: ZdogTypes.ZdogAnchor, color: string, density: number = 20, height: number = 20, variation: number = 1, optimize: boolean = true)
+export function add_grass(x: number, y: number, half_board: number, anchor: Zdog.Anchor, color: string, density: number = 20, height: number = 20, variation: number = 1, optimize: boolean = true)
 {
     return add_detail(x, y, half_board, anchor, color, 4, density, height, variation, 0, 0, false, optimize);
 }

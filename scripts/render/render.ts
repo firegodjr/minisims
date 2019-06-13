@@ -3,10 +3,10 @@ import { Table } from "../util/table.js";
 import { GameState, ICoords, TileCreator } from "../game/game.js";
 import { Coords } from "../game/game.js";
 import { ModelStore, json_to_zdog } from "./models.js";
-import { ZdogTypes } from '../zDog/zdog';
+import { Zdog } from '../zDog/zdog.js';
 import { create_tile_from_object, create_tile, add_grass } from "./add_detail.js";
 import { Drone } from "../drone.js";
-export declare var Zdog: any;
+declare var Zdog: Zdog;
 
 export const TILE_SIZE = 40;
 const GRASS_THRESHOLD = 0.5;
@@ -16,12 +16,12 @@ const GRASS_THRESHOLD = 0.5;
  */
 interface GridLayers
 {
-    tiles: ZdogTypes.ZdogGroup;
-    highlights: ZdogTypes.ZdogGroup;
-    grass: ZdogTypes.ZdogGroup;
-    tileArr: ZdogTypes.ZdogShape[][];
-    highlightArr: ZdogTypes.ZdogShape[][];
-    grassArr: ZdogTypes.ZdogGroup[][];
+    tiles: Zdog.Group;
+    highlights: Zdog.Group;
+    grass: Zdog.Group;
+    tileArr: Zdog.Shape[][];
+    highlightArr: Zdog.Shape[][];
+    grassArr: Zdog.Group[][];
 }
 
 /**
@@ -55,7 +55,7 @@ class BoardManager
      * Handler for the Zdog dragStart event
      * @param pointer Mouse pointer coordinates
      */
-    dragStart(pointer: ICoords)
+    dragStart(pointer: Event | Touch)
     {
         this.is_dragged = true;
     }
@@ -66,7 +66,7 @@ class BoardManager
      * @param moveX Total amount of x movement in this drag
      * @param moveY Total amount of y movement in this drag
      */
-    dragMove(pointer: ICoords, moveX: number, moveY: number)
+    dragMove(pointer: Event | Touch, moveX: number, moveY: number)
     {
         this.game.m_pitch = Math.max(
             -Zdog.TAU / 5, Math.min(
@@ -109,11 +109,10 @@ function init_illustration(game: GameState, board_mgr: BoardManager): GridLayers
     {
         board = new Zdog.Illustration({
             element: "#cvs_viewport",
-            color: "rgb(110, 210, 190)",
             resize: true,
             dragRotate: true,
-            onDragStart: (p: ICoords) => board_mgr.dragStart(p),
-            onDragMove: (p: ICoords, mx: number, my: number) => board_mgr.dragMove(p, mx, my),
+            onDragStart: (p: Event | Touch) => board_mgr.dragStart(p),
+            onDragMove: (p: Event | Touch, mx: number, my: number) => board_mgr.dragMove(p, mx, my),
             onDragEnd: () => board_mgr.dragEnd(),
             rotate: { x: -Zdog.TAU / 12, y: -Zdog.TAU /8 }
         });
@@ -176,9 +175,9 @@ function init_illustration(game: GameState, board_mgr: BoardManager): GridLayers
     return { tiles, highlights, grass, tileArr, highlightArr, grassArr };
 }
 
-let board: ZdogTypes.ZdogIllustration;
+let board: Zdog.Illustration;
 let layers: GridLayers;
-let droneArr: ZdogTypes.ZdogAnchor[] = [];
+let droneArr: Zdog.Anchor[] = [];
 let game: GameState;
 
 // Variables for rotation correction on drag release
@@ -288,7 +287,7 @@ export function draw_board(game_state: GameState, board_mgr: BoardManager, model
         game.m_dirty_tiles = [];
 
         // Update selections
-        layers.highlightArr.map((arr: Array<ZdogTypes.ZdogAnchor>) =>
+        layers.highlightArr.map((arr: Array<Zdog.Anchor>) =>
         {
             arr.map((tile: any) => 
             {
