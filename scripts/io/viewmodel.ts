@@ -1,4 +1,4 @@
-import { KnockoutStatic, Observable, ObservableArray } from "../../node_modules/knockout/build/output/knockout-latest.js";
+import { Observable, ObservableArray } from "../knockout.js";
 import { Items } from "../constants.js";
 import { DroneHelper, InventoryPair } from "../drone.js";
 import { ChangeSelectedEvent } from '../event/events.js';
@@ -7,6 +7,7 @@ import { load_text, load_json, Manifest } from "../network.js";
 import { json_to_zdog } from "../render/models.js";
 import { reset_board, BoardManager } from '../render/render.js';
 import copy from '../util/copy.js';
+import { KnockoutStatic } from "../../node_modules/knockout/build/output/knockout-latest.js";
 declare var ko: KnockoutStatic;
 
 const GAMES_PATH = "games/";
@@ -21,7 +22,7 @@ class ViewModel
     drone_inventory: ObservableArray<Observable<InventoryPair>>;
     drone_energy: Observable<Number>;
     drones: ObservableArray<number>;
-    games: ObservableArray<string>;
+    games: ObservableArray<SerialGameState>;
     board: BoardManager
     game: GameState;
 
@@ -79,7 +80,7 @@ class ViewModel
         let games: string[] = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
         if(games)
         {
-            let new_games: string[] = [];
+            let new_games: SerialGameState[] = [];
             for(var i = 0; i < games.length; ++i)
             {
                 new_games.push(JSON.parse(games[i]));

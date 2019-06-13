@@ -4,7 +4,10 @@
     "typescript.format.placeOpenBraceOnNewLineForFunctions": true,
     "typescript.referencesCodeLens.enabled": true,
     "files.exclude": {
+        "**/.vscode": true,
         "**/*.bat": true,
+        "**/build": true,
+        "**/node_modules": true,
         "**/package-lock.json": true,
         "**/package.json": true
     }

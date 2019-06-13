@@ -232,7 +232,7 @@ body * {
 }
 .panel button.dropdown::before {
   position: relative;
-  background: url(arrow.png);
+  background: url(images/arrow.png);
   background-size: 1em 1em;
   background-position: 0.5em;
   background-repeat: no-repeat;

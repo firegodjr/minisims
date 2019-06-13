@@ -3,6 +3,9 @@ import { AddItemEvent, ChangeEnergyEvent } from "./event/events.js";
 import { GameState } from "./game/game.js";
 import { Job } from "./game/jobs.js";
 
+/**
+ * An item/count pair for storing items in inventory
+ */
 class InventoryPair
 {
     m_item: number;
@@ -14,6 +17,9 @@ class InventoryPair
     }
 }
 
+/**
+ * A grid-based entity that uses goals to remedy deficits.
+ */
 class Drone
 {
     m_index: number;
@@ -81,16 +87,33 @@ class Dronef
         return Deficits.NONE;
     }
 
+    /**
+     * Checks a drone for an energy deficit
+     * @param drone 
+     * @param threshold 
+     */
     has_energy_deficit(drone: Drone, threshold: number)
     {
-        return drone.m_energy <= drone.m_energy_threshold;
+        return drone.m_energy <= threshold;
     }
 
+    /**
+     * Checks a drone for a crop deficit
+     * @param drone 
+     * @param threshold 
+     */
     has_crop_deficit(drone: Drone, threshold: number)
     {
         return drone.m_inventory
     }
 
+    /**
+     * Sets a drone's goal based on its deficit
+     * @param drone 
+     * @param game 
+     * @param deficit 
+     * @param change_event 
+     */
     set_goal_from_deficit(drone: Drone, game: GameState, deficit: Deficits, change_event: any)
     {
         let initial_goal = drone.m_goal;
@@ -109,6 +132,11 @@ class Dronef
         }
     }
 
+    /**
+     * Gets the index of this drone in the GameState
+     * @param drone 
+     * @param game 
+     */
     to_index(drone: Drone, game: GameState)
     {
         let comp = function(val: Drone)
@@ -132,6 +160,12 @@ class Dronef
         return found_inv_pair;
     }
 
+    /**
+     * Adds or subtracts n items to/from a drone's inventory
+     * @param drone 
+     * @param item 
+     * @param count 
+     */
     add_item(drone: Drone, item: Items, count = 1)
     {
         let index = this.find_in_inventory(drone, item);
@@ -157,12 +191,23 @@ class Dronef
         document.dispatchEvent(AddItemEvent(drone.m_index, item, count));
     }
 
+    /**
+     * Applies a positive or negative change to a drone's energy count
+     * @param drone 
+     * @param change 
+     */
     change_energy(drone: Drone, change: number)
     {
         drone.m_energy += change;
         document.dispatchEvent(ChangeEnergyEvent(drone.m_index, change));
     }
 
+    /**
+     * Moves a drone n units in the x and y directions
+     * @param drone 
+     * @param moveX 
+     * @param moveY 
+     */
     move(drone: Drone, moveX: number, moveY: number)
     {
         drone.m_pos_x += moveX;
