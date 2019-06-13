@@ -37,3 +37,5 @@ Tasks:
 				table.ts
 				network.ts
 				game.ts
+	2. Fix drone selection from loaded game
+	3. Fix deleting loaded games
