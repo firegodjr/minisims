@@ -1,10 +1,11 @@
 {
-    "easycompile.typescript":
-    {
-        "outfile": "build/compiled.js"
-    },
     "javascript.suggest.autoImports": false,
     "typescript.format.placeOpenBraceOnNewLineForControlBlocks": true,
     "typescript.format.placeOpenBraceOnNewLineForFunctions": true,
-    "typescript.referencesCodeLens.enabled": true
+    "typescript.referencesCodeLens.enabled": true,
+    "files.exclude": {
+        "**/*.bat": true,
+        "**/package-lock.json": true,
+        "**/package.json": true
+    }
 }
