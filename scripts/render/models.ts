@@ -54,7 +54,7 @@ class ModelStore
                 {
                     console.log("Loaded model " + man.paths[i]);
                     let zdog_model = json_to_zdog(model);
-                    this.models.set(model.name, json_to_zdog(zdog_model));
+                    this.models.set(model.name, zdog_model);
                     return zdog_model;
                 }.bind(this)));
             }
@@ -93,6 +93,11 @@ function anchor_from_key(key: string, params: Object)
     return anchor;
 }
 
+function attrib_is_anchor(attrib: any, key: string)
+{
+    return typeof attrib === "object" && key != "translate" && key != "rotate" && key != "scale";
+}
+
 /**
  * Recursively converts a parsed JSONModel into properly instantiated Zdog classes
  * @param obj Parsed JSONModel
@@ -105,7 +110,7 @@ function json_to_zdog(obj: JSONModel, root_key: string = "Group")
 
     Object.keys(obj).forEach(key => 
     {
-        if(typeof obj[key] === "object" && key != "translate" && key != "rotate" && key != "scale")
+        if(attrib_is_anchor(obj[key], key))
         {
             children.push(json_to_zdog(obj[key], key));
         }
@@ -117,8 +122,9 @@ function json_to_zdog(obj: JSONModel, root_key: string = "Group")
 
     if(Object.keys(params).includes("type"))
     {
-        root_key = params["type"];
+        root_key = params.type;
     }
+
     let anchor = anchor_from_key(root_key, params);
     children.forEach((child: any) => anchor.addChild(child));
 
