@@ -72,7 +72,7 @@
                     <li>
                         <button data-bind="click: () => $parent.loadGame($index())">
                                 <span data-bind="text: 'Game ' + $data.m_name"></span>
-                                <button data-bind="click: () => $parent.deleteGame($index())">X</button>
+                                <button data-bind="click: () => $parent.deleteGame($data.m_name)">X</button>
                         </button>
                     </li>
                 </ul>

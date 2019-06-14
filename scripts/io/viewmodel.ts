@@ -106,14 +106,36 @@ class ViewModel
         this.games.push(parse_JSON_as<SerialGameState>(this.game.serialize()));
     }
 
-    deleteGame(index: number)
+    deleteGame(name: string)
     {
         let games: string[] = parse_JSON_as<string[]>(localStorage.getItem(LOCAL_STORAGE_KEY));
+        let loaded_games: SerialGameState[] = this.games();
 
         if(games)
         {
-            games.splice(index);
-            this.games.splice(index);
+            // Delete game from localstorage
+            for(var i = 0; i < games.length; ++i)
+            {
+                let game_state = parse_JSON_as<SerialGameState>(games[i]);
+                if(game_state.m_name == name)
+                {
+                    games.splice(i, 1);
+                    break;
+                }
+            }
+
+            // Delete game from loaded games
+            for(var i = 0; i < loaded_games.length; ++i)
+            {
+                let game_state = loaded_games[i];
+                if(game_state.m_name == name)
+                {
+                    loaded_games.splice(i, 1);
+                    this.games(loaded_games);
+                    break;
+                }
+            }
+            
             localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(games));
         }
     }
