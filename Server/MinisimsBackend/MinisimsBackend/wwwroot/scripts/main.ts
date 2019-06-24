@@ -11,6 +11,7 @@ import { ViewModel } from "./io/viewmodel.js";
 import { log, init_log } from "./io/output.js";
 import { ModelStore } from "./render/models.js";
 import { get_element } from "./util/docutil.js";
+import { request_from_server } from "./network/network.js";
 declare var ko: KnockoutStatic;
 
 (function(window: Window){
@@ -67,15 +68,19 @@ declare var ko: KnockoutStatic;
 
         viewport.addEventListener("mousewheel", mousewheel_handler);
         viewport.addEventListener("DOMMouseScroll", mousewheel_handler);
-        viewport.addEventListener("keydown", function(e: KeyboardEvent)
+        document.addEventListener("keydown", function(e: KeyboardEvent)
         {
+            // DEBUG //
+            let xhrequest = request_from_server();
+            xhrequest.then((obj) => { console.log(JSON.parse(JSON.parse(obj.responseText)[0])) });
+
             game.m_input_mgr.m_keystates.set(e.keyCode, true)
             if(e.shiftKey)
             {
                 game.m_input_mgr.m_keystates.set("SHIFT", true);
             }
         });
-        viewport.addEventListener("keyup", function(e)
+        document.addEventListener("keyup", function(e)
         {
             game.m_input_mgr.m_keystates.set(e.keyCode, false);
             if(e.shiftKey)
@@ -102,26 +107,26 @@ declare var ko: KnockoutStatic;
             }
         });
 
-        var console = document.getElementById("console");
+        var console_area = document.getElementById("console");
 
-        console.addEventListener(Events.ADD_ITEM, function(e: CustomEvent)
+        console_area.addEventListener(Events.ADD_ITEM, function(e: CustomEvent)
         {
             log("Drone " + e.detail.drone + (e.detail.count > 0 ? " gets " : " loses ") + Math.abs(e.detail.count) + " " + ItemStrings[e.detail.item] + ".");
             // update viewmodel
             viewmodel.drone.valueHasMutated();
         });
 
-        console.addEventListener(Events.CHANGE_GOAL, function(e: CustomEvent)
+        console_area.addEventListener(Events.CHANGE_GOAL, function(e: CustomEvent)
         {
             log("Drone " + e.detail.drone + " wants to " + GoalStrings[e.detail.goal] + ".");
         });
 
-        console.addEventListener(Events.CHANGE_ENERGY, function(e: CustomEvent)
+        console_area.addEventListener(Events.CHANGE_ENERGY, function(e: CustomEvent)
         {
             viewmodel.drone.valueHasMutated();
         });
 
-        console.addEventListener(Events.CHANGE_SELECTED, function(e: CustomEvent)
+        console_area.addEventListener(Events.CHANGE_SELECTED, function(e: CustomEvent)
         {
             board.selectTile(game.m_drones[e.detail.drone].m_pos_x, game.m_drones[e.detail.drone].m_pos_y);
         });

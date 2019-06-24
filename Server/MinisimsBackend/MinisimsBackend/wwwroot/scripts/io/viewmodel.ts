@@ -3,11 +3,12 @@ import { Items } from "../constants.js";
 import { DroneHelper, InventoryPair } from "../drone.js";
 import { ChangeSelectedEvent } from '../event/events.js';
 import { GameState, SerialGameState, do_tick } from "../game/game.js";
-import { load_text, load_json, Manifest } from "../network.js";
+import { load_text, load_json, Manifest, post_to_server, DTFTypes } from "../network/network.js";
 import { reset_board, BoardManager } from '../render/render.js';
 import copy from '../util/copy.js';
 import { KnockoutStatic } from "../../node_modules/knockout/build/output/knockout-latest.js";
 import { parse_JSON_as } from "../util/jsonutil.js";
+import { PostActions } from '../network/network.js';
 declare var ko: KnockoutStatic;
 
 const GAMES_PATH = "games/";
@@ -66,10 +67,12 @@ class ViewModel
         let game_arr: Promise<SerialGameState>[] = [];
         for(let i = 0; i < man.paths.length; ++i)
         {
-            game_arr.push(load_text(GAMES_PATH + man.paths[i]).then(function(game: string){
+            let game_promise = load_text(GAMES_PATH + man.paths[i]).then(function (game: string) {
                 console.log("Loaded game " + man.paths[i]);
                 return parse_JSON_as<SerialGameState>(game);
-            }.bind(this)));
+            });
+
+            game_arr.push(game_promise);
         }
 
         return await Promise.all(game_arr).then((arr: SerialGameState[]) => { this.games(this.games().concat(arr)) } );
@@ -88,10 +91,16 @@ class ViewModel
 
             this.games(this.games().concat(new_games));
         }
-
     }
 
     saveGame()
+    {
+        this.games.push(parse_JSON_as<SerialGameState>(this.game.serialize()));
+        post_to_server(this.game.serialize(), this.game.m_name, DTFTypes.GAMESTATE, PostActions.SAVE_FILE, [], "application/json; charset=utf-8");
+        console.log("Pushed game to server!");
+    }
+
+    saveGameToLocalStorage()
     {
         let games = parse_JSON_as<string[]>(localStorage.getItem(LOCAL_STORAGE_KEY));
 

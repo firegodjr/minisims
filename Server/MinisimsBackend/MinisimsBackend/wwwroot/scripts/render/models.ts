@@ -1,5 +1,5 @@
 import { Table, make_pair } from "../util/table.js";
-import { load_json } from "../network.js";
+import { load_json } from "../network/network.js";
 import { Zdog } from "../zDog/zdog.js";
 declare var Zdog: Zdog;
 

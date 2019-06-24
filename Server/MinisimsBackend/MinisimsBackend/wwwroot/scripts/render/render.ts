@@ -272,7 +272,7 @@ export function draw_board(game_state: GameState, board_mgr: BoardManager, model
 
             let drone = game.m_drones.find((drone: Drone) => 
             { 
-                if(drone.m_pos_x == pair.x && drone.m_pos_y == pair.y) return drone 
+                return drone.m_pos_x == pair.x && drone.m_pos_y == pair.y
             });
 
             layers.grassArr[pair.x][pair.y] = add_grass(pair.x, pair.y, half_board, layers.tiles, newTile.color, tile.grass_density, tile.grass_height, tile.grass_height_variation, tile.optimize_grass);

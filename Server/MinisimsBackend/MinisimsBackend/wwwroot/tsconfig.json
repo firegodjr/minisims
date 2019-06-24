@@ -12,7 +12,7 @@
         "noImplicitAny": false
     },
     "include": [
-        "./scripts/*"
+        "./scripts/*", "../Game", "../Sync/ServerState.cs", "scripts/network/network.ts"
     ],
     "exclude": []
 }

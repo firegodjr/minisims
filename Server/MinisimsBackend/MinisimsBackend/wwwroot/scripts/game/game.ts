@@ -139,7 +139,7 @@ class TileCreator
 /**
  * The bare essentials required to (de)serialize a GameState object
  */
-interface SerialGameState
+interface GameStateDTF
 {
     m_name: string;
     m_tiles: Array<Array<SerialTile>>;
@@ -175,7 +175,7 @@ class GameState
     m_input_mgr: InputManager;
     m_tile_creator: TileCreator;
 
-    constructor(name: string = "default", obj?: SerialGameState)
+    constructor(name: string = "default", obj?: GameStateDTF)
     {
         this.m_name = name;
         this.m_tiles = [];
@@ -274,7 +274,7 @@ class GameState
             }
         }
 
-        let serial: SerialGameState = 
+        let serial: GameStateDTF = 
         {
             m_name: this.m_name,
             m_tiles: serial_tiles,
@@ -390,4 +390,4 @@ function varied_color(color: IVariedColor)
     return raw_varied_color(color.r, color.g, color.b, color.v);
 }
 
-export { Coords, ICoords, GameState, Tile, TileCreator, do_tick, SerialGameState, SerialTile };
+export { Coords, ICoords, GameState, Tile, TileCreator, do_tick, GameStateDTF as SerialGameState, SerialTile };

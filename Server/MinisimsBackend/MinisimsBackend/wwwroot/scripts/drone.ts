@@ -1,4 +1,4 @@
-import { Deficits, Goals, Items } from "./constants.js";
+import { Deficits, Goals, Items, Jobs } from "./constants.js";
 import { AddItemEvent, ChangeEnergyEvent } from "./event/events.js";
 import { GameState } from "./game/game.js";
 import { Job } from "./game/jobs.js";
@@ -15,6 +15,18 @@ class InventoryPair
         this.m_item = item;
         this.m_count = count;
     }
+}
+
+interface DroneDTF
+{
+    m_index: number;
+    m_pos_x: number;
+    m_pos_y: number;
+    m_energy: number;
+    m_energy_threshold: number; // Inclusive threshold for when this should create a goal
+    m_inventory: Array<InventoryPair>;
+    m_job: Job;
+    m_goal: Goals;
 }
 
 /**
@@ -213,6 +225,19 @@ class Dronef
         drone.m_pos_x += moveX;
         drone.m_pos_y += moveY;
         drone.m_moved = true;
+    }
+
+    serialize(drone: Drone)
+    {
+        let drone_dtf: DroneDTF;
+
+        drone_dtf.m_index = drone.m_index;
+        drone_dtf.m_pos_x = drone.m_pos_x;
+        drone_dtf.m_pos_y = drone.m_pos_y;
+        drone_dtf.m_energy = drone.m_energy;
+        drone_dtf.m_energy_threshold = drone.m_energy_threshold;
+        drone_dtf.m_inventory = drone.m_inventory;
+        drone_dtf.m_goal = drone.m_goal;
     }
 }
 

@@ -4,3 +4,6 @@ build/
 startsite.bat
 test.ts
 style.old.css
+Server/MinisimsBackend/MinisimsBackend/obj/
+Server/MinisimsBackend/MinisimsBackend/bin/
+Server/MinisimsBackend/.vs/

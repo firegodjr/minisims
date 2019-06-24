@@ -1,10 +1,32 @@
-import { parse_JSON_as } from "./util/jsonutil.js";
+import { parse_JSON_as } from "../util/jsonutil.js";
 
 const OBJECTS_PATH = "objects/";
+const API_PATH = "/api/values";
+const SERVER_URL = "";
 
 interface Manifest
 {
     paths: string[];
+}
+
+export enum DTFTypes
+{
+    GAMESTATE
+}
+
+export enum PostActions
+{
+    SAVE_FILE,
+    SEND_TO_CLIENTS
+}
+
+interface GenericDTF
+{
+    id: string,
+    type: DTFTypes,
+    action: PostActions,
+    options: string[],
+    data: string
 }
 
 /**
@@ -71,8 +93,9 @@ async function load_from_manifest<T>(path: string, callback?: ThenFunction<T>, n
  * Borrowed from https://gomakethings.com/promise-based-xhr/
  * @param url 
  * @param method 
+ * @param data data to send if method is "POST"
  */
-function make_request(url: string, method?: string): Promise<XMLHttpRequest>
+function make_request(url: string, method?: string, data?: string, contentType?: string): Promise<XMLHttpRequest>
 {
     let request = new XMLHttpRequest();
     return new Promise((resolve, reject) => 
@@ -96,10 +119,52 @@ function make_request(url: string, method?: string): Promise<XMLHttpRequest>
                 });
             }
         }
-
         request.open(method || "GET", url, true);
-        request.send();
+
+        if(data && !contentType)
+        {
+            contentType = "text/plain";
+        }
+
+        if(contentType)
+        {
+            request.setRequestHeader("Content-Type", contentType);
+        }
+
+        request.send(data);
     });
 }
 
-export { Manifest, load_json, load_text };
+function request_update(): Promise<XMLHttpRequest>
+{
+    return make_request(API_PATH, "GET")
+}
+
+function request_from_server(): Promise<XMLHttpRequest>
+{
+    return make_request("/api/values", "GET");
+}
+
+/**
+ * Posts the given string data to the server
+ * @param data data to send
+ * @param id id to use
+ * @param type the type of data being sent
+ * @param action action to perform on post
+ * @param options post action options
+ */
+function post_to_server(data: string, id: string, type: DTFTypes, action: PostActions = PostActions.SAVE_FILE, options?: string[], contentType?: string): void
+{
+    let dtf: GenericDTF = 
+    {
+        id: id,
+        type: type,
+        action: action,
+        options: options,
+        data: data
+    }
+
+    make_request(SERVER_URL + API_PATH, "POST", JSON.stringify(dtf), contentType);
+}
+
+export { Manifest, load_json, load_text, request_from_server, post_to_server };

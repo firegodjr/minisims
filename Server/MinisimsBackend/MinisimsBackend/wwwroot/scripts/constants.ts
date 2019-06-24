@@ -60,6 +60,11 @@ enum Deficits
     ENOUGH_CROP
 }
 
+enum Jobs
+{
+    CIVILIAN
+}
+
 const TILE_DEGRADE_TABLE = new Table([
     { key: Tiles.WHEAT_RIPE, value: Tiles.ORE_RIPE}, 
     { key: Tiles.WHEAT, value: Tiles.ORE }
@@ -70,6 +75,6 @@ const TILE_HARVEST_TABLE = new Table([
     make_pair(Tiles.ORE_RIPE, Items.ORE)
 ])
 
-export { Goals, Tiles, Items, Deficits };
+export { Goals, Tiles, Items, Deficits, Jobs };
 export { GoalStrings, TileStrings, ItemStrings };
 export { TILE_DEGRADE_TABLE, TILE_HARVEST_TABLE };
