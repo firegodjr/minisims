@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using MinisimsBackend.Files;
-using MinisimsBackend.Game;
-using MinisimsBackend.Sync;
+﻿using Microsoft.AspNetCore.Mvc;
+using MinisimsBackend.DI.Abstractions;
 using MinisimsServer.DTF;
 
 namespace MinisimsBackend.Controllers
@@ -15,26 +8,22 @@ namespace MinisimsBackend.Controllers
     [ApiController]
     public class GameSyncController : ControllerBase
     {
-        [HttpGet]
-        public ActionResult<GameState> Get(int id)
+        private IGameSyncHandler _gameSyncHandler;
+        public GameSyncController(IGameSyncHandler _gameSyncHandler)
         {
-            Log.Write("Caught GET request at api/gamesync");
-            if(ServerState.GetID() > id)
-            {
-                //Client needs an update
-            }
+            this._gameSyncHandler = _gameSyncHandler;
+        }
 
-            //TODO return something
-            return null;
+        [HttpGet]
+        public ActionResult<IGameState> Get(int id)
+        {
+            return _gameSyncHandler.Get(id);
         }
 
         [HttpPost]
         public ActionResult<int> Post(TileUpdateDTF[] tileUpdates)
         {
-            Log.Write("Caught POST request at api/gamesync");
-            
-            ServerState.UpdateGameState(tileUpdates);
-            return ServerState.IncrementID();
+            return _gameSyncHandler.Post(tileUpdates);
         }
     }
 }

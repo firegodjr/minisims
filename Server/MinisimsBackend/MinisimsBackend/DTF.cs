@@ -1,4 +1,5 @@
 ﻿using MinisimsBackend.Game;
+using MinisimsBackend.Game.Map;
 using MinisimsBackend.Sync;
 using System;
 using System.Collections.Generic;
@@ -24,9 +25,9 @@ namespace MinisimsServer.DTF
         public int y;
         public int type;
 
-        public Tiles GetTileType()
+        public TileTypes GetTileType()
         {
-            return (Tiles)type;
+            return (TileTypes)type;
         }
 
         public TileUpdate ToTileUpdate()

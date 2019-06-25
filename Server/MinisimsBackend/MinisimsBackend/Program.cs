@@ -8,24 +8,25 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using MinisimsBackend.Files;
+using MinisimsBackend.Util;
 using MinisimsBackend.Game;
+using Autofac;
+using MinisimsBackend.DI;
+using MinisimsBackend.DI.Abstractions;
+using MinisimsBackend.Game.Map;
 
 namespace MinisimsBackend
 {
     public class Program
     {
-        static readonly GameState game;
+        public static IGameState Game;
 
         public static void Main(string[] args)
         {
-            game.GenerateTiles(16, 16);
-
             CreateWebHostBuilder(args)
-                .ConfigureServices(services => services.AddAutofac())
-                .Build()
-                .Run();
+            .ConfigureServices(services => services.AddAutofac())
+            .Build()
+            .Run();
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>

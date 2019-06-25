@@ -9,10 +9,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MinisimsBackend.Controllers;
 using MinisimsBackend.DI;
+using MinisimsBackend.DI.Abstractions;
 using MinisimsBackend.Game;
+using MinisimsBackend.Game.Map;
+using MinisimsBackend.Util;
 
 namespace MinisimsBackend
 {
@@ -31,12 +34,13 @@ namespace MinisimsBackend
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             var containerBuilder = new ContainerBuilder();
-            containerBuilder.RegisterModule(new TileGeneratorModule()
-            {
-                UseNoiseGenerator = false
-            });
-
             containerBuilder.Populate(services);
+            containerBuilder.RegisterType<GameSyncHandler>().As<IGameSyncHandler>().SingleInstance();
+            containerBuilder.RegisterType<Log>().As<ILog>().SingleInstance();
+            containerBuilder.RegisterType<TileMap>().As<ITileMap>();
+            containerBuilder.RegisterType<GameState>().As<IGameState>().SingleInstance();
+            containerBuilder.RegisterType<ServerState>().As<IServerState>().SingleInstance();
+
             var container = containerBuilder.Build();
             return new AutofacServiceProvider(container);
         }

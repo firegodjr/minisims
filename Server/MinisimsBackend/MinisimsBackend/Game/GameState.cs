@@ -1,50 +1,35 @@
-﻿using Autofac;
-using Autofac.Core;
+﻿using MinisimsBackend.DI.Abstractions;
+using MinisimsBackend.Game.Map;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MinisimsBackend.Game
 {
-    public enum Tiles
-    {
-        GRASS,
-        WHEAT,
-        WHEAT_RIPE,
-        STONE,
-        ORE,
-        ORE_RIPE,
-        WATER
-    }
 
-    struct Tile
+    public class GameState : IGameState
     {
-        public Tiles type;
-        public float height;
-    }
+        public ITileMap Tiles { get => _tiles; set => _tiles = value; }
 
-    struct Drone
-    {
-        // TODO
-    }
-
-    public class GameState
-    {
         string name;
-        Tile[][] tiles;
-        Drone[] drones;
+        ITileMap _tiles;
+        IDrone[] drones;
         int selected_drone;
-        ITileGenerator _tileGenerator; // How to inject?
 
-        public void UpdateTile(int x, int y, Tiles type)
+        public GameState(ITileMap _tiles)
         {
-            this.tiles[x][y].type = type;
+            this.name = "default";
+            this._tiles = _tiles;
+
+            _tiles.Init(16, 16, new Tile(TileTypes.GRASS, 0));
         }
 
-        public void GenerateTiles(int width, int height)
+        public void SetTile(int x, int y, TileTypes type)
         {
-            _tileGenerator.GenerateTiles(this, width, height);
+            this._tiles.SetTile(x, y, type);
+        }
+
+        public void SelectDrone(int ID)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using MinisimsBackend.Game;
+using MinisimsBackend.Game.Map;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,9 +11,9 @@ namespace MinisimsBackend.Sync
     {
         public int x;
         public int y;
-        public Tiles type;
+        public TileTypes type;
 
-        public TileUpdate(int x, int y, Tiles type)
+        public TileUpdate(int x, int y, TileTypes type)
         {
             this.x = x;
             this.y = y;

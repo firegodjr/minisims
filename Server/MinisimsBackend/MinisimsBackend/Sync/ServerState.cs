@@ -1,4 +1,6 @@
-﻿using MinisimsBackend.Game;
+﻿using MinisimsBackend.DI.Abstractions;
+using MinisimsBackend.Game;
+using MinisimsBackend.Game.Map;
 using MinisimsBackend.Sync;
 using MinisimsServer.DTF;
 using System;
@@ -8,17 +10,25 @@ using System.Threading.Tasks;
 
 namespace MinisimsBackend
 {
-    public static class ServerState
+    public class ServerState : IServerState
     {
-        static GameState game;
-        static int gameStateID;
+        public int GameStateID { get => gameStateID; }
+        public IGameState GameState { get => _game; }
 
-        public static int GetID()
+        IGameState _game;
+        int gameStateID;
+
+        public ServerState(IGameState _game)
+        {
+            this._game = _game;
+        }
+
+        public int GetID()
         {
             return gameStateID;
         }
 
-        public static int IncrementID()
+        public int IncrementID()
         {
             gameStateID += 1;
             return gameStateID;
@@ -28,23 +38,9 @@ namespace MinisimsBackend
         /// Updates a single tile's type in the GameState
         /// </summary>
         /// <param name="update"></param>
-        static void ApplyTileUpdate(TileUpdateDTF tileUpdate)
+        public void ApplyTileUpdate(TileUpdateDTF tileUpdate)
         {
-            game.UpdateTile(tileUpdate.x, tileUpdate.y, (Tiles)tileUpdate.type);
-        }
-
-        /// <summary>
-        /// Applies tile updates to the GameState
-        /// </summary>
-        /// <param name="tileUpdates"></param>
-        public static void UpdateGameState(params TileUpdateDTF[] tileUpdates)
-        {
-            for(int i = 0; i < tileUpdates.Length; ++i)
-            {
-                ApplyTileUpdate(tileUpdates[i]);
-            }
-
-            IncrementID();
+            _game.Tiles.SetTile(tileUpdate.x, tileUpdate.y, (TileTypes)tileUpdate.type);
         }
     }
 }
