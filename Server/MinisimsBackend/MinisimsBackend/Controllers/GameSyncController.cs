@@ -4,35 +4,36 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using MinisimsBackend.Files;
+using MinisimsBackend.Game;
 using MinisimsBackend.Sync;
 using MinisimsServer.DTF;
 
 namespace MinisimsBackend.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/gamesync")]
     [ApiController]
     public class GameSyncController : ControllerBase
     {
-        public ActionResult<IEnumerable<string>> Get(int id)
+        [HttpGet]
+        public ActionResult<GameState> Get(int id)
         {
+            Log.Write("Caught GET request at api/gamesync");
             if(ServerState.GetID() > id)
             {
                 //Client needs an update
             }
 
-            return new string[] {  };
+            //TODO return something
+            return null;
         }
 
-        public int Post(TileUpdateDTF[] tileUpdateDTFArr)
+        [HttpPost]
+        public ActionResult<int> Post(TileUpdateDTF[] tileUpdates)
         {
-            TileUpdate[] updates = new TileUpdate[tileUpdateDTFArr.Length];
-            // Convert to non-DTF type
-            for(int i = 0; i < tileUpdateDTFArr.Length; ++i)
-            {
-                updates[i] = tileUpdateDTFArr[i].ToTileUpdate();
-            }
+            Log.Write("Caught POST request at api/gamesync");
             
-            ServerState.UpdateGameState(updates);
+            ServerState.UpdateGameState(tileUpdates);
             return ServerState.IncrementID();
         }
     }

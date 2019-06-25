@@ -20,9 +20,9 @@ namespace MinisimsServer.DTF
 
     public class TileUpdateDTF
     {
-        int x;
-        int y;
-        int type;
+        public int x;
+        public int y;
+        public int type;
 
         public Tiles GetTileType()
         {
@@ -33,6 +33,16 @@ namespace MinisimsServer.DTF
         {
             return new TileUpdate(x, y, GetTileType());
         }
+
+        public override string ToString()
+        {
+            return $"x: {x}, y: {y}, type: {type}";
+        }
+    }
+
+    public class GameStateDTF
+    {
+
     }
 
     public class GenericDTF

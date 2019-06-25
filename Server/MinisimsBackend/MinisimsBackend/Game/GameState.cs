@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Autofac;
+using Autofac.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -27,19 +29,22 @@ namespace MinisimsBackend.Game
         // TODO
     }
 
-    public struct GameState
+    public class GameState
     {
         string name;
         Tile[][] tiles;
         Drone[] drones;
         int selected_drone;
-        float zoom;
-        float pitch;
-        float rotation;
+        ITileGenerator _tileGenerator; // How to inject?
 
         public void UpdateTile(int x, int y, Tiles type)
         {
             this.tiles[x][y].type = type;
+        }
+
+        public void GenerateTiles(int width, int height)
+        {
+            _tileGenerator.GenerateTiles(this, width, height);
         }
     }
 }

@@ -167,4 +167,4 @@ function post_to_server(data: string, id: string, type: DTFTypes, action: PostAc
     make_request(SERVER_URL + API_PATH, "POST", JSON.stringify(dtf), contentType);
 }
 
-export { Manifest, load_json, load_text, request_from_server, post_to_server };
+export { Manifest, load_json, load_text, make_request, request_from_server, post_to_server };

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MinisimsServer.Objects
 {
-    public class FileMgr
+    public static class FileMgr
     {
         static readonly string OBJ_PATH = "./Files/";
 
@@ -23,6 +23,11 @@ namespace MinisimsServer.Objects
             {
                 objFile.Write(text);
             }
+        }
+
+        public static void AppendFileText(string url, string text)
+        {
+            File.AppendAllText(url, text);
         }
     }
 }

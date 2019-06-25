@@ -5,6 +5,7 @@ import { Tiles, TILE_DEGRADE_TABLE, Goals, Items, TILE_HARVEST_TABLE } from "../
 import { ChangeSelectedEvent, AddDroneEvent, ChangeGoalEvent, TickEvent } from "../event/events.js";
 import { Table } from "../util/table.js";
 import { GenerateTiles } from './tilegenerator.js';
+import { ChangeTileEvent } from '../event/events.js';
 declare var Zdog: any;
 
 /**
@@ -199,6 +200,15 @@ class GameState
             this.m_zoom = obj.m_zoom;
             this.m_selected_drone = obj.m_selected_drone;
         }
+    }
+
+    update_tile(x: number, y: number, type: Tiles)
+    {
+        let old_height = this.m_tiles[x][y].height;
+        this.m_tiles[x][y] = this.m_tile_creator.create(type);
+        this.m_tiles[x][y].height = old_height;
+        this.m_dirty_tiles.push(new Coords(x, y));
+        document.dispatchEvent(ChangeTileEvent(x, y, type));
     }
 
     /**

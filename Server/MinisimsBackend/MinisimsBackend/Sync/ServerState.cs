@@ -1,5 +1,6 @@
 ﻿using MinisimsBackend.Game;
 using MinisimsBackend.Sync;
+using MinisimsServer.DTF;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,16 +28,16 @@ namespace MinisimsBackend
         /// Updates a single tile's type in the GameState
         /// </summary>
         /// <param name="update"></param>
-        static void ApplyTileUpdate(TileUpdate update)
+        static void ApplyTileUpdate(TileUpdateDTF tileUpdate)
         {
-            game.UpdateTile(update.x, update.y, update.type);
+            game.UpdateTile(tileUpdate.x, tileUpdate.y, (Tiles)tileUpdate.type);
         }
 
         /// <summary>
         /// Applies tile updates to the GameState
         /// </summary>
         /// <param name="tileUpdates"></param>
-        public static void UpdateGameState(params TileUpdate[] tileUpdates)
+        public static void UpdateGameState(params TileUpdateDTF[] tileUpdates)
         {
             for(int i = 0; i < tileUpdates.Length; ++i)
             {

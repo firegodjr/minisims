@@ -6,12 +6,14 @@ import { GenerateTiles } from "./game/tilegenerator.js";
 import { draw_board, BoardManager } from "./render/render.js";
 import { InputManager, InputManagerHelper } from "./io/input.js";
 import { KnockoutStatic } from "../node_modules/knockout/build/output/knockout-latest.js";
-import { ItemStrings, GoalStrings } from "./constants.js";
+import { ItemStrings, GoalStrings, Tiles } from "./constants.js";
 import { ViewModel } from "./io/viewmodel.js";
 import { log, init_log } from "./io/output.js";
 import { ModelStore } from "./render/models.js";
 import { get_element } from "./util/docutil.js";
 import { request_from_server } from "./network/network.js";
+import { push_updates } from './network/sync.js';
+import { TileUpdateDTF } from './network/dtf.js';
 declare var ko: KnockoutStatic;
 
 (function(window: Window){
@@ -52,6 +54,12 @@ declare var ko: KnockoutStatic;
         viewport.addEventListener(Events.ON_TICK, function(e)
         {
             game.m_dirty_tiles.push({x: 0, y: 1})
+        });
+
+        viewport.addEventListener(Events.CHANGE_TILE, function(e: CustomEvent)
+        {
+            let tileUpdate = new TileUpdateDTF(e.detail.x, e.detail.y, e.detail.type);
+            push_updates([tileUpdate]);
         });
 
         var mousewheel_handler = function(e: WheelEvent)
@@ -152,7 +160,10 @@ declare var ko: KnockoutStatic;
         GenerateTiles(game, 16, 16);
 
         draw_board(game, board, model_store);
+        //DEBUG
+        game.update_tile(0, 0, Tiles.WATER);
     });
+
 
     var events_to_listen = Events + "load" + "mousewheel" + "DOMMouseScroll";
     epublisher_helper.register_listeners(epublisher);

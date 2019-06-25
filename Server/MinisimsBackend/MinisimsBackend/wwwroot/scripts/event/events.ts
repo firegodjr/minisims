@@ -1,5 +1,5 @@
 import { Drone } from "../drone.js";
-import { Items, Goals } from "../constants.js";
+import { Items, Goals, Tiles } from "../constants.js";
 import { GameState } from "../game/game.js";
 
 export enum Events
@@ -10,7 +10,8 @@ export enum Events
     CHANGE_ENERGY = "chgenergy",
     CHANGE_SELECTED = "chgselected",
     CHANGE_GOAL = "chggoal",
-    RENDER = "render"
+    RENDER = "render",
+    CHANGE_TILE = "chgtile"
 }
 
 export function AddDroneEvent(pos_x: number, pos_y: number): CustomEvent
@@ -60,4 +61,9 @@ export function RenderEvent(game: GameState, delta: number): CustomEvent
     var self = this;
     self = new CustomEvent(Events.RENDER, {detail: {game: game, delta: delta}});
     return self;
+}
+
+export function ChangeTileEvent(x: number, y: number, type: Tiles)
+{
+    return new CustomEvent(Events.CHANGE_TILE, {detail: {x: x, y: y, type: type}});
 }
