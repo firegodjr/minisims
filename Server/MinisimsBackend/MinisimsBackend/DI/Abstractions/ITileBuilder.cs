@@ -1,4 +1,5 @@
 ﻿using MinisimsBackend.Game;
+using MinisimsBackend.Game.Map;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,6 @@ namespace MinisimsBackend.DI.Abstractions
 {
     public interface ITileGenerator
     {
-        void GenerateTiles(IGameState game, int width, int height);
+        Tile[][] GenerateTiles(int width, int height);
     }
 }

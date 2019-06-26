@@ -6,6 +6,7 @@ import { ChangeSelectedEvent, AddDroneEvent, ChangeGoalEvent, TickEvent } from "
 import { Table } from "../util/table.js";
 import { GenerateTiles } from './tilegenerator.js';
 import { ChangeTileEvent } from '../event/events.js';
+import { GameStateDTF } from "../network/dtf.js";
 declare var Zdog: any;
 
 /**
@@ -138,20 +139,6 @@ class TileCreator
 }
 
 /**
- * The bare essentials required to (de)serialize a GameState object
- */
-interface GameStateDTF
-{
-    m_name: string;
-    m_tiles: Array<Array<SerialTile>>;
-    m_drones: Array<Drone>;
-    m_selected_drone: number;
-    m_zoom: number;
-    m_pitch: number;
-    m_rotation: number;
-}
-
-/**
  * The bare essentials required to (de)serialize a Tile object
  */
 interface SerialTile
@@ -165,10 +152,10 @@ interface SerialTile
  */
 class GameState
 {
-    m_name: string;
+    name: string;
     m_tiles: Array<Array<Tile>>;
-    m_drones: Array<Drone>;
-    m_selected_drone: number;
+    drones: Array<Drone>;
+    selectedDrone: number;
     m_zoom: number;
     m_pitch: number;
     m_rotation: number;
@@ -178,10 +165,10 @@ class GameState
 
     constructor(name: string = "default", obj?: GameStateDTF)
     {
-        this.m_name = name;
+        this.name = name;
         this.m_tiles = [];
-        this.m_drones = [];
-        this.m_selected_drone = 0;
+        this.drones = [];
+        this.selectedDrone = 0;
         this.m_zoom = 1;
         this.m_pitch = -Zdog.TAU / 12;
         this.m_rotation = Zdog.TAU * 7 / 8;
@@ -191,24 +178,38 @@ class GameState
 
         if(obj)
         {
-            GenerateTiles(this, obj.m_tiles.length, obj.m_tiles[0].length, obj.m_tiles);
+            GenerateTiles(this, obj.tiles.length, obj.tiles[0].length, obj.tiles);
 
-            this.m_name = obj.m_name;
-            this.m_drones = obj.m_drones;
-            this.m_pitch = obj.m_pitch;
-            this.m_rotation = obj.m_rotation;
-            this.m_zoom = obj.m_zoom;
-            this.m_selected_drone = obj.m_selected_drone;
+            this.name = obj.name;
+            this.drones = obj.drones;
+            this.selectedDrone = obj.selectedDrone;
         }
+    }
+
+    set_tile(x: number, y: number, type: Tiles)
+    {
+        let old_height = 0;
+        if(this.m_tiles.length > 0)
+        {
+            old_height = this.m_tiles[x][y].height;
+        }
+        this.m_tiles[x][y] = this.m_tile_creator.create(type);
+        this.m_tiles[x][y].height = old_height;
+        this.m_dirty_tiles.push(new Coords(x, y));
+
+        document.dispatchEvent(ChangeTileEvent(x, y, type));
     }
 
     update_tile(x: number, y: number, type: Tiles)
     {
-        let old_height = this.m_tiles[x][y].height;
+        let old_height = 0;
+        if(this.m_tiles.length > 0)
+        {
+            old_height = this.m_tiles[x][y].height;
+        }
         this.m_tiles[x][y] = this.m_tile_creator.create(type);
         this.m_tiles[x][y].height = old_height;
         this.m_dirty_tiles.push(new Coords(x, y));
-        document.dispatchEvent(ChangeTileEvent(x, y, type));
     }
 
     /**
@@ -233,7 +234,7 @@ class GameState
      */
     select_drone(index: number)
     {
-        this.m_selected_drone = index;
+        this.selectedDrone = index;
         document.dispatchEvent(ChangeSelectedEvent(index));
     }
 
@@ -264,8 +265,8 @@ class GameState
             }
         }
 
-        var drone_index = this.m_drones.length;
-        this.m_drones.push(new Drone(drone_index, pos_x, pos_y, JobCitizen()));
+        var drone_index = this.drones.length;
+        this.drones.push(new Drone(drone_index, pos_x, pos_y, JobCitizen()));
         document.dispatchEvent(AddDroneEvent(pos_x, pos_y));
     }
 
@@ -286,13 +287,10 @@ class GameState
 
         let serial: GameStateDTF = 
         {
-            m_name: this.m_name,
-            m_tiles: serial_tiles,
-            m_drones: this.m_drones,
-            m_pitch: this.m_pitch,
-            m_rotation: this.m_rotation,
-            m_zoom: this.m_zoom,
-            m_selected_drone: this.m_selected_drone
+            name: this.name,
+            tiles: serial_tiles,
+            drones: this.drones,
+            selectedDrone: this.selectedDrone
         };
 
         return JSON.stringify(serial);
@@ -302,17 +300,17 @@ class GameState
      * Parses a stripped-down JSON GameState and loads it into this full GameState object
      * @param serial 
      */
-    deserialize(serial: string)
+    deserialize(parsed: GameStateDTF)
     {
-        let parsed = JSON.parse(serial);
         // Takes care of m_tiles
-        GenerateTiles(this, parsed.m_tiles.length, parsed.m_tiles[0].length, parsed.m_tiles);
+        GenerateTiles(this, parsed.tiles.length, parsed.tiles[0].length, parsed.tiles);
 
-        this.m_drones = parsed.m_drones;
-        this.m_pitch = parsed.m_pitch;
-        this.m_rotation = parsed.m_rotation;
-        this.m_zoom = parsed.m_zoom;
-        this.m_selected_drone = parsed.m_selected_drone;
+        if(parsed.drones)
+        {
+            this.drones = parsed.drones;
+        }
+        
+        this.selectedDrone = parsed.selectedDrone | this.selectedDrone;
     }
 }
 
@@ -323,20 +321,20 @@ class GameState
  */
 function update_ai(game: GameState, drone_helper: DroneHelper)
 {
-    for(var i = 0; i < game.m_drones.length; ++i)
+    for(var i = 0; i < game.drones.length; ++i)
     {
         // If the drone has no goal, we should give him one by checking his deficits
-        if(game.m_drones[i].m_goal == Goals.NONE && game.m_drones[i].m_job)
+        if(game.drones[i].m_goal == Goals.NONE && game.drones[i].m_job)
         {
-            var deficit = drone_helper.get_priority_deficit(game.m_drones[i]);
-            drone_helper.set_goal_from_deficit(game.m_drones[i], game, deficit, ChangeGoalEvent);
+            var deficit = drone_helper.get_priority_deficit(game.drones[i]);
+            drone_helper.set_goal_from_deficit(game.drones[i], game, deficit, ChangeGoalEvent);
         }
 
-        var initial_goal = game.m_drones[i].m_goal;
-        perform_goal(game.m_drones[i], drone_helper, game);
-        if(initial_goal != game.m_drones[i].m_goal)
+        var initial_goal = game.drones[i].m_goal;
+        perform_goal(game.drones[i], drone_helper, game);
+        if(initial_goal != game.drones[i].m_goal)
         {
-            document.dispatchEvent(ChangeGoalEvent(i, game.m_drones[i].m_goal));
+            document.dispatchEvent(ChangeGoalEvent(i, game.drones[i].m_goal));
         }
     }
 }
@@ -361,7 +359,7 @@ function perform_goal(drone: Drone, drone_helper: DroneHelper, game: GameState)
     if(drone.m_goal == Goals.EAT)
     {
         var wheat_index = drone_helper.find_in_inventory(drone, Items.WHEAT);
-        if(drone.m_inventory[wheat_index] && drone.m_inventory[wheat_index].m_count >= DRONE_HUNGER)
+        if(drone.inventory[wheat_index] && drone.inventory[wheat_index].count >= DRONE_HUNGER)
         {
             drone_helper.add_item(drone, Items.WHEAT, -DRONE_HUNGER);
             drone_helper.change_energy(drone, DRONE_ENERGY_RECOVER);

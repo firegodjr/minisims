@@ -8,12 +8,12 @@ import { Job } from "./game/jobs.js";
  */
 class InventoryPair
 {
-    m_item: number;
-    m_count: number;
+    item: number;
+    count: number;
     constructor(item: number, count: number)
     {
-        this.m_item = item;
-        this.m_count = count;
+        this.item = item;
+        this.count = count;
     }
 }
 
@@ -37,9 +37,9 @@ class Drone
     m_index: number;
     m_pos_x: number;
     m_pos_y: number;
-    m_energy: number;
+    energy: number;
     m_energy_threshold: number; // Inclusive threshold for when this should create a goal
-    m_inventory: Array<InventoryPair>;
+    inventory: Array<InventoryPair>;
     m_job: Job;
     m_goal: Goals;
     m_moved: boolean;
@@ -49,9 +49,9 @@ class Drone
         this.m_index = index;
         this.m_pos_x = pos_x;
         this.m_pos_y = pos_y;
-        this.m_energy = 100;
+        this.energy = 100;
         this.m_energy_threshold = 30;
-        this.m_inventory = [];
+        this.inventory = [];
         this.m_job = job;
         this.m_goal = Goals.NONE;
     }
@@ -106,7 +106,7 @@ class Dronef
      */
     has_energy_deficit(drone: Drone, threshold: number)
     {
-        return drone.m_energy <= threshold;
+        return drone.energy <= threshold;
     }
 
     /**
@@ -116,7 +116,7 @@ class Dronef
      */
     has_crop_deficit(drone: Drone, threshold: number)
     {
-        return drone.m_inventory
+        return drone.inventory
     }
 
     /**
@@ -156,7 +156,7 @@ class Dronef
             return val == drone;
         }
 
-        return game.m_drones.findIndex(comp);
+        return game.drones.findIndex(comp);
     }
 
     /**
@@ -166,8 +166,8 @@ class Dronef
      */
     find_in_inventory(drone: Drone, item: Items)
     {
-        let found_inv_pair = drone.m_inventory.findIndex(function(inv_pair){
-            return inv_pair.m_item == item;
+        let found_inv_pair = drone.inventory.findIndex(function(inv_pair){
+            return inv_pair.item == item;
         });
         return found_inv_pair;
     }
@@ -186,18 +186,18 @@ class Dronef
             // Don't allow adding negative items
             if(count >= 0)
             {
-                index = drone.m_inventory.length;
-                drone.m_inventory.push(new InventoryPair(item, count));
+                index = drone.inventory.length;
+                drone.inventory.push(new InventoryPair(item, count));
             }
         }
         else
         {
-            drone.m_inventory[index].m_count += count;
+            drone.inventory[index].count += count;
         }
 
-        if(index != -1 && drone.m_inventory[index].m_count == 0)
+        if(index != -1 && drone.inventory[index].count == 0)
         {
-            drone.m_inventory.splice(index, 1);
+            drone.inventory.splice(index, 1);
         }
 
         document.dispatchEvent(AddItemEvent(drone.m_index, item, count));
@@ -210,7 +210,7 @@ class Dronef
      */
     change_energy(drone: Drone, change: number)
     {
-        drone.m_energy += change;
+        drone.energy += change;
         document.dispatchEvent(ChangeEnergyEvent(drone.m_index, change));
     }
 
@@ -234,9 +234,9 @@ class Dronef
         drone_dtf.m_index = drone.m_index;
         drone_dtf.m_pos_x = drone.m_pos_x;
         drone_dtf.m_pos_y = drone.m_pos_y;
-        drone_dtf.m_energy = drone.m_energy;
+        drone_dtf.m_energy = drone.energy;
         drone_dtf.m_energy_threshold = drone.m_energy_threshold;
-        drone_dtf.m_inventory = drone.m_inventory;
+        drone_dtf.m_inventory = drone.inventory;
         drone_dtf.m_goal = drone.m_goal;
     }
 }

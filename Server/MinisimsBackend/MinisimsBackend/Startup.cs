@@ -15,6 +15,7 @@ using MinisimsBackend.DI;
 using MinisimsBackend.DI.Abstractions;
 using MinisimsBackend.Game;
 using MinisimsBackend.Game.Map;
+using MinisimsBackend.Sync;
 using MinisimsBackend.Util;
 
 namespace MinisimsBackend
@@ -35,11 +36,13 @@ namespace MinisimsBackend
 
             var containerBuilder = new ContainerBuilder();
             containerBuilder.Populate(services);
+            containerBuilder.RegisterType<RandomMapGenerator>().As<ITileGenerator>();
             containerBuilder.RegisterType<GameSyncHandler>().As<IGameSyncHandler>().SingleInstance();
             containerBuilder.RegisterType<Log>().As<ILog>().SingleInstance();
             containerBuilder.RegisterType<TileMap>().As<ITileMap>();
             containerBuilder.RegisterType<GameState>().As<IGameState>().SingleInstance();
             containerBuilder.RegisterType<ServerState>().As<IServerState>().SingleInstance();
+            containerBuilder.RegisterType<ServerLog>().As<IServerLog>().SingleInstance();
 
             var container = containerBuilder.Build();
             return new AutofacServiceProvider(container);

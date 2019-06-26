@@ -14,10 +14,22 @@ namespace MinisimsBackend.Controllers
             this._gameSyncHandler = _gameSyncHandler;
         }
 
-        [HttpGet]
-        public ActionResult<IGameState> Get(int id)
+        [HttpGet("id")]
+        public ActionResult<int> GetID()
         {
-            return _gameSyncHandler.Get(id);
+            return _gameSyncHandler.GetID();
+        }
+
+        [HttpGet("state")]
+        public ActionResult<GameStateDTF> GetState()
+        {
+            return _gameSyncHandler.GetState();
+        }
+
+        [HttpGet("updates/{id}")]
+        public ActionResult<TileUpdateDTF[]> GetUpdates(int id)
+        {
+            return _gameSyncHandler.GetUpdates(id);
         }
 
         [HttpPost]

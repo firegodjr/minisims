@@ -1,4 +1,7 @@
 import { parse_JSON_as } from "../util/jsonutil.js";
+import { GameState, SerialGameState as GameStateDTF } from "../game/game.js";
+import { BoardManager, reset_board } from "../render/render.js";
+import { TileUpdateDTF } from './dtf';
 
 const OBJECTS_PATH = "objects/";
 const API_PATH = "/api/values";
@@ -33,9 +36,9 @@ interface GenericDTF
  * Returns a promise for a parsed JSON object, loaded from the provided path
  * @param path 
  */
-function load_json<T>(path: string): Promise<T>
+function loadJson<T>(path: string): Promise<T>
 {
-    let promise = make_request(OBJECTS_PATH + path).then((req: XMLHttpRequest) => 
+    let promise = makeRequest(OBJECTS_PATH + path).then((req: XMLHttpRequest) => 
     {
         return parse_JSON_as<T>(req.responseText);
     });
@@ -49,7 +52,7 @@ function load_json<T>(path: string): Promise<T>
  */
 function load_text(path: string): Promise<string>
 {
-    let promise = make_request(OBJECTS_PATH + path).then((req: XMLHttpRequest) => 
+    let promise = makeRequest(OBJECTS_PATH + path).then((req: XMLHttpRequest) => 
     {
         return req.responseText;
     });
@@ -74,14 +77,14 @@ interface ThenFunction<T>
  */
 async function load_from_manifest<T>(path: string, callback?: ThenFunction<T>, names?: string[])
 {
-    let man = await load_json<Manifest>(path + "manifest.json");
+    let man = await loadJson<Manifest>(path + "manifest.json");
     
     let obj_arr: Promise<T>[] = [];
     for(let i = 0; i < man.paths.length; ++i)
     {
         if((names && names.includes(man.paths[i])) || !names)
         {
-            obj_arr.push(load_json(path + man.paths[i]).then(callback? callback : (v: T) => { return v }));
+            obj_arr.push(loadJson(path + man.paths[i]).then(callback? callback : (v: T) => { return v }));
         }
     }
 
@@ -95,7 +98,7 @@ async function load_from_manifest<T>(path: string, callback?: ThenFunction<T>, n
  * @param method 
  * @param data data to send if method is "POST"
  */
-function make_request(url: string, method?: string, data?: string, contentType?: string): Promise<XMLHttpRequest>
+function makeRequest(url: string, method?: string, data?: string, contentType?: string): Promise<XMLHttpRequest>
 {
     let request = new XMLHttpRequest();
     return new Promise((resolve, reject) => 
@@ -135,14 +138,65 @@ function make_request(url: string, method?: string, data?: string, contentType?:
     });
 }
 
-function request_update(): Promise<XMLHttpRequest>
+let clientStateID = -1;
+function requestID(): Promise<XMLHttpRequest>
 {
-    return make_request(API_PATH, "GET")
+    return makeRequest("/api/gamesync/id", "GET");
 }
 
-function request_from_server(): Promise<XMLHttpRequest>
+function requestState(): Promise<XMLHttpRequest>
 {
-    return make_request("/api/values", "GET");
+    return makeRequest("/api/gamesync/state", "GET");
+}
+
+function requestUpdates(id: number): Promise<XMLHttpRequest>
+{
+    return makeRequest(`api/gamesync/updates/${id}/`, "GET");
+}
+
+function requestUpdate(game: GameState)
+{
+    requestID().then((req) => {
+        let serverStateID = parseInt(req.responseText);
+        if(serverStateID > clientStateID)
+        {
+            requestUpdates(clientStateID).then((req) => {
+                if(req.responseText && req.responseText != "")
+                {
+                    clientStateID = serverStateID;
+                    let updates = parse_JSON_as<TileUpdateDTF[]>(req.responseText);
+                    for(let i = 0; i < updates.length; ++i)
+                    {
+                        game.update_tile(updates[i].x, updates[i].y, updates[i].type);
+                    }
+                }
+            });
+        }
+    });
+}
+
+function requestFullState(game: GameState) : Promise<void[]>
+{
+    let promises: Array<Promise<void>> = [];
+    promises.push(requestID().then((req) => {
+        clientStateID = parseInt(req.responseText);
+    }));
+    promises.push(requestState().then((req) => {
+        if(req.responseText && req.responseText != "")
+        {
+            let state = parse_JSON_as<GameStateDTF>(req.responseText);
+            game.deserialize(state);
+        }
+    }));
+
+    return Promise.all(promises);
+}
+
+function startRepeatUpdateRequests(game: GameState)
+{
+    setInterval(() => {
+        requestUpdate(game);
+    }, 2000);
 }
 
 /**
@@ -153,7 +207,7 @@ function request_from_server(): Promise<XMLHttpRequest>
  * @param action action to perform on post
  * @param options post action options
  */
-function post_to_server(data: string, id: string, type: DTFTypes, action: PostActions = PostActions.SAVE_FILE, options?: string[], contentType?: string): void
+function postToServer(data: string, id: string, type: DTFTypes, action: PostActions = PostActions.SAVE_FILE, options?: string[], contentType?: string): void
 {
     let dtf: GenericDTF = 
     {
@@ -164,7 +218,7 @@ function post_to_server(data: string, id: string, type: DTFTypes, action: PostAc
         data: data
     }
 
-    make_request(SERVER_URL + API_PATH, "POST", JSON.stringify(dtf), contentType);
+    makeRequest(SERVER_URL + API_PATH, "POST", JSON.stringify(dtf), contentType);
 }
 
-export { Manifest, load_json, load_text, make_request, request_from_server, post_to_server };
+export { Manifest, loadJson, load_text, makeRequest, requestID, postToServer, requestFullState, requestUpdate, startRepeatUpdateRequests };

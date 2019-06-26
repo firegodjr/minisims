@@ -19,6 +19,18 @@ namespace MinisimsServer.DTF
         SEND_TO_CLIENTS
     }
 
+    public class TileDTF
+    {
+        public int type;
+        public float height;
+
+        public TileDTF(int type, float height)
+        {
+            this.type = type;
+            this.height = height;
+        }
+    }
+
     public class TileUpdateDTF
     {
         public int x;
@@ -43,7 +55,14 @@ namespace MinisimsServer.DTF
 
     public class GameStateDTF
     {
+        public string m_name;
+        public TileDTF[][] m_tiles;
+        public int m_selected_drone;
+    }
 
+    public class ClientIDDTF
+    {
+        public int id;
     }
 
     public class GenericDTF

@@ -8,18 +8,21 @@ namespace MinisimsBackend.Game.Map
 {
     public class RandomMapGenerator : ITileGenerator
     {
-        public void GenerateTiles(IGameState game, int width, int height)
+        public Tile[][] GenerateTiles(int width, int height)
         {
-            Random random = new Random();
-            int tileCount = Enum.GetValues(typeof(TileTypes)).Length;
+            Tile[][] tileArray = new Tile[width][];
             for (int x = 0; x < width; ++x)
             {
-                for(int y = 0; y < height; ++y)
+                tileArray[x] = new Tile[height];
+                for (int y = 0; y < height; ++y)
                 {
-                    TileTypes tile = (TileTypes)(random.Next() % tileCount);
-                    game.Tiles.SetTile(x, y, tile);
+                    tileArray[x][y] = new Tile(TileTypes.GRASS, 0.5f);
                 }
             }
+
+            tileArray[5][5] = new Tile(TileTypes.WATER, 0.5f);
+
+            return tileArray;
         }
     }
 }

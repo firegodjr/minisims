@@ -11,6 +11,7 @@ namespace MinisimsBackend.DI.Abstractions
     {
         int GameStateID { get; }
         IGameState GameState { get; }
+        IServerLog ServerLog { get; }
         void ApplyTileUpdate(TileUpdateDTF tileUpdate);
         int IncrementID();
     }

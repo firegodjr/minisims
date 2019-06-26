@@ -1,5 +1,6 @@
 ﻿using MinisimsBackend.DI.Abstractions;
 using MinisimsBackend.Game.Map;
+using MinisimsServer.DTF;
 using System;
 
 namespace MinisimsBackend.Game
@@ -18,8 +19,6 @@ namespace MinisimsBackend.Game
         {
             this.name = "default";
             this._tiles = _tiles;
-
-            _tiles.Init(16, 16, new Tile(TileTypes.GRASS, 0));
         }
 
         public void SetTile(int x, int y, TileTypes type)
@@ -30,6 +29,16 @@ namespace MinisimsBackend.Game
         public void SelectDrone(int ID)
         {
             throw new NotImplementedException();
+        }
+
+        public GameStateDTF AsDTF()
+        {
+            GameStateDTF gameStateDTF = new GameStateDTF();
+            gameStateDTF.m_name = this.name;
+            gameStateDTF.m_tiles = this.Tiles.AsTileDTFArray();
+            gameStateDTF.m_selected_drone = this.selected_drone;
+
+            return gameStateDTF;
         }
     }
 }

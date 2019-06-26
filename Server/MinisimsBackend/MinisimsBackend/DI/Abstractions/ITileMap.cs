@@ -1,5 +1,6 @@
 ﻿using MinisimsBackend.Game;
 using MinisimsBackend.Game.Map;
+using MinisimsServer.DTF;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace MinisimsBackend.DI.Abstractions
 {
     public interface ITileMap
     {
-        void Init(int width, int height, Tile fillTile);
+        void Init(int width, int height, TileTypes fillTile);
         void SetTile(int x, int y, TileTypes type, float height);
         void SetTile(int x, int y, Tile tile);
         /// <summary>
@@ -20,5 +21,6 @@ namespace MinisimsBackend.DI.Abstractions
         /// <param name="type"></param>
         void SetTile(int x, int y, TileTypes type);
         Tile[][] TileArray { get; }
+        TileDTF[][] AsTileDTFArray();
     }
 }

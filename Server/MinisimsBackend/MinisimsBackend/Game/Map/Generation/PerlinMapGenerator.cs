@@ -8,7 +8,7 @@ namespace MinisimsBackend.Game.Map
 {
     public class PerlinMapGenerator : ITileGenerator
     {
-        public void GenerateTiles(IGameState game, int width, int height)
+        public Tile[][] GenerateTiles(int width, int height)
         {
             throw new NotImplementedException();
         }

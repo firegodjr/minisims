@@ -1,5 +1,5 @@
 import { Table, make_pair } from "../util/table.js";
-import { load_json } from "../network/network.js";
+import { loadJson } from "../network/network.js";
 import { Zdog } from "../zDog/zdog.js";
 declare var Zdog: Zdog;
 
@@ -43,14 +43,14 @@ class ModelStore
      */
     async load_models(names?: string[])
     {
-        let man = await load_json(MANIFEST_PATH) as ModelManifest;
+        let man = await loadJson(MANIFEST_PATH) as ModelManifest;
         
         let model_arr: Promise<JSONModel>[] = [];
         for(let i = 0; i < man.paths.length; ++i)
         {
             if((names && names.includes(man.paths[i])) || !names)
             {
-                model_arr.push(load_json(MODELS_PATH + man.paths[i]).then(function(model: JSONModel)
+                model_arr.push(loadJson(MODELS_PATH + man.paths[i]).then(function(model: JSONModel)
                 {
                     console.log("Loaded model " + man.paths[i]);
                     let zdog_model = json_to_zdog(model);

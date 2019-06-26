@@ -226,11 +226,11 @@ export function draw_board(game_state: GameState, board_mgr: BoardManager, model
 
         // Update drones
         var refreshed = false;
-        while(droneArr.length < game.m_drones.length)
+        while(droneArr.length < game.drones.length)
         {
             let new_index = droneArr.length;
-            let new_x = game.m_drones[new_index].m_pos_x;
-            let new_y = game.m_drones[new_index].m_pos_y;
+            let new_x = game.drones[new_index].m_pos_x;
+            let new_y = game.drones[new_index].m_pos_y;
             let new_drone = model_store.get("drone", { translate: { x: new_x, y: new_y}, addTo: layers.grassArr[new_x][new_y]});
             new_drone.translate = {x: TILE_SIZE / 2, z: TILE_SIZE / 2}
             droneArr.push(new_drone);
@@ -238,13 +238,13 @@ export function draw_board(game_state: GameState, board_mgr: BoardManager, model
             refreshed = true;
         }
 
-        for(var i = 0; i < game.m_drones.length; ++i)
+        for(var i = 0; i < game.drones.length; ++i)
         {
-            if(game.m_drones[i].m_moved)
+            if(game.drones[i].m_moved)
             {
                 droneArr[i].remove(); 
-                var x = game.m_drones[i].m_pos_x;
-                var y = game.m_drones[i].m_pos_y;
+                var x = game.drones[i].m_pos_x;
+                var y = game.drones[i].m_pos_y;
     
                 layers.grassArr[x][y].addChild(droneArr[i]);
                 layers.grassArr[x][y].updateGraph();
@@ -270,7 +270,7 @@ export function draw_board(game_state: GameState, board_mgr: BoardManager, model
             let newTile = create_tile_from_object(tile, pair.x, pair.y, half_board, layers.tiles);
             layers.tileArr[pair.x][pair.y] = newTile;
 
-            let drone = game.m_drones.find((drone: Drone) => 
+            let drone = game.drones.find((drone: Drone) => 
             { 
                 return drone.m_pos_x == pair.x && drone.m_pos_y == pair.y
             });

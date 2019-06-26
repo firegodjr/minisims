@@ -1,4 +1,5 @@
 ﻿using MinisimsBackend.DI.Abstractions;
+using MinisimsServer.DTF;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,11 @@ namespace MinisimsBackend.Game.Map
         {
             TileType = tileType;
             Height = height;
+        }
+
+        public TileDTF AsDTF()
+        {
+            return new TileDTF((int)TileType, Height);
         }
     }
 }

@@ -11,9 +11,10 @@ import { ViewModel } from "./io/viewmodel.js";
 import { log, init_log } from "./io/output.js";
 import { ModelStore } from "./render/models.js";
 import { get_element } from "./util/docutil.js";
-import { request_from_server } from "./network/network.js";
+import { requestUpdate, startRepeatUpdateRequests, requestFullState } from "./network/network.js";
 import { push_updates } from './network/sync.js';
 import { TileUpdateDTF } from './network/dtf.js';
+import { reset_board } from './render/render.js';
 declare var ko: KnockoutStatic;
 
 (function(window: Window){
@@ -78,15 +79,17 @@ declare var ko: KnockoutStatic;
         viewport.addEventListener("DOMMouseScroll", mousewheel_handler);
         document.addEventListener("keydown", function(e: KeyboardEvent)
         {
-            // DEBUG //
-            let xhrequest = request_from_server();
-            xhrequest.then((obj) => { console.log(JSON.parse(JSON.parse(obj.responseText)[0])) });
-
             game.m_input_mgr.m_keystates.set(e.keyCode, true)
             if(e.shiftKey)
             {
                 game.m_input_mgr.m_keystates.set("SHIFT", true);
             }
+
+            //DEBUG
+            let x = Math.floor(Math.random() * 16)
+            let y = Math.floor(Math.random() * 16)
+            console.log(`x: ${x}, y: ${y}`);
+            game.set_tile(x, y, Tiles.STONE);
         });
         document.addEventListener("keyup", function(e)
         {
@@ -99,18 +102,18 @@ declare var ko: KnockoutStatic;
 
         get_element(document, "inventory-pane").addEventListener(Events.ADD_ITEM, function(e: CustomEvent)
         {
-            let target_element = e.target as HTMLElement;
+            let targetElement = e.target as HTMLElement;
             // If the selected drone just got an item, update the ui
-            if(e.detail.drone === game.m_selected_drone)
+            if(e.detail.drone === game.selectedDrone)
             {
                 // clear the inventory pane
-                target_element.innerHTML = "";
-                for(var i = 0; i < game.m_drones[game.m_selected_drone].m_inventory.length; ++i)
+                targetElement.innerHTML = "";
+                for(var i = 0; i < game.drones[game.selectedDrone].inventory.length; ++i)
                 {
-                    var new_element = document.createElement("div");
-                    var inv_pair = game.m_drones[game.m_selected_drone].m_inventory[i];
-                    new_element.innerHTML = inv_pair.m_item + ": " + inv_pair.m_count;
-                    target_element.appendChild(new_element);
+                    var newElement = document.createElement("div");
+                    var invPair = game.drones[game.selectedDrone].inventory[i];
+                    newElement.innerHTML = invPair.item + ": " + invPair.count;
+                    targetElement.appendChild(newElement);
                 }
             }
         });
@@ -136,7 +139,7 @@ declare var ko: KnockoutStatic;
 
         console_area.addEventListener(Events.CHANGE_SELECTED, function(e: CustomEvent)
         {
-            board.selectTile(game.m_drones[e.detail.drone].m_pos_x, game.m_drones[e.detail.drone].m_pos_y);
+            board.selectTile(game.drones[e.detail.drone].m_pos_x, game.drones[e.detail.drone].m_pos_y);
         });
     }
 
@@ -155,13 +158,11 @@ declare var ko: KnockoutStatic;
     viewmodel.selectDrone(0);
     viewmodel.loadGamesFromManifest();
     viewmodel.loadGamesFromLocalStorage();
-    model_store.load_models().then(() => 
-    {
-        GenerateTiles(game, 16, 16);
-
-        draw_board(game, board, model_store);
-        //DEBUG
-        game.update_tile(0, 0, Tiles.WATER);
+    model_store.load_models().then(() => {
+        requestFullState(game).then(() => {
+            startRepeatUpdateRequests(game);
+            draw_board(game, board, model_store);
+        });
     });
 
 
@@ -173,6 +174,4 @@ declare var ko: KnockoutStatic;
 
     ko.applyBindings(viewmodel);
     log("Done setting up!");
-
-    console.log(game.serialize());
 })(window);

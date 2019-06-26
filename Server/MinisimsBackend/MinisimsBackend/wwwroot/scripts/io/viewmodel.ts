@@ -3,7 +3,7 @@ import { Items } from "../constants.js";
 import { DroneHelper, InventoryPair } from "../drone.js";
 import { ChangeSelectedEvent } from '../event/events.js';
 import { GameState, SerialGameState, do_tick } from "../game/game.js";
-import { load_text, load_json, Manifest, post_to_server, DTFTypes } from "../network/network.js";
+import { loadJson, load_text, Manifest, postToServer, DTFTypes } from "../network/network.js";
 import { reset_board, BoardManager } from '../render/render.js';
 import copy from '../util/copy.js';
 import { KnockoutStatic } from "../../node_modules/knockout/build/output/knockout-latest.js";
@@ -17,11 +17,11 @@ const LOCAL_STORAGE_KEY = "minisims_games";
 
 class ViewModel
 {
-    drone_helper: DroneHelper;
+    droneHelper: DroneHelper;
     drone: Observable<number>;
-    drone_name: Observable<String>;
-    drone_inventory: ObservableArray<Observable<InventoryPair>>;
-    drone_energy: Observable<Number>;
+    droneName: Observable<String>;
+    droneInventory: ObservableArray<Observable<InventoryPair>>;
+    droneEnergy: Observable<Number>;
     drones: ObservableArray<number>;
     games: ObservableArray<SerialGameState>;
     board: BoardManager
@@ -29,11 +29,11 @@ class ViewModel
 
     constructor(game: GameState, board: BoardManager)
     {
-        this.drone_helper = new DroneHelper();
+        this.droneHelper = new DroneHelper();
         this.drone = ko.observable(0);
-        this.drone_name = ko.observable("Drone #");
-        this.drone_inventory = ko.observableArray<Observable<InventoryPair>>();
-        this.drone_energy = ko.observable(0);
+        this.droneName = ko.observable("Drone #");
+        this.droneInventory = ko.observableArray<Observable<InventoryPair>>();
+        this.droneEnergy = ko.observable(0);
         this.drones = ko.observableArray(); 
         this.games = ko.observableArray([]);
         this.board = board;
@@ -44,25 +44,25 @@ class ViewModel
 
     private updateDroneData()
     {
-        this.drone_name("Drone " + this.drone());
+        this.droneName("Drone " + this.drone());
 
-        this.drone_inventory.removeAll();
-        for(var i = 0; i < this.game.m_drones[this.drone()].m_inventory.length; ++i)
+        this.droneInventory.removeAll();
+        for(var i = 0; i < this.game.drones[this.drone()].inventory.length; ++i)
         {
-            this.drone_inventory.push(ko.observable(this.game.m_drones[this.drone()].m_inventory[i]))
+            this.droneInventory.push(ko.observable(this.game.drones[this.drone()].inventory[i]))
         }
 
-        this.drone_energy(this.game.m_drones[this.drone()].m_energy);
+        this.droneEnergy(this.game.drones[this.drone()].energy);
     }
 
     doTick()
     {
-        do_tick(this.game, this.drone_helper);
+        do_tick(this.game, this.droneHelper);
     }
 
     async loadGamesFromManifest()
     {
-        let man = await load_json<Manifest>(GAME_MANIFEST_PATH);
+        let man = await loadJson<Manifest>(GAME_MANIFEST_PATH);
         
         let game_arr: Promise<SerialGameState>[] = [];
         for(let i = 0; i < man.paths.length; ++i)
@@ -96,7 +96,7 @@ class ViewModel
     saveGame()
     {
         this.games.push(parse_JSON_as<SerialGameState>(this.game.serialize()));
-        post_to_server(this.game.serialize(), this.game.m_name, DTFTypes.GAMESTATE, PostActions.SAVE_FILE, [], "application/json; charset=utf-8");
+        postToServer(this.game.serialize(), this.game.name, DTFTypes.GAMESTATE, PostActions.SAVE_FILE, [], "application/json; charset=utf-8");
         console.log("Pushed game to server!");
     }
 
@@ -118,15 +118,15 @@ class ViewModel
     deleteGame(name: string)
     {
         let games: string[] = parse_JSON_as<string[]>(localStorage.getItem(LOCAL_STORAGE_KEY));
-        let loaded_games: SerialGameState[] = this.games();
+        let loadedGames: SerialGameState[] = this.games();
 
         if(games)
         {
             // Delete game from localstorage
             for(var i = 0; i < games.length; ++i)
             {
-                let game_state = parse_JSON_as<SerialGameState>(games[i]);
-                if(game_state.m_name == name)
+                let gameState = parse_JSON_as<SerialGameState>(games[i]);
+                if(gameState.name == name)
                 {
                     games.splice(i, 1);
                     break;
@@ -134,13 +134,13 @@ class ViewModel
             }
 
             // Delete game from loaded games
-            for(var i = 0; i < loaded_games.length; ++i)
+            for(var i = 0; i < loadedGames.length; ++i)
             {
-                let game_state = loaded_games[i];
-                if(game_state.m_name == name)
+                let gameState = loadedGames[i];
+                if(gameState.name == name)
                 {
-                    loaded_games.splice(i, 1);
-                    this.games(loaded_games);
+                    loadedGames.splice(i, 1);
+                    this.games(loadedGames);
                     break;
                 }
             }
@@ -151,7 +151,7 @@ class ViewModel
 
     addItem(item: Items, count: number = 1)
     {
-        this.drone_helper.add_item(this.game.m_drones[this.drone()], item, count);
+        this.droneHelper.add_item(this.game.drones[this.drone()], item, count);
     }
 
     addWheat(count: number = 1)
@@ -166,16 +166,16 @@ class ViewModel
 
     addDrone()
     {
-        var drone_index = this.game.m_drones.length;
+        var droneIndex = this.game.drones.length;
         this.game.add_drone(); //FIXME the drone y coordinate is undefined sometimes, why?
-        this.drones.push(drone_index);
+        this.drones.push(droneIndex);
     }
 
     loadGame(index: number)
     {
-        console.log("Loading game '" + this.games()[index].m_name + "'...");
-        let game_copy = copy(this.games()[index]);
-        this.game = new GameState(game_copy.m_name, game_copy);
+        console.log("Loading game '" + this.games()[index].name + "'...");
+        let gameCopy = copy(this.games()[index]);
+        this.game = new GameState(gameCopy.name, gameCopy);
         this.board.game = this.game;
         reset_board(this.game, this.board)
     }

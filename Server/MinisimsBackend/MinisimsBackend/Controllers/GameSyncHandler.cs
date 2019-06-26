@@ -13,13 +13,19 @@ namespace MinisimsBackend.Controllers
             this._serverState = serverState;
         }
 
-        public ActionResult<IGameState> Get(int clientStateID)
+        public ActionResult<int> GetID()
         {
-            if (_serverState.GameStateID > clientStateID)
-            {
-                return new ActionResult<IGameState>(_serverState.GameState);
-            }
-            else return null;
+            return new ActionResult<int>(_serverState.GameStateID);
+        }
+
+        public ActionResult<GameStateDTF> GetState()
+        {
+            return new ActionResult<GameStateDTF>(_serverState.GameState.AsDTF());
+        }
+
+        public ActionResult<TileUpdateDTF[]> GetUpdates(int id)
+        {
+            return new ActionResult<TileUpdateDTF[]>(_serverState.ServerLog.GetUpdatesInRange(id, _serverState.GameStateID));
         }
 
         public ActionResult<int> Post(TileUpdateDTF[] clientUpdates)
@@ -32,6 +38,7 @@ namespace MinisimsBackend.Controllers
             if(clientUpdates.Length > 0)
             {
                 _serverState.IncrementID();
+                _serverState.ServerLog.LogUpdate(_serverState.GameStateID, clientUpdates);
             }
 
             return _serverState.GameStateID;

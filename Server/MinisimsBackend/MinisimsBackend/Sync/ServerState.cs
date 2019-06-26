@@ -14,13 +14,16 @@ namespace MinisimsBackend
     {
         public int GameStateID { get => gameStateID; }
         public IGameState GameState { get => _game; }
+        public IServerLog ServerLog { get => _serverLog; }
 
         IGameState _game;
-        int gameStateID;
+        IServerLog _serverLog;
+        int gameStateID = 1;
 
-        public ServerState(IGameState _game)
+        public ServerState(IGameState _game, IServerLog _serverLog)
         {
             this._game = _game;
+            this._serverLog = _serverLog;
         }
 
         public int GetID()

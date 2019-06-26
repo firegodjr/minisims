@@ -9,7 +9,9 @@ namespace MinisimsBackend.DI.Abstractions
 {
     public interface IGameSyncHandler
     {
-        ActionResult<IGameState> Get(int id);
+        ActionResult<int> GetID();
+        ActionResult<GameStateDTF> GetState();
+        ActionResult<TileUpdateDTF[]> GetUpdates(int id);
         ActionResult<int> Post(TileUpdateDTF[] tileUpdates);
     }
 }
