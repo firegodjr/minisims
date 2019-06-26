@@ -1,20 +1,20 @@
 import { DroneHelper } from "./drone.js";
 import { EventPublisher, EventPublisherHelper } from './event/eventpublisher.js';
 import { Events, AddDroneEvent, TickEvent, ChangeGoalEvent } from './event/events.js';
-import { GameState, do_tick } from "./game/game.js";
+import { GameState, doTick } from "./game/game.js";
 import { GenerateTiles } from "./game/tilegenerator.js";
-import { draw_board, BoardManager } from "./render/render.js";
+import { drawBoard, BoardManager } from "./render/render.js";
 import { InputManager, InputManagerHelper } from "./io/input.js";
 import { KnockoutStatic } from "../node_modules/knockout/build/output/knockout-latest.js";
-import { ItemStrings, GoalStrings, Tiles } from "./constants.js";
+import { ItemStrings, GoalStrings, TileTypes } from "./constants.js";
 import { ViewModel } from "./io/viewmodel.js";
-import { log, init_log } from "./io/output.js";
+import { log, initLog } from "./io/output.js";
 import { ModelStore } from "./render/models.js";
-import { get_element } from "./util/docutil.js";
+import { getElement } from "./util/docutil.js";
 import { requestUpdate, startRepeatUpdateRequests, requestFullState } from "./network/network.js";
-import { push_updates } from './network/sync.js';
-import { TileUpdateDTF } from './network/dtf.js';
-import { reset_board } from './render/render.js';
+import { pushUpdates } from './network/sync.js';
+import { TileUpdateDTO } from './network/dto.js';
+import { resetBoard } from './render/render.js';
 declare var ko: KnockoutStatic;
 
 (function(window: Window){
@@ -22,24 +22,24 @@ declare var ko: KnockoutStatic;
 
     function click_helper(document: Document, btn_id: string, event: any, args: Array<any> = [])
     {
-        get_element(document, btn_id).addEventListener("click", (e) => 
+        getElement(document, btn_id).addEventListener("click", (e) => 
         {
             document.dispatchEvent(new event(...args));
         });
     }
 
-    function init_event_dispatchers(document: Document, game: GameState)
+    function initEventDispatchers(document: Document, game: GameState)
     {
         click_helper(document, "btn_adddrone", AddDroneEvent, [0, 0]);
         click_helper(document, "btn_dotick", TickEvent);
     }
 
-    function init_event_listeners(document: Document, game: GameState, epublisher: EventPublisher, epublisher_helper: EventPublisherHelper, drone_helper: DroneHelper)
+    function initEventListeners(document: Document, game: GameState, epublisher: EventPublisher, epublisher_helper: EventPublisherHelper, drone_helper: DroneHelper)
     {
         epublisher_helper.subscribe(epublisher, "cvs_viewport");
         epublisher_helper.subscribe(epublisher, "console");
 
-        var viewport = get_element<HTMLCanvasElement>(document, "cvs_viewport");
+        var viewport = getElement<HTMLCanvasElement>(document, "cvs_viewport");
         window.addEventListener("resize", function(e)
         {
             viewport.width = viewport.parentElement.clientWidth;
@@ -54,23 +54,23 @@ declare var ko: KnockoutStatic;
 
         viewport.addEventListener(Events.ON_TICK, function(e)
         {
-            game.m_dirty_tiles.push({x: 0, y: 1})
+            game.dirtyTiles.push({x: 0, y: 1})
         });
 
         viewport.addEventListener(Events.CHANGE_TILE, function(e: CustomEvent)
         {
-            let tileUpdate = new TileUpdateDTF(e.detail.x, e.detail.y, e.detail.type);
-            push_updates([tileUpdate]);
+            let tileUpdate = new TileUpdateDTO(e.detail.x, e.detail.y, e.detail.type);
+            pushUpdates([tileUpdate]);
         });
 
         var mousewheel_handler = function(e: WheelEvent)
         {
             var delta = Math.max(-1, Math.min(1, (e!.deltaY || -e.detail)));
-            var newZoom = game.m_zoom + delta * Math.log10(1 + game.m_zoom);
+            var newZoom = game.zoom + delta * Math.log10(1 + game.zoom);
 
             if(newZoom < 0.25 || !newZoom) newZoom = 0.25;
 
-            game.m_zoom = newZoom;
+            game.zoom = newZoom;
 
             return false;
         }
@@ -79,28 +79,28 @@ declare var ko: KnockoutStatic;
         viewport.addEventListener("DOMMouseScroll", mousewheel_handler);
         document.addEventListener("keydown", function(e: KeyboardEvent)
         {
-            game.m_input_mgr.m_keystates.set(e.keyCode, true)
+            game.inputMgr.keystates.set(e.keyCode, true)
             if(e.shiftKey)
             {
-                game.m_input_mgr.m_keystates.set("SHIFT", true);
+                game.inputMgr.keystates.set("SHIFT", true);
             }
 
             //DEBUG
             let x = Math.floor(Math.random() * 16)
             let y = Math.floor(Math.random() * 16)
             console.log(`x: ${x}, y: ${y}`);
-            game.set_tile(x, y, Tiles.STONE);
+            game.setTile(x, y, TileTypes.STONE);
         });
         document.addEventListener("keyup", function(e)
         {
-            game.m_input_mgr.m_keystates.set(e.keyCode, false);
+            game.inputMgr.keystates.set(e.keyCode, false);
             if(e.shiftKey)
             {
-                game.m_input_mgr.m_keystates.set("SHIFT", false);
+                game.inputMgr.keystates.set("SHIFT", false);
             }
         });
 
-        get_element(document, "inventory-pane").addEventListener(Events.ADD_ITEM, function(e: CustomEvent)
+        getElement(document, "inventory-pane").addEventListener(Events.ADD_ITEM, function(e: CustomEvent)
         {
             let targetElement = e.target as HTMLElement;
             // If the selected drone just got an item, update the ui
@@ -118,59 +118,58 @@ declare var ko: KnockoutStatic;
             }
         });
 
-        var console_area = document.getElementById("console");
+        var consoleArea = document.getElementById("console");
 
-        console_area.addEventListener(Events.ADD_ITEM, function(e: CustomEvent)
+        consoleArea.addEventListener(Events.ADD_ITEM, function(e: CustomEvent)
         {
             log("Drone " + e.detail.drone + (e.detail.count > 0 ? " gets " : " loses ") + Math.abs(e.detail.count) + " " + ItemStrings[e.detail.item] + ".");
             // update viewmodel
             viewmodel.drone.valueHasMutated();
         });
 
-        console_area.addEventListener(Events.CHANGE_GOAL, function(e: CustomEvent)
+        consoleArea.addEventListener(Events.CHANGE_GOAL, function(e: CustomEvent)
         {
             log("Drone " + e.detail.drone + " wants to " + GoalStrings[e.detail.goal] + ".");
         });
 
-        console_area.addEventListener(Events.CHANGE_ENERGY, function(e: CustomEvent)
+        consoleArea.addEventListener(Events.CHANGE_ENERGY, function(e: CustomEvent)
         {
             viewmodel.drone.valueHasMutated();
         });
 
-        console_area.addEventListener(Events.CHANGE_SELECTED, function(e: CustomEvent)
+        consoleArea.addEventListener(Events.CHANGE_SELECTED, function(e: CustomEvent)
         {
-            board.selectTile(game.drones[e.detail.drone].m_pos_x, game.drones[e.detail.drone].m_pos_y);
+            board.selectTile(game.drones[e.detail.drone].posX, game.drones[e.detail.drone].posY);
         });
     }
 
 
     /* Entry point */
-    var drone_helper = new DroneHelper();
-    var epublisher = new EventPublisher();
-    var epublisher_helper = new EventPublisherHelper();
-    var input_mgr = new InputManager();
-    var input_mgr_helper = new InputManagerHelper();
+    var droneHelper = new DroneHelper();
+    var epub = new EventPublisher();
+    var epubHelper = new EventPublisherHelper();
+    var inputMgr = new InputManager();
+    var inputMgrHelper = new InputManagerHelper();
     var game = new GameState();
     var board = new BoardManager(game);
     var viewmodel = new ViewModel(game, board);
-    let model_store = new ModelStore();
+    let modelStore = new ModelStore();
     viewmodel.addDrone();
     viewmodel.selectDrone(0);
     viewmodel.loadGamesFromManifest();
     viewmodel.loadGamesFromLocalStorage();
-    model_store.load_models().then(() => {
+    modelStore.load_models().then(() => {
         requestFullState(game).then(() => {
             startRepeatUpdateRequests(game);
-            draw_board(game, board, model_store);
+            drawBoard(game, board, modelStore);
         });
     });
 
-
-    var events_to_listen = Events + "load" + "mousewheel" + "DOMMouseScroll";
-    epublisher_helper.register_listeners(epublisher);
-    init_event_dispatchers(document, game);
-    init_event_listeners(document, game, epublisher, epublisher_helper, drone_helper);
-    init_log();
+    
+    epubHelper.registerListeners(epub);
+    initEventDispatchers(document, game);
+    initEventListeners(document, game, epub, epubHelper, droneHelper);
+    initLog();
 
     ko.applyBindings(viewmodel);
     log("Done setting up!");

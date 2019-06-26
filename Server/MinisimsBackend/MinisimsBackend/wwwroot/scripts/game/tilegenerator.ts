@@ -1,21 +1,21 @@
-import { Tiles } from "../constants.js";
+import { TileTypes } from "../constants.js";
 import { GameState, Tile, SerialTile } from "../game/game.js";
-import { make_pair, Table } from "../util/table.js";
+import { makePair, Table } from "../util/table.js";
 declare var noise: any;
 
-const TILES = [Tiles.GRASS, Tiles.WATER];
+const TILES = [TileTypes.GRASS, TileTypes.WATER];
 const WATER_LEVEL_RANGES = [
-    { tile: Tiles.ORE_RIPE, min: 0.75 },
-    { tile: Tiles.STONE, min: 0.65 },
-    { tile: Tiles.GRASS, min: 0.35 },
-    { tile: Tiles.WATER, min: 0 }
+    { tile: TileTypes.ORE_RIPE, min: 0.75 },
+    { tile: TileTypes.STONE, min: 0.65 },
+    { tile: TileTypes.GRASS, min: 0.35 },
+    { tile: TileTypes.WATER, min: 0 }
 ]
 
 const WATER_LEVEL_TABLE = new Table([
-    make_pair(Tiles.ORE_RIPE, 0.75),
-    make_pair(Tiles.STONE, 0.65),
-    make_pair(Tiles.GRASS, 0.35),
-    make_pair(Tiles.WATER, 0)
+    makePair(TileTypes.ORE_RIPE, 0.75),
+    makePair(TileTypes.STONE, 0.65),
+    makePair(TileTypes.GRASS, 0.35),
+    makePair(TileTypes.WATER, 0)
 ]);
 
 const WHEAT_MIN = 0.65;
@@ -29,11 +29,11 @@ export function GenerateTiles(game: GameState, width: number, height: number, se
         tiles.push([]);
         for(var j = 0; j < height; ++j)
         {
-            var water_level = (noise.perlin2((i+1) / 8, (j+1) / 8) + 1) / 2;
+            var waterLevel = (noise.perlin2((i+1) / 8, (j+1) / 8) + 1) / 2;
 
             for(var tl = 0; tl < WATER_LEVEL_RANGES.length; ++tl)
             {
-                if(water_level > WATER_LEVEL_RANGES[tl].min)
+                if(waterLevel > WATER_LEVEL_RANGES[tl].min)
                 {
                     let new_tile;
 
@@ -42,7 +42,7 @@ export function GenerateTiles(game: GameState, width: number, height: number, se
                     {
                         let type = serial_tiles[i][j].type;
                         let height = serial_tiles[i][j].height;
-                        new_tile = game.m_tile_creator.create(type);
+                        new_tile = game.tileCreator.create(type);
                         
                         if(WATER_LEVEL_TABLE.get(type))
                         {
@@ -54,15 +54,15 @@ export function GenerateTiles(game: GameState, width: number, height: number, se
                     }
                     else
                     {
-                        new_tile = game.m_tile_creator.create(WATER_LEVEL_RANGES[tl].tile);
+                        new_tile = game.tileCreator.create(WATER_LEVEL_RANGES[tl].tile);
                     
                         //new_tile.color.v = 0;
-                        new_tile.color.r += (water_level - WATER_LEVEL_RANGES[tl].min - 0.5) * 80;
-                        new_tile.color.g += (water_level - WATER_LEVEL_RANGES[tl].min - 0.5) * 80;
-                        new_tile.color.b += (water_level - WATER_LEVEL_RANGES[tl].min - 0.5) * 80;
-                        if(new_tile.type != Tiles.WATER)
+                        new_tile.color.r += (waterLevel - WATER_LEVEL_RANGES[tl].min - 0.5) * 80;
+                        new_tile.color.g += (waterLevel - WATER_LEVEL_RANGES[tl].min - 0.5) * 80;
+                        new_tile.color.b += (waterLevel - WATER_LEVEL_RANGES[tl].min - 0.5) * 80;
+                        if(new_tile.type != TileTypes.WATER)
                         {
-                            new_tile.height = water_level - 0.35;
+                            new_tile.height = waterLevel - 0.35;
                         }
                         else
                         {
@@ -82,10 +82,10 @@ export function GenerateTiles(game: GameState, width: number, height: number, se
 
                 if(crop_noise > WHEAT_MIN)
                 {
-                    if(tiles[i][j].type == Tiles.GRASS)
+                    if(tiles[i][j].type == TileTypes.GRASS)
                     {
                         let height = tiles[i][j].height;
-                        tiles[i][j] = game.m_tile_creator.create(Tiles.WHEAT_RIPE);
+                        tiles[i][j] = game.tileCreator.create(TileTypes.WHEAT_RIPE);
                         tiles[i][j].height = height;
                     }
                 }
@@ -93,5 +93,5 @@ export function GenerateTiles(game: GameState, width: number, height: number, se
         }
     }
 
-    game.m_tiles = tiles;
+    game.tiles = tiles;
 }

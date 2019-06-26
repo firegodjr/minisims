@@ -1,21 +1,21 @@
-import { Tiles } from "../constants.js";
-import { SerialGameState, SerialTile } from "../game/game.js";
+import { TileTypes } from "../constants.js";
+import { GameStateDTO, SerialTile } from "../game/game.js";
 import { Drone } from "../drone.js";
 
-export interface TileUpdateDTF
+export interface TileUpdateDTO
 {
     x: number;
     y: number;
-    type: Tiles;
+    type: TileTypes;
 }
 
-export class TileUpdateDTF
+export class TileUpdateDTO
 {
     x: number;
     y: number;
-    type: Tiles;
+    type: TileTypes;
 
-    constructor(x: number, y: number, type: Tiles)
+    constructor(x: number, y: number, type: TileTypes)
     {
         this.x = x;
         this.y = y;
@@ -26,7 +26,7 @@ export class TileUpdateDTF
 /**
  * The bare essentials required to (de)serialize a GameState object
  */
-export interface GameStateDTF
+export interface GameStateDTO
 {
     name: string;
     tiles: Array<Array<SerialTile>>;

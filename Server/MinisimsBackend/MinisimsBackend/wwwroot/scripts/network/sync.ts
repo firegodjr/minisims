@@ -1,13 +1,11 @@
 import { makeRequest } from "./network.js";
-import { TileUpdateDTF } from './dtf';
+import { TileUpdateDTO } from 'dto.js';
 
 const SYNC_PATH = "api/gamesync/";
 
-let latest_update_ID = -1;
-
-export function push_updates(tileUpdateDTFArr: TileUpdateDTF[])
+export function pushUpdates(tileUpdateDTOArr: TileUpdateDTO[])
 {
-    let data = JSON.stringify(tileUpdateDTFArr);
+    let data = JSON.stringify(tileUpdateDTOArr);
     let req = makeRequest(SYNC_PATH, "POST", data, "application/json");
     // req.then((req) => 
     // { 

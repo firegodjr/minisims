@@ -17,16 +17,16 @@ class InventoryPair
     }
 }
 
-interface DroneDTF
+interface DroneDTO
 {
-    m_index: number;
-    m_pos_x: number;
-    m_pos_y: number;
-    m_energy: number;
-    m_energy_threshold: number; // Inclusive threshold for when this should create a goal
-    m_inventory: Array<InventoryPair>;
-    m_job: Job;
-    m_goal: Goals;
+    index: number;
+    posX: number;
+    posY: number;
+    energy: number;
+    energyThreshold: number; // Inclusive threshold for when this should create a goal
+    inventory: Array<InventoryPair>;
+    job: Job;
+    goal: Goals;
 }
 
 /**
@@ -34,26 +34,26 @@ interface DroneDTF
  */
 class Drone
 {
-    m_index: number;
-    m_pos_x: number;
-    m_pos_y: number;
+    index: number;
+    posX: number;
+    posY: number;
     energy: number;
-    m_energy_threshold: number; // Inclusive threshold for when this should create a goal
+    energyThreshold: number; // Inclusive threshold for when this should create a goal
     inventory: Array<InventoryPair>;
-    m_job: Job;
-    m_goal: Goals;
-    m_moved: boolean;
+    job: Job;
+    goal: Goals;
+    moved: boolean;
 
     constructor(index: number, pos_x: number, pos_y: number, job: Job)
     {
-        this.m_index = index;
-        this.m_pos_x = pos_x;
-        this.m_pos_y = pos_y;
+        this.index = index;
+        this.posX = pos_x;
+        this.posY = pos_y;
         this.energy = 100;
-        this.m_energy_threshold = 30;
+        this.energyThreshold = 30;
         this.inventory = [];
-        this.m_job = job;
-        this.m_goal = Goals.NONE;
+        this.job = job;
+        this.goal = Goals.NONE;
     }
 }
 
@@ -63,32 +63,32 @@ class Dronef
      * Checks the drone for any deficits, and returns the one with highest priority
      */
     get_priority_deficit(drone: Drone){
-        let energy_deficit = this.has_energy_deficit(drone, drone.m_energy_threshold);
-        let crop_deficit = this.has_crop_deficit(drone, drone.m_job.crop_threshold);
+        let energyDeficit = this.hasEnergyDeficit(drone, drone.energyThreshold);
+        let cropDeficit = this.hasCropDeficit(drone, drone.job.cropThreshold);
 
-        if(drone.m_job)
+        if(drone.job)
         {
-            for(let i = 0; i < drone.m_job.deficit_priority.length; ++i)
+            for(let i = 0; i < drone.job.deficitPriority.length; ++i)
             {
-                if(drone.m_job.deficit_priority[i] === Deficits.ENERGY)
+                if(drone.job.deficitPriority[i] === Deficits.ENERGY)
                 {
                     // TODO there has to be a better way
-                    if(energy_deficit)
+                    if(energyDeficit)
                     {
                         return Deficits.ENERGY;
                     }
                 }
-                else if(drone.m_job.deficit_priority[i] === Deficits.LOW_CROP)
+                else if(drone.job.deficitPriority[i] === Deficits.LOW_CROP)
                 {
                     // TODO there has to be a better way
-                    if(crop_deficit)
+                    if(cropDeficit)
                     {
                         return Deficits.LOW_CROP;
                     }
                 }
-                else if(drone.m_job.deficit_priority[i] === Deficits.ENOUGH_CROP)
+                else if(drone.job.deficitPriority[i] === Deficits.ENOUGH_CROP)
                 {
-                    if(!crop_deficit)
+                    if(!cropDeficit)
                     {
                         return Deficits.ENOUGH_CROP;
                     }
@@ -104,7 +104,7 @@ class Dronef
      * @param drone 
      * @param threshold 
      */
-    has_energy_deficit(drone: Drone, threshold: number)
+    hasEnergyDeficit(drone: Drone, threshold: number)
     {
         return drone.energy <= threshold;
     }
@@ -114,7 +114,7 @@ class Dronef
      * @param drone 
      * @param threshold 
      */
-    has_crop_deficit(drone: Drone, threshold: number)
+    hasCropDeficit(drone: Drone, threshold: number)
     {
         return drone.inventory
     }
@@ -124,23 +124,23 @@ class Dronef
      * @param drone 
      * @param game 
      * @param deficit 
-     * @param change_event 
+     * @param changeEvent 
      */
-    set_goal_from_deficit(drone: Drone, game: GameState, deficit: Deficits, change_event: any)
+    setGoalFromDeficit(drone: Drone, game: GameState, deficit: Deficits, changeEvent: any)
     {
-        let initial_goal = drone.m_goal;
+        let initialGoal = drone.goal;
         if(deficit != Deficits.NONE)
         {
-            drone.m_goal = drone.m_job.goal_table.get(deficit);
+            drone.goal = drone.job.goalTable.get(deficit);
         }
         else
         {
-            drone.m_goal = Goals.NONE;
+            drone.goal = Goals.NONE;
         }
 
-        if(drone.m_goal != initial_goal)
+        if(drone.goal != initialGoal)
         {
-            document.dispatchEvent(change_event(this.to_index(drone, game), drone.m_goal));
+            document.dispatchEvent(changeEvent(this.toIndex(drone, game), drone.goal));
         }
     }
 
@@ -149,7 +149,7 @@ class Dronef
      * @param drone 
      * @param game 
      */
-    to_index(drone: Drone, game: GameState)
+    toIndex(drone: Drone, game: GameState)
     {
         let comp = function(val: Drone)
         {
@@ -164,12 +164,12 @@ class Dronef
      * @param item the item to search for
      * @returns index of the item
      */
-    find_in_inventory(drone: Drone, item: Items)
+    findInInventory(drone: Drone, item: Items)
     {
-        let found_inv_pair = drone.inventory.findIndex(function(inv_pair){
-            return inv_pair.item == item;
+        let foundInvPair = drone.inventory.findIndex(function(invPair){
+            return invPair.item == item;
         });
-        return found_inv_pair;
+        return foundInvPair;
     }
 
     /**
@@ -178,9 +178,9 @@ class Dronef
      * @param item 
      * @param count 
      */
-    add_item(drone: Drone, item: Items, count = 1)
+    addItem(drone: Drone, item: Items, count = 1)
     {
-        let index = this.find_in_inventory(drone, item);
+        let index = this.findInInventory(drone, item);
         if(index == -1)
         {
             // Don't allow adding negative items
@@ -200,7 +200,7 @@ class Dronef
             drone.inventory.splice(index, 1);
         }
 
-        document.dispatchEvent(AddItemEvent(drone.m_index, item, count));
+        document.dispatchEvent(AddItemEvent(drone.index, item, count));
     }
 
     /**
@@ -208,10 +208,10 @@ class Dronef
      * @param drone 
      * @param change 
      */
-    change_energy(drone: Drone, change: number)
+    changeEnergy(drone: Drone, change: number)
     {
         drone.energy += change;
-        document.dispatchEvent(ChangeEnergyEvent(drone.m_index, change));
+        document.dispatchEvent(ChangeEnergyEvent(drone.index, change));
     }
 
     /**
@@ -222,22 +222,22 @@ class Dronef
      */
     move(drone: Drone, moveX: number, moveY: number)
     {
-        drone.m_pos_x += moveX;
-        drone.m_pos_y += moveY;
-        drone.m_moved = true;
+        drone.posX += moveX;
+        drone.posY += moveY;
+        drone.moved = true;
     }
 
     serialize(drone: Drone)
     {
-        let drone_dtf: DroneDTF;
+        let droneDTO: DroneDTO;
 
-        drone_dtf.m_index = drone.m_index;
-        drone_dtf.m_pos_x = drone.m_pos_x;
-        drone_dtf.m_pos_y = drone.m_pos_y;
-        drone_dtf.m_energy = drone.energy;
-        drone_dtf.m_energy_threshold = drone.m_energy_threshold;
-        drone_dtf.m_inventory = drone.inventory;
-        drone_dtf.m_goal = drone.m_goal;
+        droneDTO.index = drone.index;
+        droneDTO.posX = drone.posX;
+        droneDTO.posY = drone.posY;
+        droneDTO.energy = drone.energy;
+        droneDTO.energyThreshold = drone.energyThreshold;
+        droneDTO.inventory = drone.inventory;
+        droneDTO.goal = drone.goal;
     }
 }
 

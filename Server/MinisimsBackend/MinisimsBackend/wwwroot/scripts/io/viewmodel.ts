@@ -2,12 +2,12 @@ import { Observable, ObservableArray } from "../knockout.js";
 import { Items } from "../constants.js";
 import { DroneHelper, InventoryPair } from "../drone.js";
 import { ChangeSelectedEvent } from '../event/events.js';
-import { GameState, SerialGameState, do_tick } from "../game/game.js";
-import { loadJson, load_text, Manifest, postToServer, DTFTypes } from "../network/network.js";
-import { reset_board, BoardManager } from '../render/render.js';
+import { GameState, GameStateDTO, doTick } from "../game/game.js";
+import { loadJson, loadText, Manifest, postToServer, DTOTypes } from "../network/network.js";
+import { resetBoard, BoardManager } from '../render/render.js';
 import copy from '../util/copy.js';
 import { KnockoutStatic } from "../../node_modules/knockout/build/output/knockout-latest.js";
-import { parse_JSON_as } from "../util/jsonutil.js";
+import { parseJsonAs } from "../util/jsonutil.js";
 import { PostActions } from '../network/network.js';
 declare var ko: KnockoutStatic;
 
@@ -23,7 +23,7 @@ class ViewModel
     droneInventory: ObservableArray<Observable<InventoryPair>>;
     droneEnergy: Observable<Number>;
     drones: ObservableArray<number>;
-    games: ObservableArray<SerialGameState>;
+    gameStates: ObservableArray<GameStateDTO>;
     board: BoardManager
     game: GameState;
 
@@ -35,7 +35,7 @@ class ViewModel
         this.droneInventory = ko.observableArray<Observable<InventoryPair>>();
         this.droneEnergy = ko.observable(0);
         this.drones = ko.observableArray(); 
-        this.games = ko.observableArray([]);
+        this.gameStates = ko.observableArray([]);
         this.board = board;
         this.game = game;
 
@@ -57,52 +57,52 @@ class ViewModel
 
     doTick()
     {
-        do_tick(this.game, this.droneHelper);
+        doTick(this.game, this.droneHelper);
     }
 
     async loadGamesFromManifest()
     {
         let man = await loadJson<Manifest>(GAME_MANIFEST_PATH);
         
-        let game_arr: Promise<SerialGameState>[] = [];
+        let gameStates: Promise<GameStateDTO>[] = [];
         for(let i = 0; i < man.paths.length; ++i)
         {
-            let game_promise = load_text(GAMES_PATH + man.paths[i]).then(function (game: string) {
+            let gameStatePromise = loadText(GAMES_PATH + man.paths[i]).then(function (game: string) {
                 console.log("Loaded game " + man.paths[i]);
-                return parse_JSON_as<SerialGameState>(game);
+                return parseJsonAs<GameStateDTO>(game);
             });
 
-            game_arr.push(game_promise);
+            gameStates.push(gameStatePromise);
         }
 
-        return await Promise.all(game_arr).then((arr: SerialGameState[]) => { this.games(this.games().concat(arr)) } );
+        return await Promise.all(gameStates).then((arr: GameStateDTO[]) => { this.gameStates(this.gameStates().concat(arr)) } );
     }
 
     loadGamesFromLocalStorage()
     {
-        let games = parse_JSON_as<string[]>(localStorage.getItem(LOCAL_STORAGE_KEY));
+        let games = parseJsonAs<string[]>(localStorage.getItem(LOCAL_STORAGE_KEY));
         if(games)
         {
-            let new_games: SerialGameState[] = [];
+            let gameState: GameStateDTO[] = [];
             for(var i = 0; i < games.length; ++i)
             {
-                new_games.push(parse_JSON_as<SerialGameState>(games[i]));
+                gameState.push(parseJsonAs<GameStateDTO>(games[i]));
             }
 
-            this.games(this.games().concat(new_games));
+            this.gameStates(this.gameStates().concat(gameState));
         }
     }
 
     saveGame()
     {
-        this.games.push(parse_JSON_as<SerialGameState>(this.game.serialize()));
-        postToServer(this.game.serialize(), this.game.name, DTFTypes.GAMESTATE, PostActions.SAVE_FILE, [], "application/json; charset=utf-8");
+        this.gameStates.push(parseJsonAs<GameStateDTO>(this.game.serialize()));
+        postToServer(this.game.serialize(), this.game.name, DTOTypes.GAMESTATE, PostActions.SAVE_FILE, [], "application/json; charset=utf-8");
         console.log("Pushed game to server!");
     }
 
     saveGameToLocalStorage()
     {
-        let games = parse_JSON_as<string[]>(localStorage.getItem(LOCAL_STORAGE_KEY));
+        let games = parseJsonAs<string[]>(localStorage.getItem(LOCAL_STORAGE_KEY));
 
         if(!games)
         {
@@ -112,20 +112,20 @@ class ViewModel
         games.push(this.game.serialize());
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(games));
 
-        this.games.push(parse_JSON_as<SerialGameState>(this.game.serialize()));
+        this.gameStates.push(parseJsonAs<GameStateDTO>(this.game.serialize()));
     }
 
     deleteGame(name: string)
     {
-        let games: string[] = parse_JSON_as<string[]>(localStorage.getItem(LOCAL_STORAGE_KEY));
-        let loadedGames: SerialGameState[] = this.games();
+        let games: string[] = parseJsonAs<string[]>(localStorage.getItem(LOCAL_STORAGE_KEY));
+        let loadedGames: GameStateDTO[] = this.gameStates();
 
         if(games)
         {
             // Delete game from localstorage
             for(var i = 0; i < games.length; ++i)
             {
-                let gameState = parse_JSON_as<SerialGameState>(games[i]);
+                let gameState = parseJsonAs<GameStateDTO>(games[i]);
                 if(gameState.name == name)
                 {
                     games.splice(i, 1);
@@ -140,7 +140,7 @@ class ViewModel
                 if(gameState.name == name)
                 {
                     loadedGames.splice(i, 1);
-                    this.games(loadedGames);
+                    this.gameStates(loadedGames);
                     break;
                 }
             }
@@ -151,7 +151,7 @@ class ViewModel
 
     addItem(item: Items, count: number = 1)
     {
-        this.droneHelper.add_item(this.game.drones[this.drone()], item, count);
+        this.droneHelper.addItem(this.game.drones[this.drone()], item, count);
     }
 
     addWheat(count: number = 1)
@@ -167,22 +167,22 @@ class ViewModel
     addDrone()
     {
         var droneIndex = this.game.drones.length;
-        this.game.add_drone(); //FIXME the drone y coordinate is undefined sometimes, why?
+        this.game.addDrone(); //FIXME the drone y coordinate is undefined sometimes, why?
         this.drones.push(droneIndex);
     }
 
     loadGame(index: number)
     {
-        console.log("Loading game '" + this.games()[index].name + "'...");
-        let gameCopy = copy(this.games()[index]);
+        console.log("Loading game '" + this.gameStates()[index].name + "'...");
+        let gameCopy = copy(this.gameStates()[index]);
         this.game = new GameState(gameCopy.name, gameCopy);
         this.board.game = this.game;
-        reset_board(this.game, this.board)
+        resetBoard(this.game, this.board)
     }
 
     selectDrone(index: number)
     {
-        this.game.select_drone(index);
+        this.game.selectDrone(index);
         this.drone(index);
         document.dispatchEvent(ChangeSelectedEvent(index));
     }

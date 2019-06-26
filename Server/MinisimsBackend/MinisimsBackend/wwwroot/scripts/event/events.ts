@@ -1,5 +1,5 @@
 import { Drone } from "../drone.js";
-import { Items, Goals, Tiles } from "../constants.js";
+import { Items, Goals, TileTypes } from "../constants.js";
 import { GameState } from "../game/game.js";
 
 export enum Events
@@ -63,7 +63,7 @@ export function RenderEvent(game: GameState, delta: number): CustomEvent
     return self;
 }
 
-export function ChangeTileEvent(x: number, y: number, type: Tiles)
+export function ChangeTileEvent(x: number, y: number, type: TileTypes)
 {
     return new CustomEvent(Events.CHANGE_TILE, {detail: {x: x, y: y, type: type}});
 }

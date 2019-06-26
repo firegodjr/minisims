@@ -1,12 +1,12 @@
 import { Drone, DroneHelper } from "../drone.js";
 import { JobCitizen } from "./jobs.js";
 import { InputManager } from "../io/input.js";
-import { Tiles, TILE_DEGRADE_TABLE, Goals, Items, TILE_HARVEST_TABLE } from "../constants.js";
+import { TileTypes, TILE_DEGRADE_TABLE, Goals, Items, TILE_HARVEST_TABLE } from "../constants.js";
 import { ChangeSelectedEvent, AddDroneEvent, ChangeGoalEvent, TickEvent } from "../event/events.js";
 import { Table } from "../util/table.js";
 import { GenerateTiles } from './tilegenerator.js';
 import { ChangeTileEvent } from '../event/events.js';
-import { GameStateDTF } from "../network/dtf.js";
+import { GameStateDTO } from "../network/dto.js";
 declare var Zdog: any;
 
 /**
@@ -42,46 +42,46 @@ interface IVariedColor
 
 class Tile implements SerialTile
 {
-    type: Tiles;
+    type: TileTypes;
     color: IVariedColor;
-    color_offset: IVariedColor; // Added to color before finalizing
+    colorOffset: IVariedColor; // Added to color before finalizing
     height: number;
-    grass_color: string;
+    grassColor: string;
     stroke: number;
-    grass_density: number;
-    grass_height: number;
-    grass_height_variation: number;
-    optimize_grass: boolean;
+    grassDensity: number;
+    grassHeight: number;
+    grassHeightVariation: number;
+    optimizeGrass: boolean;
 
-    get_color()
+    getColor()
     {
-        if(this.color_offset !== undefined)
+        if(this.colorOffset !== undefined)
         {
-            return varied_color({ 
-                r: this.color.r + this.color_offset.r, 
-                g: this.color.g + this.color_offset.g,
-                b: this.color.b + this.color_offset.b,
-                v: this.color.v + this.color_offset.v
+            return variedColor({ 
+                r: this.color.r + this.colorOffset.r, 
+                g: this.color.g + this.colorOffset.g,
+                b: this.color.b + this.colorOffset.b,
+                v: this.color.v + this.colorOffset.v
             });
         }
         else
         {
-            return varied_color(this.color);
+            return variedColor(this.color);
         }
     }
 
-    constructor(type: Tiles, color: IVariedColor, grass_stroke: number, grass_density: number, grass_height: number, height_variation: number, optimize_grass: boolean, height?: number, color_offset?: IVariedColor, grass_color?: string)
+    constructor(type: TileTypes, color: IVariedColor, grassStroke: number, grassDensity: number, grassHeight: number, grassHeightVariation: number, optimizeGrass: boolean, height?: number, colorOffset?: IVariedColor, grassColor?: string)
     {
         this.type = type;
         this.color = color;
-        this.stroke = grass_stroke;
+        this.stroke = grassStroke;
         this.height = height;
-        this.grass_density = grass_density;
-        this.grass_height = grass_height;
-        this.grass_height_variation = height_variation;
-        this.optimize_grass = optimize_grass;
-        this.color_offset = color_offset;
-        this.grass_color = grass_color;
+        this.grassDensity = grassDensity;
+        this.grassHeight = grassHeight;
+        this.grassHeightVariation = grassHeightVariation;
+        this.optimizeGrass = optimizeGrass;
+        this.colorOffset = colorOffset;
+        this.grassColor = grassColor;
     }
 }
 
@@ -91,48 +91,48 @@ class Tile implements SerialTile
 class TileCreator
 {
     colorTable = new Table([
-        { key: Tiles.GRASS, value: { r: 35, g: 135, b: 43, v: 7 }},
-        { key: Tiles.WHEAT, value: { r: 100, g: 75, b: 45 }},
-        { key: Tiles.WHEAT_RIPE, value: { r: 210, g: 155, b: 94, v: 10 }},
-        { key: Tiles.STONE, value: { r: 150, g: 150, b: 150, v: 5 }},
-        { key: Tiles.ORE, value: { r: 80, g: 80, b: 80, v: 5 }},
-        { key: Tiles.ORE_RIPE, value: { r: 80, g: 80, b: 80, v: 5 }},
-        { key: Tiles.WATER, value: { r: 110, g: 210, b: 190, v: 0 }}
+        { key: TileTypes.GRASS, value: { r: 35, g: 135, b: 43, v: 7 }},
+        { key: TileTypes.WHEAT, value: { r: 100, g: 75, b: 45 }},
+        { key: TileTypes.WHEAT_RIPE, value: { r: 210, g: 155, b: 94, v: 10 }},
+        { key: TileTypes.STONE, value: { r: 150, g: 150, b: 150, v: 5 }},
+        { key: TileTypes.ORE, value: { r: 80, g: 80, b: 80, v: 5 }},
+        { key: TileTypes.ORE_RIPE, value: { r: 80, g: 80, b: 80, v: 5 }},
+        { key: TileTypes.WATER, value: { r: 110, g: 210, b: 190, v: 0 }}
     ]);
 
     densityTable = new Table([
-        { key: Tiles.GRASS, value: 6 },
-        { key: Tiles.WHEAT_RIPE, value: 5 },
-        { key: Tiles.ORE_RIPE, value: 2 },
-        { key: Tiles.WHEAT, value: 0 },
-        { key: Tiles.STONE, value: 0 },
-        { key: Tiles.ORE, value: 0 },
-        { key: Tiles.WATER, value: 0}
+        { key: TileTypes.GRASS, value: 6 },
+        { key: TileTypes.WHEAT_RIPE, value: 5 },
+        { key: TileTypes.ORE_RIPE, value: 2 },
+        { key: TileTypes.WHEAT, value: 0 },
+        { key: TileTypes.STONE, value: 0 },
+        { key: TileTypes.ORE, value: 0 },
+        { key: TileTypes.WATER, value: 0}
     ]);
 
     heightTable = new Table([
-        { key: Tiles.WHEAT_RIPE, value: 20 },
-        { key: Tiles.GRASS, value: 10 }
+        { key: TileTypes.WHEAT_RIPE, value: 20 },
+        { key: TileTypes.GRASS, value: 10 }
     ]);
 
     variationTable = new Table([
-        { key: Tiles.WHEAT_RIPE, value: 0.2 },
-        { key: Tiles.GRASS, value: 1 },
+        { key: TileTypes.WHEAT_RIPE, value: 0.2 },
+        { key: TileTypes.GRASS, value: 1 },
     ]);
 
     grassColorTable = new Table([
-        { key: Tiles.ORE_RIPE, value: "#930" }
+        { key: TileTypes.ORE_RIPE, value: "#930" }
     ]);
 
     optimizeTable = new Table([
-        { key: Tiles.WHEAT_RIPE, value: false }
+        { key: TileTypes.WHEAT_RIPE, value: false }
     ]);
 
     /**
      * Creates a Tile object given a single tile type
      * @param type 
      */
-    create(type: Tiles) : Tile
+    create(type: TileTypes) : Tile
     {   let tile = new Tile(type, Object.assign({}, this.colorTable.get(type)), 4, this.densityTable.get(type), this.heightTable.get(type), this.variationTable.get(type), this.optimizeTable.get(type), 0, undefined, this.grassColorTable.get(type));
         return tile;
     }
@@ -153,28 +153,28 @@ interface SerialTile
 class GameState
 {
     name: string;
-    m_tiles: Array<Array<Tile>>;
+    tiles: Array<Array<Tile>>;
     drones: Array<Drone>;
     selectedDrone: number;
-    m_zoom: number;
-    m_pitch: number;
-    m_rotation: number;
-    m_dirty_tiles: Array<Coords> // coordinates of tiles that need to be refreshed
-    m_input_mgr: InputManager;
-    m_tile_creator: TileCreator;
+    zoom: number;
+    pitch: number;
+    rotation: number;
+    dirtyTiles: Array<Coords> // coordinates of tiles that need to be refreshed
+    inputMgr: InputManager;
+    tileCreator: TileCreator;
 
-    constructor(name: string = "default", obj?: GameStateDTF)
+    constructor(name: string = "default", obj?: GameStateDTO)
     {
         this.name = name;
-        this.m_tiles = [];
+        this.tiles = [];
         this.drones = [];
         this.selectedDrone = 0;
-        this.m_zoom = 1;
-        this.m_pitch = -Zdog.TAU / 12;
-        this.m_rotation = Zdog.TAU * 7 / 8;
-        this.m_dirty_tiles = [];
-        this.m_input_mgr = new InputManager();
-        this.m_tile_creator = new TileCreator();
+        this.zoom = 1;
+        this.pitch = -Zdog.TAU / 12;
+        this.rotation = Zdog.TAU * 7 / 8;
+        this.dirtyTiles = [];
+        this.inputMgr = new InputManager();
+        this.tileCreator = new TileCreator();
 
         if(obj)
         {
@@ -186,30 +186,30 @@ class GameState
         }
     }
 
-    set_tile(x: number, y: number, type: Tiles)
+    setTile(x: number, y: number, type: TileTypes)
     {
-        let old_height = 0;
-        if(this.m_tiles.length > 0)
+        let oldHeight = 0;
+        if(this.tiles.length > 0)
         {
-            old_height = this.m_tiles[x][y].height;
+            oldHeight = this.tiles[x][y].height;
         }
-        this.m_tiles[x][y] = this.m_tile_creator.create(type);
-        this.m_tiles[x][y].height = old_height;
-        this.m_dirty_tiles.push(new Coords(x, y));
+        this.tiles[x][y] = this.tileCreator.create(type);
+        this.tiles[x][y].height = oldHeight;
+        this.dirtyTiles.push(new Coords(x, y));
 
         document.dispatchEvent(ChangeTileEvent(x, y, type));
     }
 
-    update_tile(x: number, y: number, type: Tiles)
+    updateTile(x: number, y: number, type: TileTypes)
     {
-        let old_height = 0;
-        if(this.m_tiles.length > 0)
+        let oldHeight = 0;
+        if(this.tiles.length > 0)
         {
-            old_height = this.m_tiles[x][y].height;
+            oldHeight = this.tiles[x][y].height;
         }
-        this.m_tiles[x][y] = this.m_tile_creator.create(type);
-        this.m_tiles[x][y].height = old_height;
-        this.m_dirty_tiles.push(new Coords(x, y));
+        this.tiles[x][y] = this.tileCreator.create(type);
+        this.tiles[x][y].height = oldHeight;
+        this.dirtyTiles.push(new Coords(x, y));
     }
 
     /**
@@ -217,22 +217,22 @@ class GameState
      * @param x 
      * @param y 
      */
-    harvest(x: number, y: number, harvester?: Drone, drone_helper?: DroneHelper)
+    harvest(x: number, y: number, harvester?: Drone, droneHelper?: DroneHelper)
     {
-        if(harvester && drone_helper)
+        if(harvester && droneHelper)
         {
-            drone_helper.add_item(harvester, TILE_HARVEST_TABLE.get(this.m_tiles[x][y].type));
+            droneHelper.addItem(harvester, TILE_HARVEST_TABLE.get(this.tiles[x][y].type));
         }
 
-        this.m_tiles[x][y] = this.m_tile_creator.create(TILE_DEGRADE_TABLE.get(this.m_tiles[x][y].type));
-        this.m_dirty_tiles.push(new Coords(x, y));
+        this.tiles[x][y] = this.tileCreator.create(TILE_DEGRADE_TABLE.get(this.tiles[x][y].type));
+        this.dirtyTiles.push(new Coords(x, y));
     }
 
     /**
      * Selects the drone at the given index in the game's list of drones
      * @param index 
      */
-    select_drone(index: number)
+    selectDrone(index: number)
     {
         this.selectedDrone = index;
         document.dispatchEvent(ChangeSelectedEvent(index));
@@ -240,34 +240,34 @@ class GameState
 
     /**
      * Adds a drone at the given position
-     * @param pos_x 
-     * @param pos_y 
+     * @param posX 
+     * @param posY 
      */
-    add_drone(pos_x?: number, pos_y?: number)
+    addDrone(posX?: number, posY?: number)
     {
-        if(!pos_x && !pos_y)
+        if(!posX && !posY)
         {
-            if(this.m_tiles && this.m_tiles.length > 0)
+            if(this.tiles && this.tiles.length > 0)
             {
-                pos_x = Math.floor(Math.random() * this.m_tiles.length);
-                pos_y = Math.floor(Math.random() * this.m_tiles[0].length);
+                posX = Math.floor(Math.random() * this.tiles.length);
+                posY = Math.floor(Math.random() * this.tiles[0].length);
                 
-                while(this.m_tiles[pos_x][pos_y].type == Tiles.WATER)
+                while(this.tiles[posX][posY].type == TileTypes.WATER)
                 {
-                    pos_x = Math.floor(Math.random() * this.m_tiles.length);
-                    pos_y = Math.floor(Math.random() * this.m_tiles[0].length);
+                    posX = Math.floor(Math.random() * this.tiles.length);
+                    posY = Math.floor(Math.random() * this.tiles[0].length);
                 }
             }
             else
             {
-                pos_x = 0;
-                pos_y = 0;
+                posX = 0;
+                posY = 0;
             }
         }
 
-        var drone_index = this.drones.length;
-        this.drones.push(new Drone(drone_index, pos_x, pos_y, JobCitizen()));
-        document.dispatchEvent(AddDroneEvent(pos_x, pos_y));
+        var droneIndex = this.drones.length;
+        this.drones.push(new Drone(droneIndex, posX, posY, JobCitizen()));
+        document.dispatchEvent(AddDroneEvent(posX, posY));
     }
 
     /**
@@ -275,20 +275,20 @@ class GameState
      */
     serialize()
     {
-        let serial_tiles = [];
-        for(let i = 0; i < this.m_tiles.length; ++i)
+        let serialTiles = [];
+        for(let i = 0; i < this.tiles.length; ++i)
         {
-            serial_tiles.push([])
-            for(let j = 0; j < this.m_tiles[i].length; ++j)
+            serialTiles.push([])
+            for(let j = 0; j < this.tiles[i].length; ++j)
             {
-                serial_tiles[i].push({ type: this.m_tiles[i][j].type, height: this.m_tiles[i][j].height });
+                serialTiles[i].push({ type: this.tiles[i][j].type, height: this.tiles[i][j].height });
             }
         }
 
-        let serial: GameStateDTF = 
+        let serial: GameStateDTO = 
         {
             name: this.name,
-            tiles: serial_tiles,
+            tiles: serialTiles,
             drones: this.drones,
             selectedDrone: this.selectedDrone
         };
@@ -300,7 +300,7 @@ class GameState
      * Parses a stripped-down JSON GameState and loads it into this full GameState object
      * @param serial 
      */
-    deserialize(parsed: GameStateDTF)
+    deserialize(parsed: GameStateDTO)
     {
         // Takes care of m_tiles
         GenerateTiles(this, parsed.tiles.length, parsed.tiles[0].length, parsed.tiles);
@@ -317,24 +317,24 @@ class GameState
 /**
  * Updates each drone in the GameState
  * @param game 
- * @param drone_helper 
+ * @param droneHelper 
  */
-function update_ai(game: GameState, drone_helper: DroneHelper)
+function updateAI(game: GameState, droneHelper: DroneHelper)
 {
     for(var i = 0; i < game.drones.length; ++i)
     {
         // If the drone has no goal, we should give him one by checking his deficits
-        if(game.drones[i].m_goal == Goals.NONE && game.drones[i].m_job)
+        if(game.drones[i].goal == Goals.NONE && game.drones[i].job)
         {
-            var deficit = drone_helper.get_priority_deficit(game.drones[i]);
-            drone_helper.set_goal_from_deficit(game.drones[i], game, deficit, ChangeGoalEvent);
+            var deficit = droneHelper.get_priority_deficit(game.drones[i]);
+            droneHelper.setGoalFromDeficit(game.drones[i], game, deficit, ChangeGoalEvent);
         }
 
-        var initial_goal = game.drones[i].m_goal;
-        perform_goal(game.drones[i], drone_helper, game);
-        if(initial_goal != game.drones[i].m_goal)
+        var initialGoal = game.drones[i].goal;
+        performGoal(game.drones[i], droneHelper, game);
+        if(initialGoal != game.drones[i].goal)
         {
-            document.dispatchEvent(ChangeGoalEvent(i, game.drones[i].m_goal));
+            document.dispatchEvent(ChangeGoalEvent(i, game.drones[i].goal));
         }
     }
 }
@@ -344,34 +344,34 @@ function update_ai(game: GameState, drone_helper: DroneHelper)
  * @param game 
  * @param drone_helper 
  */
-function do_tick(game: GameState, drone_helper: DroneHelper)
+function doTick(game: GameState, drone_helper: DroneHelper)
 {
-    update_ai(game, drone_helper);
+    updateAI(game, drone_helper);
     document.dispatchEvent(TickEvent());
 }
 
 const DRONE_HUNGER = 1; // Amount of food (wheat) each drone eats
 const DRONE_ENERGY_RECOVER = 50; // Amount of energy recovered from eating TODO make random
-function perform_goal(drone: Drone, drone_helper: DroneHelper, game: GameState)
+function performGoal(drone: Drone, droneHelper: DroneHelper, game: GameState)
 {
-    drone_helper.change_energy(drone, -10);
+    droneHelper.changeEnergy(drone, -10);
 
-    if(drone.m_goal == Goals.EAT)
+    if(drone.goal == Goals.EAT)
     {
-        var wheat_index = drone_helper.find_in_inventory(drone, Items.WHEAT);
-        if(drone.inventory[wheat_index] && drone.inventory[wheat_index].count >= DRONE_HUNGER)
+        var wheatIndex = droneHelper.findInInventory(drone, Items.WHEAT);
+        if(drone.inventory[wheatIndex] && drone.inventory[wheatIndex].count >= DRONE_HUNGER)
         {
-            drone_helper.add_item(drone, Items.WHEAT, -DRONE_HUNGER);
-            drone_helper.change_energy(drone, DRONE_ENERGY_RECOVER);
-            drone.m_goal = Goals.NONE;
+            droneHelper.addItem(drone, Items.WHEAT, -DRONE_HUNGER);
+            droneHelper.changeEnergy(drone, DRONE_ENERGY_RECOVER);
+            drone.goal = Goals.NONE;
         }
     }
-    else if(drone.m_goal == Goals.HARVEST)
+    else if(drone.goal == Goals.HARVEST)
     {
-        if(game.m_tiles[drone.m_pos_x][drone.m_pos_y].type == Tiles.WHEAT)
+        if(game.tiles[drone.posX][drone.posY].type == TileTypes.WHEAT)
         {
-            game.harvest(drone.m_pos_x, drone.m_pos_y);
-            drone_helper.add_item(drone, Items.WHEAT, 1);
+            game.harvest(drone.posX, drone.posY);
+            droneHelper.addItem(drone, Items.WHEAT, 1);
         }
         //TODO: pathfinding
     }
@@ -384,7 +384,7 @@ function perform_goal(drone: Drone, drone_helper: DroneHelper, game: GameState)
  * @param b 
  * @param variation 
  */
-function raw_varied_color(r: number, g: number, b: number, variation: number = 0)
+function rawVariedColor(r: number, g: number, b: number, variation: number = 0)
 {
     return `rgb(${Zdog.lerp(r-variation, r+variation, Math.random())}, ${Zdog.lerp(g-variation, g+variation, Math.random())}, ${Zdog.lerp(b-variation, b+variation, Math.random())}`;
 }
@@ -393,9 +393,9 @@ function raw_varied_color(r: number, g: number, b: number, variation: number = 0
  * Converts raw IVariedColor information into an HTML color string
  * @param color 
  */
-function varied_color(color: IVariedColor)
+function variedColor(color: IVariedColor)
 {
-    return raw_varied_color(color.r, color.g, color.b, color.v);
+    return rawVariedColor(color.r, color.g, color.b, color.v);
 }
 
-export { Coords, ICoords, GameState, Tile, TileCreator, do_tick, GameStateDTF as SerialGameState, SerialTile };
+export { Coords, ICoords, GameState, Tile, TileCreator, doTick, GameStateDTO, SerialTile };

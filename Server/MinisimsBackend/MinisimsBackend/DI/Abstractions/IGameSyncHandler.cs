@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MinisimsServer.DTF;
+using MinisimsServer.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,8 +10,8 @@ namespace MinisimsBackend.DI.Abstractions
     public interface IGameSyncHandler
     {
         ActionResult<int> GetID();
-        ActionResult<GameStateDTF> GetState();
-        ActionResult<TileUpdateDTF[]> GetUpdates(int id);
-        ActionResult<int> Post(TileUpdateDTF[] tileUpdates);
+        ActionResult<GameStateDTO> GetState();
+        ActionResult<TileUpdateDTO[]> GetUpdates(int id);
+        ActionResult<int> Post(TileUpdateDTO[] tileUpdates);
     }
 }

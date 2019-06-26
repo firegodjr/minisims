@@ -12,7 +12,7 @@ interface ITablePair<V>
  * @param k Key
  * @param v Value
  */
-function make_pair<V>(k: string | number, v: V): ITablePair<V>
+function makePair<V>(k: string | number, v: V): ITablePair<V>
 {
     return { key: k, value: v };
 }
@@ -22,31 +22,31 @@ function make_pair<V>(k: string | number, v: V): ITablePair<V>
  */
 class Table<V>
 {
-    m_data: { [key: string]: V };
+    data: { [key: string]: V };
 
     /**
      * @returns Array of all keys in the dictionary
      */
     keys(): Array<string>
     {
-        return Object.keys(this.m_data);
+        return Object.keys(this.data);
     }
 
     /** Gets the value stored at the given key location. */
     get(key: string | number) : V
     {
-        return this.m_data[key + ""];
+        return this.data[key + ""];
     }
 
     /** Sets the given key to the given value */
     set(key: string | number, value: V) : void
     {
-        this.m_data[key] = value;
+        this.data[key] = value;
     }
 
     constructor(pairs?: Array<ITablePair<V>>)
     {
-        this.m_data = {};
+        this.data = {};
 
         if(pairs)
         {
@@ -58,4 +58,4 @@ class Table<V>
     }
 }
 
-export { Table, make_pair };
+export { Table, makePair };

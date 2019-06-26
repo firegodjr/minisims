@@ -1,4 +1,4 @@
-import { Table, make_pair } from "../util/table.js";
+import { Table, makePair } from "../util/table.js";
 import { loadJson } from "../network/network.js";
 import { Zdog } from "../zDog/zdog.js";
 declare var Zdog: Zdog;
@@ -53,9 +53,9 @@ class ModelStore
                 model_arr.push(loadJson(MODELS_PATH + man.paths[i]).then(function(model: JSONModel)
                 {
                     console.log("Loaded model " + man.paths[i]);
-                    let zdog_model = json_to_zdog(model);
-                    this.models.set(model.name, zdog_model);
-                    return zdog_model;
+                    let zdogModel = jsonToZdog(model);
+                    this.models.set(model.name, zdogModel);
+                    return zdogModel;
                 }.bind(this)));
             }
         }
@@ -103,7 +103,7 @@ function attrib_is_anchor(attrib: any, key: string)
  * @param obj Parsed JSONModel
  * @param root_key Fallback classname to use for the root element of the model, if none is provided
  */
-function json_to_zdog(obj: JSONModel, root_key: string = "Group")
+function jsonToZdog(obj: JSONModel, root_key: string = "Group")
 {
     let children: JSONModel[] = [];
     let params: ZdogParams = {};
@@ -112,7 +112,7 @@ function json_to_zdog(obj: JSONModel, root_key: string = "Group")
     {
         if(attrib_is_anchor(obj[key], key))
         {
-            children.push(json_to_zdog(obj[key], key));
+            children.push(jsonToZdog(obj[key], key));
         }
         else if(key != "name")
         {
@@ -131,4 +131,4 @@ function json_to_zdog(obj: JSONModel, root_key: string = "Group")
     return anchor;
 }
 
-export { ModelStore, json_to_zdog };
+export { ModelStore, jsonToZdog };

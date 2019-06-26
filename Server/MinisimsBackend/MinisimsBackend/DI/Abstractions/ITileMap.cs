@@ -1,6 +1,6 @@
 ﻿using MinisimsBackend.Game;
 using MinisimsBackend.Game.Map;
-using MinisimsServer.DTF;
+using MinisimsServer.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +21,6 @@ namespace MinisimsBackend.DI.Abstractions
         /// <param name="type"></param>
         void SetTile(int x, int y, TileTypes type);
         Tile[][] TileArray { get; }
-        TileDTF[][] AsTileDTFArray();
+        TileDTO[][] AsTileDTOArray();
     }
 }

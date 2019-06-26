@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using MinisimsServer.DTF;
+using MinisimsServer.DTO;
 using MinisimsServer.Objects;
 
 namespace MinisimsBackend.Controllers
@@ -28,11 +28,11 @@ namespace MinisimsBackend.Controllers
 
         // POST api/values
         [HttpPost]
-        public void Post([FromBody] GenericDTF dtf)
+        public void Post([FromBody] GenericDTO dtf)
         {
-            switch ((DTFTypes)dtf.type)
+            switch ((DTOTypes)dtf.type)
             {
-                case DTFTypes.GAMESTATE:
+                case DTOTypes.GAMESTATE:
                     {
                         if ((PostActions)dtf.action == PostActions.SAVE_FILE)
                         {

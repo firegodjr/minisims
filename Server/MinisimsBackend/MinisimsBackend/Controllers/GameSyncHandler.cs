@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MinisimsBackend.DI.Abstractions;
-using MinisimsServer.DTF;
+using MinisimsServer.DTO;
 
 namespace MinisimsBackend.Controllers
 {
@@ -18,17 +18,17 @@ namespace MinisimsBackend.Controllers
             return new ActionResult<int>(_serverState.GameStateID);
         }
 
-        public ActionResult<GameStateDTF> GetState()
+        public ActionResult<GameStateDTO> GetState()
         {
-            return new ActionResult<GameStateDTF>(_serverState.GameState.AsDTF());
+            return new ActionResult<GameStateDTO>(_serverState.GameState.AsDTO());
         }
 
-        public ActionResult<TileUpdateDTF[]> GetUpdates(int id)
+        public ActionResult<TileUpdateDTO[]> GetUpdates(int id)
         {
-            return new ActionResult<TileUpdateDTF[]>(_serverState.ServerLog.GetUpdatesInRange(id, _serverState.GameStateID));
+            return new ActionResult<TileUpdateDTO[]>(_serverState.ServerLog.GetUpdatesInRange(id, _serverState.GameStateID));
         }
 
-        public ActionResult<int> Post(TileUpdateDTF[] clientUpdates)
+        public ActionResult<int> Post(TileUpdateDTO[] clientUpdates)
         {
             for(int i = 0; i < clientUpdates.Length; ++i)
             {

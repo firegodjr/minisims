@@ -4,9 +4,9 @@
  * @param document 
  * @param str 
  */
-function get_element<T extends HTMLElement>(document: Document, id: string): T
+function getElement<T extends HTMLElement>(document: Document, id: string): T
 {
     return document.getElementById(id) as T;
 }
 
-export { get_element }
+export { getElement }

@@ -1,5 +1,5 @@
 ﻿using MinisimsBackend.DI.Abstractions;
-using MinisimsServer.DTF;
+using MinisimsServer.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,9 +18,9 @@ namespace MinisimsBackend.Game.Map
             Height = height;
         }
 
-        public TileDTF AsDTF()
+        public TileDTO AsDTO()
         {
-            return new TileDTF((int)TileType, Height);
+            return new TileDTO((int)TileType, Height);
         }
     }
 }

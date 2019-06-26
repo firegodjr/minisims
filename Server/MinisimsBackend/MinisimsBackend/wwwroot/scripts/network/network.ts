@@ -1,7 +1,7 @@
-import { parse_JSON_as } from "../util/jsonutil.js";
-import { GameState, SerialGameState as GameStateDTF } from "../game/game.js";
-import { BoardManager, reset_board } from "../render/render.js";
-import { TileUpdateDTF } from './dtf';
+import { parseJsonAs } from "../util/jsonutil.js";
+import { GameState, GameStateDTO } from "../game/game.js";
+import { BoardManager, resetBoard } from "../render/render.js";
+import { TileUpdateDTO } from 'dto.js';
 
 const OBJECTS_PATH = "objects/";
 const API_PATH = "/api/values";
@@ -12,7 +12,7 @@ interface Manifest
     paths: string[];
 }
 
-export enum DTFTypes
+export enum DTOTypes
 {
     GAMESTATE
 }
@@ -23,10 +23,10 @@ export enum PostActions
     SEND_TO_CLIENTS
 }
 
-interface GenericDTF
+interface GenericDTO
 {
     id: string,
-    type: DTFTypes,
+    type: DTOTypes,
     action: PostActions,
     options: string[],
     data: string
@@ -40,7 +40,7 @@ function loadJson<T>(path: string): Promise<T>
 {
     let promise = makeRequest(OBJECTS_PATH + path).then((req: XMLHttpRequest) => 
     {
-        return parse_JSON_as<T>(req.responseText);
+        return parseJsonAs<T>(req.responseText);
     });
 
     return promise;
@@ -50,7 +50,7 @@ function loadJson<T>(path: string): Promise<T>
  * Returns a promise for a string, loaded from the provided path
  * @param path 
  */
-function load_text(path: string): Promise<string>
+function loadText(path: string): Promise<string>
 {
     let promise = makeRequest(OBJECTS_PATH + path).then((req: XMLHttpRequest) => 
     {
@@ -75,7 +75,7 @@ interface ThenFunction<T>
  * @param names Whitelist of paths to use from the manifest. Paths not found in the manifest are ignored.
  * @returns Promise of an array containing either T or whatever the given callback returns
  */
-async function load_from_manifest<T>(path: string, callback?: ThenFunction<T>, names?: string[])
+async function loadFromManifest<T>(path: string, callback?: ThenFunction<T>, names?: string[])
 {
     let man = await loadJson<Manifest>(path + "manifest.json");
     
@@ -164,10 +164,10 @@ function requestUpdate(game: GameState)
                 if(req.responseText && req.responseText != "")
                 {
                     clientStateID = serverStateID;
-                    let updates = parse_JSON_as<TileUpdateDTF[]>(req.responseText);
+                    let updates = parseJsonAs<TileUpdateDTO[]>(req.responseText);
                     for(let i = 0; i < updates.length; ++i)
                     {
-                        game.update_tile(updates[i].x, updates[i].y, updates[i].type);
+                        game.updateTile(updates[i].x, updates[i].y, updates[i].type);
                     }
                 }
             });
@@ -184,7 +184,7 @@ function requestFullState(game: GameState) : Promise<void[]>
     promises.push(requestState().then((req) => {
         if(req.responseText && req.responseText != "")
         {
-            let state = parse_JSON_as<GameStateDTF>(req.responseText);
+            let state = parseJsonAs<GameStateDTO>(req.responseText);
             game.deserialize(state);
         }
     }));
@@ -207,9 +207,9 @@ function startRepeatUpdateRequests(game: GameState)
  * @param action action to perform on post
  * @param options post action options
  */
-function postToServer(data: string, id: string, type: DTFTypes, action: PostActions = PostActions.SAVE_FILE, options?: string[], contentType?: string): void
+function postToServer(data: string, id: string, type: DTOTypes, action: PostActions = PostActions.SAVE_FILE, options?: string[], contentType?: string): void
 {
-    let dtf: GenericDTF = 
+    let dtf: GenericDTO = 
     {
         id: id,
         type: type,
@@ -221,4 +221,4 @@ function postToServer(data: string, id: string, type: DTFTypes, action: PostActi
     makeRequest(SERVER_URL + API_PATH, "POST", JSON.stringify(dtf), contentType);
 }
 
-export { Manifest, loadJson, load_text, makeRequest, requestID, postToServer, requestFullState, requestUpdate, startRepeatUpdateRequests };
+export { Manifest, loadJson, loadText, makeRequest, requestID, postToServer, requestFullState, requestUpdate, startRepeatUpdateRequests };

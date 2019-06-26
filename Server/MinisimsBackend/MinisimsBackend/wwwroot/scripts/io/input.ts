@@ -2,13 +2,13 @@ import { Table } from "../util/table.js";
 
 class InputManager
 {
-    m_keys: Array<Number>;
-    m_keystates: Table<boolean>;
+    keys: Array<Number>;
+    keystates: Table<boolean>;
 
     constructor(keys: Array<number> = [])
     {
-        this.m_keys = keys;
-        this.m_keystates = new Table([
+        this.keys = keys;
+        this.keystates = new Table([
             { key: "SHIFT", value: false }, 
             { key: "CTRL", value: false }
         ]);
@@ -17,7 +17,7 @@ class InputManager
         {
             for(let i = 0; i < keys.length; ++i)
             {
-                this.m_keystates.set(keys[i], false);
+                this.keystates.set(keys[i], false);
             }
         }
     }
@@ -27,10 +27,10 @@ class InputManagerf
 {
     set_keys(im: InputManager, keys: Array<number>)
     {
-        im.m_keys = keys;
+        im.keys = keys;
         for(var i = 0; i < keys.length; ++i)
         {
-            im.m_keystates.set(keys[i], false);
+            im.keystates.set(keys[i], false);
         }
     }
 }

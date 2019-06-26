@@ -1,5 +1,5 @@
 ﻿using MinisimsBackend.DI.Abstractions;
-using MinisimsServer.DTF;
+using MinisimsServer.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,21 +9,21 @@ namespace MinisimsBackend.Sync
 {
     public class ServerLog : IServerLog
     {
-        public Dictionary<int, TileUpdateDTF[]> TileUpdateLog { get; set; }
+        public Dictionary<int, TileUpdateDTO[]> TileUpdateLog { get; set; }
 
         public ServerLog()
         {
-            TileUpdateLog = new Dictionary<int, TileUpdateDTF[]>();
+            TileUpdateLog = new Dictionary<int, TileUpdateDTO[]>();
         }
 
-        public void LogUpdate(int id, TileUpdateDTF[] tileUpdates)
+        public void LogUpdate(int id, TileUpdateDTO[] tileUpdates)
         {
             TileUpdateLog.Add(id, tileUpdates);
         }
 
-        public TileUpdateDTF[] GetUpdatesInRange(int startID, int endID)
+        public TileUpdateDTO[] GetUpdatesInRange(int startID, int endID)
         {
-            List<TileUpdateDTF> updates = new List<TileUpdateDTF>();
+            List<TileUpdateDTO> updates = new List<TileUpdateDTO>();
             while (startID <= endID)
             {
                 if(TileUpdateLog.ContainsKey(startID))

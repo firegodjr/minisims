@@ -7,25 +7,25 @@ import { Deficits, Goals, Items } from "../constants.js";
 class Job
 {
     crop: Items;
-    crop_threshold: number;
-    do_harvest: Boolean;
-    goal_table: Table<Goals>;
-    deficit_priority: Array<Deficits>;
+    cropThreshold: number;
+    doHarvest: Boolean;
+    goalTable: Table<Goals>;
+    deficitPriority: Array<Deficits>;
 
     /**
-     * @param goal_table A table of goals for each deficit this drone may encounter
-     * @param deficit_priority A list of deficits in order of priority
-     * @param crop_needed The crop that this drone would like to collect
-     * @param do_tile_harvest Whether or not this drone is willing to harvest tiles to obtain crop
-     * @param crop_threshold How much crop this drone needs to be content
+     * @param goalTable A table of goals for each deficit this drone may encounter
+     * @param deficitPriority A list of deficits in order of priority
+     * @param cropNeeded The crop that this drone would like to collect
+     * @param doTileHarvest Whether or not this drone is willing to harvest tiles to obtain crop
+     * @param cropThreshold How much crop this drone needs to be content
      */
-    constructor(goal_table: Table<Goals>, deficit_priority: Array<Deficits>, crop_needed: Items, do_tile_harvest: Boolean, crop_threshold: number)
+    constructor(goalTable: Table<Goals>, deficitPriority: Array<Deficits>, cropNeeded: Items, doTileHarvest: Boolean, cropThreshold: number)
     {
-        this.crop = crop_needed;
-        this.crop_threshold = crop_threshold;
-        this.do_harvest = do_tile_harvest
-        this.goal_table = goal_table;
-        this.deficit_priority = deficit_priority;
+        this.crop = cropNeeded;
+        this.cropThreshold = cropThreshold;
+        this.doHarvest = doTileHarvest
+        this.goalTable = goalTable;
+        this.deficitPriority = deficitPriority;
     }
 }
 

@@ -1,10 +1,10 @@
-import { Tiles } from "../constants.js";
+import { TileTypes } from "../constants.js";
 import { Table } from "../util/table.js";
 import { GameState, ICoords, TileCreator } from "../game/game.js";
 import { Coords } from "../game/game.js";
-import { ModelStore, json_to_zdog } from "./models.js";
+import { ModelStore, jsonToZdog } from "./models.js";
 import { Zdog } from '../zDog/zdog.js';
-import { create_tile_from_object, create_tile, add_grass } from "./add_detail.js";
+import { createZdogTile, createTile, addGrass } from "./add_detail.js";
 import { Drone } from "../drone.js";
 declare var Zdog: Zdog;
 
@@ -29,12 +29,12 @@ interface GridLayers
  */
 class BoardManager
 {
-    rot_offset: number;
-    rot_buf: number;
-    pitch_offset: number;
-    pitch_buf: number;
-    selected_tile: ICoords;
-    is_dragged: boolean;
+    rotOffset: number;
+    rotBuf: number;
+    pitchOffset: number;
+    pitchBuf: number;
+    selectedTile: ICoords;
+    isDragged: boolean;
     game: GameState;
 
     /**
@@ -43,11 +43,11 @@ class BoardManager
      */
     constructor(game: GameState)
     {
-        this.rot_offset = Zdog.TAU * 7 / 8;
-        this.rot_buf = 0;
-        this.pitch_offset = -Zdog.TAU / 12;
-        this.pitch_buf = 0;
-        this.selected_tile = new Coords(-1, -1);
+        this.rotOffset = Zdog.TAU * 7 / 8;
+        this.rotBuf = 0;
+        this.pitchOffset = -Zdog.TAU / 12;
+        this.pitchBuf = 0;
+        this.selectedTile = new Coords(-1, -1);
         this.game = game;
     }
 
@@ -57,7 +57,7 @@ class BoardManager
      */
     dragStart(pointer: Event | Touch)
     {
-        this.is_dragged = true;
+        this.isDragged = true;
     }
 
     /**
@@ -68,15 +68,15 @@ class BoardManager
      */
     dragMove(pointer: Event | Touch, moveX: number, moveY: number)
     {
-        this.game.m_pitch = Math.max(
+        this.game.pitch = Math.max(
             -Zdog.TAU / 5, Math.min(
-                -Zdog.TAU / 20, -Zdog.TAU * moveY / 2000 + this.pitch_offset
+                -Zdog.TAU / 20, -Zdog.TAU * moveY / 2000 + this.pitchOffset
                 ));
-        this.pitch_buf = this.game.m_pitch;
+        this.pitchBuf = this.game.pitch;
 
-        this.game.m_rotation = -Zdog.TAU * moveX / 1000 + this.rot_offset;
-        this.game.m_rotation = normalize_rotation(this.game.m_rotation);
-        this.rot_buf = this.game.m_rotation;
+        this.game.rotation = -Zdog.TAU * moveX / 1000 + this.rotOffset;
+        this.game.rotation = normalizeRotation(this.game.rotation);
+        this.rotBuf = this.game.rotation;
     }
 
     /**
@@ -84,10 +84,10 @@ class BoardManager
      */
     dragEnd()
     {
-        this.rot_offset = this.game.m_rotation % Zdog.TAU;
-        this.pitch_offset = this.game.m_pitch;
-        this.game.m_rotation = normalize_rotation(this.game.m_rotation);
-        this.is_dragged = false;
+        this.rotOffset = this.game.rotation % Zdog.TAU;
+        this.pitchOffset = this.game.pitch;
+        this.game.rotation = normalizeRotation(this.game.rotation);
+        this.isDragged = false;
     }
 
     /**
@@ -97,13 +97,13 @@ class BoardManager
      */
     selectTile(x: number, y: number)
     {
-        this.selected_tile = new Coords(x, y);
+        this.selectedTile = new Coords(x, y);
     }
 }
 
-function init_illustration(game: GameState, board_mgr: BoardManager): GridLayers
+function initIllustration(game: GameState, boardMgr: BoardManager): GridLayers
 {
-    var half_board = ((game.m_tiles.length - 1) * TILE_SIZE / 2);
+    var halfBoard = ((game.tiles.length - 1) * TILE_SIZE / 2);
 
     if(!board) // Reuse existing illustration if possible, because draggable objects can't be garbage-collected
     {
@@ -111,9 +111,9 @@ function init_illustration(game: GameState, board_mgr: BoardManager): GridLayers
             element: "#cvs_viewport",
             resize: true,
             dragRotate: true,
-            onDragStart: (p: Event | Touch) => board_mgr.dragStart(p),
-            onDragMove: (p: Event | Touch, mx: number, my: number) => board_mgr.dragMove(p, mx, my),
-            onDragEnd: () => board_mgr.dragEnd(),
+            onDragStart: (p: Event | Touch) => boardMgr.dragStart(p),
+            onDragMove: (p: Event | Touch, mx: number, my: number) => boardMgr.dragMove(p, mx, my),
+            onDragEnd: () => boardMgr.dragEnd(),
             rotate: { x: -Zdog.TAU / 12, y: -Zdog.TAU /8 }
         });
     }
@@ -146,29 +146,29 @@ function init_illustration(game: GameState, board_mgr: BoardManager): GridLayers
     var highlightArr: any = [];
     var grassArr: any = [];
 
-    for(var i = 0; i < game.m_tiles.length; ++i)
+    for(var i = 0; i < game.tiles.length; ++i)
     {
         const TILE_HEIGHT_AMNT = TILE_SIZE * 0;
 
         tileArr.push([]);
         highlightArr.push([]);
         grassArr.push([]);
-        for(var j = 0; j < game.m_tiles[i].length; ++j)
+        for(var j = 0; j < game.tiles[i].length; ++j)
         {
-            var tile = game.m_tiles[i][j];
-            var tile_surface = create_tile_from_object(game.m_tiles[i][j], i, j, half_board, tiles);
-            tile_surface.translate.y -= tile.height * TILE_HEIGHT_AMNT;
+            var tile = game.tiles[i][j];
+            var tileSurface = createZdogTile(game.tiles[i][j], i, j, halfBoard, tiles);
+            tileSurface.translate.y -= tile.height * TILE_HEIGHT_AMNT;
 
-            var tile_highlight = create_tile("rgba(255, 0, 0, 0.8)", i, j, half_board, highlights, -1, false, 4); //TODO magic numbers ree
-            tile_highlight.translate.y -= tile.height * TILE_HEIGHT_AMNT;
-            tile_highlight.visible = false;
+            var tileHighlight = createTile("rgba(255, 0, 0, 0.8)", i, j, halfBoard, highlights, -1, false, 4); //TODO magic numbers ree
+            tileHighlight.translate.y -= tile.height * TILE_HEIGHT_AMNT;
+            tileHighlight.visible = false;
 
-            tileArr[i].push(tile_surface);
-            highlightArr[i].push(tile_highlight);
+            tileArr[i].push(tileSurface);
+            highlightArr[i].push(tileHighlight);
 
-            var tile_grass = add_grass(i, j, half_board, tiles, tile_surface.color, tile.grass_density, tile.grass_height, tile.grass_height_variation, tile.optimize_grass);
-            tile_grass.translate.y -= tile.height * TILE_HEIGHT_AMNT;
-            grassArr[i].push(tile_grass);
+            var tileGrass = addGrass(i, j, halfBoard, tiles, tileSurface.color, tile.grassDensity, tile.grassHeight, tile.grassHeightVariation, tile.optimizeGrass);
+            tileGrass.translate.y -= tile.height * TILE_HEIGHT_AMNT;
+            grassArr[i].push(tileGrass);
         }
     }
 
@@ -181,15 +181,15 @@ let droneArr: Zdog.Anchor[] = [];
 let game: GameState;
 
 // Variables for rotation correction on drag release
-let last_timestamp = 0;
-let was_dragged = true;
-let nearest_corner = 0;
-export function reset_board(game_state: GameState, board_mgr: BoardManager)
+let lastTimestamp = 0;
+let wasDragged = true;
+let nearestCorner = 0;
+export function resetBoard(gameState: GameState, boardMgr: BoardManager)
 {
-    game = game_state;
-    layers = init_illustration(game, board_mgr);
+    game = gameState;
+    layers = initIllustration(game, boardMgr);
     remove_drones();
-    nearest_corner = game.m_rotation;
+    nearestCorner = game.rotation;
 }
 
 function remove_drones()
@@ -201,50 +201,50 @@ function remove_drones()
     droneArr = [];
 }
 
-function normalize_rotation(rot: number)
+function normalizeRotation(rot: number)
 {
     return ((rot % Zdog.TAU) + Zdog.TAU) % Zdog.TAU;
 }
 
-export function draw_board(game_state: GameState, board_mgr: BoardManager, model_store: ModelStore)
+export function drawBoard(gameState: GameState, boardMgr: BoardManager, modelStore: ModelStore)
 {
-    game = game_state;
+    game = gameState;
 
     var canvas = document.getElementById("cvs_viewport") as HTMLCanvasElement;
     canvas.width = canvas.parentElement.clientWidth;
     canvas.height = canvas.parentElement.clientHeight;
     
     var ctx = canvas.getContext("2d");
-    var half_board = ((game.m_tiles.length - 1) * TILE_SIZE / 2);
+    var halfBoard = ((game.tiles.length - 1) * TILE_SIZE / 2);
 
-    layers = init_illustration(game, board_mgr);
-    game = game_state;
+    layers = initIllustration(game, boardMgr);
+    game = gameState;
 
     function draw(timestamp: number)
     {
-        let delta = timestamp - last_timestamp;
+        let delta = timestamp - lastTimestamp;
 
         // Update drones
         var refreshed = false;
         while(droneArr.length < game.drones.length)
         {
-            let new_index = droneArr.length;
-            let new_x = game.drones[new_index].m_pos_x;
-            let new_y = game.drones[new_index].m_pos_y;
-            let new_drone = model_store.get("drone", { translate: { x: new_x, y: new_y}, addTo: layers.grassArr[new_x][new_y]});
-            new_drone.translate = {x: TILE_SIZE / 2, z: TILE_SIZE / 2}
-            droneArr.push(new_drone);
-            layers.grassArr[new_x][new_y].updateGraph();
+            let newIndex = droneArr.length;
+            let newX = game.drones[newIndex].posX;
+            let newY = game.drones[newIndex].posY;
+            let newDrone = modelStore.get("drone", { translate: { x: newX, y: newY}, addTo: layers.grassArr[newX][newY]});
+            newDrone.translate = {x: TILE_SIZE / 2, z: TILE_SIZE / 2}
+            droneArr.push(newDrone);
+            layers.grassArr[newX][newY].updateGraph();
             refreshed = true;
         }
 
         for(var i = 0; i < game.drones.length; ++i)
         {
-            if(game.drones[i].m_moved)
+            if(game.drones[i].moved)
             {
                 droneArr[i].remove(); 
-                var x = game.drones[i].m_pos_x;
-                var y = game.drones[i].m_pos_y;
+                var x = game.drones[i].posX;
+                var y = game.drones[i].posY;
     
                 layers.grassArr[x][y].addChild(droneArr[i]);
                 layers.grassArr[x][y].updateGraph();
@@ -258,33 +258,33 @@ export function draw_board(game_state: GameState, board_mgr: BoardManager, model
         }
 
         // Update dirty tiles
-        for(var i = 0; i < game.m_dirty_tiles.length; ++i)
+        for(var i = 0; i < game.dirtyTiles.length; ++i)
         {
-            var pair = game.m_dirty_tiles[i];
+            var pair = game.dirtyTiles[i];
             layers.tileArr[pair.x][pair.y].remove();
             layers.tileArr[pair.x][pair.y].visible = false;
             layers.grassArr[pair.x][pair.y].remove();
             layers.grassArr[pair.x][pair.y].visible = false;
 
-            let tile = game.m_tiles[pair.x][pair.y];
-            let newTile = create_tile_from_object(tile, pair.x, pair.y, half_board, layers.tiles);
+            let tile = game.tiles[pair.x][pair.y];
+            let newTile = createZdogTile(tile, pair.x, pair.y, halfBoard, layers.tiles);
             layers.tileArr[pair.x][pair.y] = newTile;
 
             let drone = game.drones.find((drone: Drone) => 
             { 
-                return drone.m_pos_x == pair.x && drone.m_pos_y == pair.y
+                return drone.posX == pair.x && drone.posY == pair.y
             });
 
-            layers.grassArr[pair.x][pair.y] = add_grass(pair.x, pair.y, half_board, layers.tiles, newTile.color, tile.grass_density, tile.grass_height, tile.grass_height_variation, tile.optimize_grass);
-            if(drone) drone.m_moved = true;
+            layers.grassArr[pair.x][pair.y] = addGrass(pair.x, pair.y, halfBoard, layers.tiles, newTile.color, tile.grassDensity, tile.grassHeight, tile.grassHeightVariation, tile.optimizeGrass);
+            if(drone) drone.moved = true;
         }
 
-        if(game.m_dirty_tiles.length > 0)
+        if(game.dirtyTiles.length > 0)
         {
             layers.tiles.updateGraph();
         }
 
-        game.m_dirty_tiles = [];
+        game.dirtyTiles = [];
 
         // Update selections
         layers.highlightArr.map((arr: Array<Zdog.Anchor>) =>
@@ -295,48 +295,48 @@ export function draw_board(game_state: GameState, board_mgr: BoardManager, model
             });
         });
 
-        if(board_mgr.selected_tile.x != -1 && board_mgr.selected_tile.y != -1)
+        if(boardMgr.selectedTile.x != -1 && boardMgr.selectedTile.y != -1)
         {
-            layers.highlightArr[board_mgr.selected_tile.x][board_mgr.selected_tile.y].visible = true;
+            layers.highlightArr[boardMgr.selectedTile.x][boardMgr.selectedTile.y].visible = true;
         }
 
         // Correct if angle isn't perfect 45deg
         let CORRECTION_DELAY = 1000;
-        if(!board_mgr.is_dragged)
+        if(!boardMgr.isDragged)
         {
-            if(was_dragged)
+            if(wasDragged)
             {
-                let corner_offset = game.m_rotation % (Zdog.TAU / 4);
+                let corner_offset = game.rotation % (Zdog.TAU / 4);
 
-                nearest_corner = game.m_rotation - corner_offset + Zdog.TAU / 8;
-                nearest_corner = normalize_rotation(nearest_corner);
-                was_dragged = false;
+                nearestCorner = game.rotation - corner_offset + Zdog.TAU / 8;
+                nearestCorner = normalizeRotation(nearestCorner);
+                wasDragged = false;
             }
 
-            if(Math.abs(game.m_rotation - nearest_corner) > 0.0001)
+            if(Math.abs(game.rotation - nearestCorner) > 0.0001)
             {
-                game.m_rotation = Zdog.lerp(game.m_rotation, nearest_corner, delta/100);
-                game.m_rotation = normalize_rotation(game.m_rotation);
+                game.rotation = Zdog.lerp(game.rotation, nearestCorner, delta/100);
+                game.rotation = normalizeRotation(game.rotation);
             }
-            board_mgr.rot_offset = game.m_rotation;
-            board_mgr.pitch_offset = game.m_pitch;
+            boardMgr.rotOffset = game.rotation;
+            boardMgr.pitchOffset = game.pitch;
         }
         else
         {
-            was_dragged = true;
+            wasDragged = true;
         }
 
         // Rotate board to match game state
-        board.zoom = game.m_zoom;
-        board.rotate.x = game.m_pitch;
-        board.rotate.y = game.m_rotation;
+        board.zoom = game.zoom;
+        board.rotate.x = game.pitch;
+        board.rotate.y = game.rotation;
 
         board.updateRenderGraph();
         ctx.fillText("FPS: " + Math.round(1000/delta), 50, 50);
-        ctx.fillText("Rotation: " + Math.round(game.m_rotation * 360 / Zdog.TAU), 50, 75);
-        ctx.fillText("Nearest Corner: " + Math.round(nearest_corner * 360 / Zdog.TAU), 50, 100);
+        ctx.fillText("Rotation: " + Math.round(game.rotation * 360 / Zdog.TAU), 50, 75);
+        ctx.fillText("Nearest Corner: " + Math.round(nearestCorner * 360 / Zdog.TAU), 50, 100);
         //document.dispatchEvent(new event(game, delta));
-        last_timestamp = timestamp;
+        lastTimestamp = timestamp;
         requestAnimationFrame(draw);
     }
 

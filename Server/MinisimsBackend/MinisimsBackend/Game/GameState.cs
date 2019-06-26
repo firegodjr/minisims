@@ -1,6 +1,6 @@
 ﻿using MinisimsBackend.DI.Abstractions;
 using MinisimsBackend.Game.Map;
-using MinisimsServer.DTF;
+using MinisimsServer.DTO;
 using System;
 
 namespace MinisimsBackend.Game
@@ -31,14 +31,14 @@ namespace MinisimsBackend.Game
             throw new NotImplementedException();
         }
 
-        public GameStateDTF AsDTF()
+        public GameStateDTO AsDTO()
         {
-            GameStateDTF gameStateDTF = new GameStateDTF();
-            gameStateDTF.m_name = this.name;
-            gameStateDTF.m_tiles = this.Tiles.AsTileDTFArray();
-            gameStateDTF.m_selected_drone = this.selected_drone;
+            GameStateDTO gameStateDTO = new GameStateDTO();
+            gameStateDTO.name = this.name;
+            gameStateDTO.tiles = this.Tiles.AsTileDTOArray();
+            gameStateDTO.selectedDrone = this.selected_drone;
 
-            return gameStateDTF;
+            return gameStateDTO;
         }
     }
 }

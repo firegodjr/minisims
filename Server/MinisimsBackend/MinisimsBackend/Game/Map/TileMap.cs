@@ -1,5 +1,5 @@
 ﻿using MinisimsBackend.DI.Abstractions;
-using MinisimsServer.DTF;
+using MinisimsServer.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,19 +46,19 @@ namespace MinisimsBackend.Game.Map
             tileArray[x][y].TileType = type;
         }
 
-        public TileDTF[][] AsTileDTFArray()
+        public TileDTO[][] AsTileDTOArray()
         {
-            TileDTF[][] tileDTFs = new TileDTF[tileArray.Length][];
+            TileDTO[][] tileDTOs = new TileDTO[tileArray.Length][];
             for(int x = 0; x < tileArray.Length; ++x)
             {
-                tileDTFs[x] = new TileDTF[tileArray[x].Length];
+                tileDTOs[x] = new TileDTO[tileArray[x].Length];
                 for(int y = 0; y < tileArray[x].Length; ++y)
                 {
-                    tileDTFs[x][y] = tileArray[x][y].AsDTF();
+                    tileDTOs[x][y] = tileArray[x][y].AsDTO();
                 }
             }
 
-            return tileDTFs;
+            return tileDTOs;
         }
     }
 }

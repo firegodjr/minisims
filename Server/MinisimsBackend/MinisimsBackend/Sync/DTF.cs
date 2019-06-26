@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MinisimsServer.DTF
+namespace MinisimsServer.DTO
 {
-    public enum DTFTypes
+    public enum DTOTypes
     {
         GAMESTATE
     }
@@ -19,19 +19,19 @@ namespace MinisimsServer.DTF
         SEND_TO_CLIENTS
     }
 
-    public class TileDTF
+    public class TileDTO
     {
         public int type;
         public float height;
 
-        public TileDTF(int type, float height)
+        public TileDTO(int type, float height)
         {
             this.type = type;
             this.height = height;
         }
     }
 
-    public class TileUpdateDTF
+    public class TileUpdateDTO
     {
         public int x;
         public int y;
@@ -53,19 +53,19 @@ namespace MinisimsServer.DTF
         }
     }
 
-    public class GameStateDTF
+    public class GameStateDTO
     {
         public string name;
-        public TileDTF[][] tiles;
-        public int selected_drone;
+        public TileDTO[][] tiles;
+        public int selectedDrone;
     }
 
-    public class ClientIDDTF
+    public class ClientIDDTO
     {
         public int id;
     }
 
-    public class GenericDTF
+    public class GenericDTO
     {
         public string id;
         public int type;

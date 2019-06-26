@@ -12,7 +12,7 @@ class EventPublisher
 
 class EventPublisherf
 {
-    push_to_subs(publisher: EventPublisher, event: Event)
+    pushToSubs(publisher: EventPublisher, event: Event)
     {
         for(var i = 0; i < publisher.subscribers.length; ++i)
         {
@@ -30,14 +30,14 @@ class EventPublisherf
         publisher.subscribers.push(subscriber);
     }
 
-    register_listeners(publisher: EventPublisher)
+    registerListeners(publisher: EventPublisher)
     {
         let keys =  Object.keys(Events);
         let length = keys.length;
         for(var i = 0; i < length; ++i)
         {
             document.addEventListener(Events[keys[i] as keyof typeof Events], (e) => {
-                this.push_to_subs(publisher, e);
+                this.pushToSubs(publisher, e);
             });
         }
     }

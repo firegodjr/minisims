@@ -1,5 +1,5 @@
 ﻿using MinisimsBackend.Game;
-using MinisimsServer.DTF;
+using MinisimsServer.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +11,6 @@ namespace MinisimsBackend.DI.Abstractions
     {
         ITileMap Tiles { get; set; }
         void SelectDrone(int ID);
-        GameStateDTF AsDTF();
+        GameStateDTO AsDTO();
     }
 }

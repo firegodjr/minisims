@@ -2,7 +2,7 @@
 using MinisimsBackend.Game;
 using MinisimsBackend.Game.Map;
 using MinisimsBackend.Sync;
-using MinisimsServer.DTF;
+using MinisimsServer.DTO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,7 +41,7 @@ namespace MinisimsBackend
         /// Updates a single tile's type in the GameState
         /// </summary>
         /// <param name="update"></param>
-        public void ApplyTileUpdate(TileUpdateDTF tileUpdate)
+        public void ApplyTileUpdate(TileUpdateDTO tileUpdate)
         {
             _game.Tiles.SetTile(tileUpdate.x, tileUpdate.y, (TileTypes)tileUpdate.type);
         }

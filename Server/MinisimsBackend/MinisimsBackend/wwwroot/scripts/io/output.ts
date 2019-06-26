@@ -1,5 +1,5 @@
 
-function init_log()
+function initLog()
 {
     let console = document.getElementById("console") as HTMLTextAreaElement;
     console.value = "";
@@ -24,4 +24,4 @@ function log(str: string)
     console.scrollTop = console.scrollHeight;
 }
 
-export { log, init_log };
+export { log, initLog };
