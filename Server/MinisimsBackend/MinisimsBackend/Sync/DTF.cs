@@ -55,9 +55,9 @@ namespace MinisimsServer.DTF
 
     public class GameStateDTF
     {
-        public string m_name;
-        public TileDTF[][] m_tiles;
-        public int m_selected_drone;
+        public string name;
+        public TileDTF[][] tiles;
+        public int selected_drone;
     }
 
     public class ClientIDDTF
