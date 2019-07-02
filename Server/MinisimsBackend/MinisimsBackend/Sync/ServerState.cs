@@ -12,13 +12,11 @@ namespace MinisimsBackend
 {
     public class ServerState : IServerState
     {
-        public int GameStateID { get => gameStateID; }
         public IGameState GameState { get => _game; }
         public IServerLog ServerLog { get => _serverLog; }
 
         IGameState _game;
         IServerLog _serverLog;
-        int gameStateID = 1;
 
         public ServerState(IGameState _game, IServerLog _serverLog)
         {
@@ -28,13 +26,13 @@ namespace MinisimsBackend
 
         public int GetID()
         {
-            return gameStateID;
+            return ServerLog.GameStateID;
         }
 
         public int IncrementID()
         {
-            gameStateID += 1;
-            return gameStateID;
+            ServerLog.GameStateID += 1;
+            return ServerLog.GameStateID;
         }
 
         /// <summary>

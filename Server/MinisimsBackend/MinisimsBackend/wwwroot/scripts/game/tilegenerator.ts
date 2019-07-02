@@ -5,9 +5,9 @@ declare var noise: any;
 
 const TILES = [TileTypes.GRASS, TileTypes.WATER];
 const WATER_LEVEL_RANGES = [
-    { tile: TileTypes.ORE_RIPE, min: 0.75 },
-    { tile: TileTypes.STONE, min: 0.65 },
-    { tile: TileTypes.GRASS, min: 0.35 },
+    { tile: TileTypes.ORE_RIPE, min: 0.85 },
+    { tile: TileTypes.STONE, min: 0.75 },
+    { tile: TileTypes.GRASS, min: 0.25 },
     { tile: TileTypes.WATER, min: 0 }
 ]
 

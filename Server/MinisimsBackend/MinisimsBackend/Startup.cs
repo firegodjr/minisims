@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Net.WebSockets;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
@@ -9,12 +7,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using MinisimsBackend.Controllers;
-using MinisimsBackend.DI;
 using MinisimsBackend.DI.Abstractions;
 using MinisimsBackend.Game;
+using MinisimsBackend.Game.AI;
+using MinisimsBackend.Game.AI.Pathing;
 using MinisimsBackend.Game.Map;
+using MinisimsBackend.Game.Map.Generation;
 using MinisimsBackend.Sync;
 using MinisimsBackend.Util;
 
@@ -34,17 +33,18 @@ namespace MinisimsBackend
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-            var containerBuilder = new ContainerBuilder();
-            containerBuilder.Populate(services);
-            containerBuilder.RegisterType<RandomMapGenerator>().As<ITileGenerator>();
-            containerBuilder.RegisterType<GameSyncHandler>().As<IGameSyncHandler>().SingleInstance();
-            containerBuilder.RegisterType<Log>().As<ILog>().SingleInstance();
-            containerBuilder.RegisterType<TileMap>().As<ITileMap>();
-            containerBuilder.RegisterType<GameState>().As<IGameState>().SingleInstance();
-            containerBuilder.RegisterType<ServerState>().As<IServerState>().SingleInstance();
-            containerBuilder.RegisterType<ServerLog>().As<IServerLog>().SingleInstance();
+            var cb = new ContainerBuilder();
+            cb.Populate(services);
+            cb.RegisterType<PerlinMapGenerator>().As<ITileGenerator>();
+            cb.RegisterType<AStarPathFinder>().As<IPathFinder>();
+            cb.RegisterType<GameSyncHandler>().As<IGameSyncHandler>().SingleInstance();
+            cb.RegisterType<Log>().As<ILog>().SingleInstance();
+            cb.RegisterType<TileMap>().As<ITileMap>();
+            cb.RegisterType<GameState>().As<IGameState>().SingleInstance();
+            cb.RegisterType<ServerState>().As<IServerState>().SingleInstance();
+            cb.RegisterType<ServerLog>().As<IServerLog>().SingleInstance();
 
-            var container = containerBuilder.Build();
+            var container = cb.Build();
             return new AutofacServiceProvider(container);
         }
 
@@ -59,6 +59,7 @@ namespace MinisimsBackend
             app.UseMvc();
             app.UseDefaultFiles();
             app.UseStaticFiles();
+            app.UseWebSockets();
         }
     }
 }

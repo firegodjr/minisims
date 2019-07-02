@@ -108,13 +108,13 @@ declare var ko: KnockoutStatic;
             {
                 // clear the inventory pane
                 targetElement.innerHTML = "";
-                for(var i = 0; i < game.drones[game.selectedDrone].inventory.length; ++i)
-                {
-                    var newElement = document.createElement("div");
-                    var invPair = game.drones[game.selectedDrone].inventory[i];
-                    newElement.innerHTML = invPair.item + ": " + invPair.count;
-                    targetElement.appendChild(newElement);
-                }
+                //for(var i = 0; i < game.drones[game.selectedDrone].inventory.length; ++i)
+                //{
+                //    var newElement = document.createElement("div");
+                //    var invPair = game.drones[game.selectedDrone].inventory[i];
+                //    newElement.innerHTML = invPair.item + ": " + invPair.count;
+                //    targetElement.appendChild(newElement);
+                //}
             }
         });
 

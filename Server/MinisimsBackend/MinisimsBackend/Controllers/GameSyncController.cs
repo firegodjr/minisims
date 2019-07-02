@@ -27,7 +27,7 @@ namespace MinisimsBackend.Controllers
         }
 
         [HttpGet("updates/{id}")]
-        public ActionResult<TileUpdateDTO[]> GetUpdates(int id)
+        public ActionResult<UpdatePackageDTO> GetUpdates(int id)
         {
             return _gameSyncHandler.GetUpdates(id);
         }

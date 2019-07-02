@@ -1,6 +1,6 @@
 import { Observable, ObservableArray } from "../knockout.js";
 import { Items } from "../constants.js";
-import { DroneHelper, InventoryPair } from "../drone.js";
+import { DroneHelper, InventoryPair, StatTypes } from "../drone.js";
 import { ChangeSelectedEvent } from '../event/events.js';
 import { GameState, GameStateDTO, doTick } from "../game/game.js";
 import { loadJson, loadText, Manifest, postToServer, DTOTypes } from "../network/network.js";
@@ -46,13 +46,13 @@ class ViewModel
     {
         this.droneName("Drone " + this.drone());
 
-        this.droneInventory.removeAll();
-        for(var i = 0; i < this.game.drones[this.drone()].inventory.length; ++i)
-        {
-            this.droneInventory.push(ko.observable(this.game.drones[this.drone()].inventory[i]))
-        }
+        //this.droneInventory.removeAll();
+        //for(var i = 0; i < this.game.drones[this.drone()].inventory.length; ++i)
+        //{
+        //    this.droneInventory.push(ko.observable(this.game.drones[this.drone()].inventory[i]))
+        //}
 
-        this.droneEnergy(this.game.drones[this.drone()].energy);
+        //this.droneEnergy(this.game.drones[this.drone()].energy);
     }
 
     doTick()
@@ -149,19 +149,19 @@ class ViewModel
         }
     }
 
-    addItem(item: Items, count: number = 1)
+    addItem(item: StatTypes, count: number = 1)
     {
         this.droneHelper.addItem(this.game.drones[this.drone()], item, count);
     }
 
     addWheat(count: number = 1)
     {
-        this.addItem(Items.WHEAT, count);
+        this.addItem(StatTypes.WHEAT, count);
     }
 
     addOre(count: number = 1)
     {
-        this.addItem(Items.ORE, count);
+        this.addItem(StatTypes.ORE, count);
     }
 
     addDrone()

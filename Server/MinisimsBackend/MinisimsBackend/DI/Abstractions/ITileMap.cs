@@ -1,10 +1,6 @@
-﻿using MinisimsBackend.Game;
+﻿using MinisimsBackend.Game.AI.Pathing;
 using MinisimsBackend.Game.Map;
 using MinisimsServer.DTO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace MinisimsBackend.DI.Abstractions
 {
@@ -20,6 +16,8 @@ namespace MinisimsBackend.DI.Abstractions
         /// <param name="y"></param>
         /// <param name="type"></param>
         void SetTile(int x, int y, TileTypes type);
+        Tile GetTileAt(Point point);
+        Point[] GetTileLocations(TileTypes type);
         Tile[][] TileArray { get; }
         TileDTO[][] AsTileDTOArray();
     }

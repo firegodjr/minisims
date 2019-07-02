@@ -11,7 +11,7 @@ namespace MinisimsBackend.DI.Abstractions
     {
         ActionResult<int> GetID();
         ActionResult<GameStateDTO> GetState();
-        ActionResult<TileUpdateDTO[]> GetUpdates(int id);
+        ActionResult<UpdatePackageDTO> GetUpdates(int id);
         ActionResult<int> Post(TileUpdateDTO[] tileUpdates);
     }
 }

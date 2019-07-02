@@ -213,22 +213,6 @@ class GameState
     }
 
     /**
-     * Harvests the given tile and optionally gives the spoils to a drone
-     * @param x 
-     * @param y 
-     */
-    harvest(x: number, y: number, harvester?: Drone, droneHelper?: DroneHelper)
-    {
-        if(harvester && droneHelper)
-        {
-            droneHelper.addItem(harvester, TILE_HARVEST_TABLE.get(this.tiles[x][y].type));
-        }
-
-        this.tiles[x][y] = this.tileCreator.create(TILE_DEGRADE_TABLE.get(this.tiles[x][y].type));
-        this.dirtyTiles.push(new Coords(x, y));
-    }
-
-    /**
      * Selects the drone at the given index in the game's list of drones
      * @param index 
      */
@@ -266,7 +250,6 @@ class GameState
         }
 
         var droneIndex = this.drones.length;
-        this.drones.push(new Drone(droneIndex, posX, posY, JobCitizen()));
         document.dispatchEvent(AddDroneEvent(posX, posY));
     }
 
@@ -315,66 +298,13 @@ class GameState
 }
 
 /**
- * Updates each drone in the GameState
- * @param game 
- * @param droneHelper 
- */
-function updateAI(game: GameState, droneHelper: DroneHelper)
-{
-    for(var i = 0; i < game.drones.length; ++i)
-    {
-        // If the drone has no goal, we should give him one by checking his deficits
-        if(game.drones[i].goal == Goals.NONE && game.drones[i].job)
-        {
-            var deficit = droneHelper.get_priority_deficit(game.drones[i]);
-            droneHelper.setGoalFromDeficit(game.drones[i], game, deficit, ChangeGoalEvent);
-        }
-
-        var initialGoal = game.drones[i].goal;
-        performGoal(game.drones[i], droneHelper, game);
-        if(initialGoal != game.drones[i].goal)
-        {
-            document.dispatchEvent(ChangeGoalEvent(i, game.drones[i].goal));
-        }
-    }
-}
-
-/**
  * Performs a logic update
  * @param game 
  * @param drone_helper 
  */
 function doTick(game: GameState, drone_helper: DroneHelper)
 {
-    updateAI(game, drone_helper);
     document.dispatchEvent(TickEvent());
-}
-
-const DRONE_HUNGER = 1; // Amount of food (wheat) each drone eats
-const DRONE_ENERGY_RECOVER = 50; // Amount of energy recovered from eating TODO make random
-function performGoal(drone: Drone, droneHelper: DroneHelper, game: GameState)
-{
-    droneHelper.changeEnergy(drone, -10);
-
-    if(drone.goal == Goals.EAT)
-    {
-        var wheatIndex = droneHelper.findInInventory(drone, Items.WHEAT);
-        if(drone.inventory[wheatIndex] && drone.inventory[wheatIndex].count >= DRONE_HUNGER)
-        {
-            droneHelper.addItem(drone, Items.WHEAT, -DRONE_HUNGER);
-            droneHelper.changeEnergy(drone, DRONE_ENERGY_RECOVER);
-            drone.goal = Goals.NONE;
-        }
-    }
-    else if(drone.goal == Goals.HARVEST)
-    {
-        if(game.tiles[drone.posX][drone.posY].type == TileTypes.WHEAT)
-        {
-            game.harvest(drone.posX, drone.posY);
-            droneHelper.addItem(drone, Items.WHEAT, 1);
-        }
-        //TODO: pathfinding
-    }
 }
 
 /**

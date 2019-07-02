@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "@aspnet/signalr": "^1.1.4",
+    "@types/signalr": "^2.2.35",
     "express": "^4.17.1",
     "http-server": "^0.11.1",
     "knockout": "^3.5.0",

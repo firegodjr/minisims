@@ -14,7 +14,7 @@ namespace MinisimsBackend.Util
         {
             string line = $"[{DateTime.Now.ToLocalTime()}] {text}";
             Console.WriteLine(line);
-            FileMgr.AppendFileText(LOG_URL, line + "\n");
+            FileMgr.AppendFileText(LOG_URL, line + Environment.NewLine);
         }
     }
 }

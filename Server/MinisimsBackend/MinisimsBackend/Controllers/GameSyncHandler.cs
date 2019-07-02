@@ -15,7 +15,7 @@ namespace MinisimsBackend.Controllers
 
         public ActionResult<int> GetID()
         {
-            return new ActionResult<int>(_serverState.GameStateID);
+            return new ActionResult<int>(_serverState.ServerLog.GameStateID);
         }
 
         public ActionResult<GameStateDTO> GetState()
@@ -23,9 +23,9 @@ namespace MinisimsBackend.Controllers
             return new ActionResult<GameStateDTO>(_serverState.GameState.AsDTO());
         }
 
-        public ActionResult<TileUpdateDTO[]> GetUpdates(int id)
+        public ActionResult<UpdatePackageDTO> GetUpdates(int id)
         {
-            return new ActionResult<TileUpdateDTO[]>(_serverState.ServerLog.GetUpdatesInRange(id, _serverState.GameStateID));
+            return new ActionResult<UpdatePackageDTO>(_serverState.ServerLog.GetUpdatesInRange(id, _serverState.ServerLog.GameStateID));
         }
 
         public ActionResult<int> Post(TileUpdateDTO[] clientUpdates)
@@ -38,10 +38,10 @@ namespace MinisimsBackend.Controllers
             if(clientUpdates.Length > 0)
             {
                 _serverState.IncrementID();
-                _serverState.ServerLog.LogUpdate(_serverState.GameStateID, clientUpdates);
+                _serverState.ServerLog.LogUpdate(clientUpdates);
             }
 
-            return _serverState.GameStateID;
+            return _serverState.ServerLog.GameStateID;
         }
     }
 }

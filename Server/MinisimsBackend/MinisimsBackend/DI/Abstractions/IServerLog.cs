@@ -8,7 +8,9 @@ namespace MinisimsBackend.DI.Abstractions
 {
     public interface IServerLog
     {
-        void LogUpdate(int id, TileUpdateDTO[] tileUpdates);
-        TileUpdateDTO[] GetUpdatesInRange(int startID, int endID);
+        int GameStateID { get; set; }
+        void LogUpdate(TileUpdateDTO[] tileUpdates);
+        void LogUpdate(DroneUpdateDTO[] droneUpdates);
+        UpdatePackageDTO GetUpdatesInRange(int startID, int endID);
     }
 }

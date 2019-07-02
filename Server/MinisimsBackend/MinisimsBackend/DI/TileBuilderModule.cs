@@ -1,7 +1,6 @@
 ﻿using Autofac;
 using MinisimsBackend.DI.Abstractions;
-using MinisimsBackend.Game;
-using MinisimsBackend.Game.Map;
+using MinisimsBackend.Game.Map.Generation;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,4 +1,4 @@
-import { Drone } from "../drone.js";
+import { Drone, StatTypes } from "../drone.js";
 import { Items, Goals, TileTypes } from "../constants.js";
 import { GameState } from "../game/game.js";
 
@@ -21,7 +21,7 @@ export function AddDroneEvent(pos_x: number, pos_y: number): CustomEvent
     return self;
 }
 
-export function AddItemEvent(drone_id: number, item: Items, count: number): CustomEvent
+export function AddItemEvent(drone_id: string, item: StatTypes, count: number): CustomEvent
 {
     var self = this;
     self = new CustomEvent(Events.ADD_ITEM, {detail: {drone: drone_id, item: item, count: count}});
@@ -35,7 +35,7 @@ export function TickEvent(): CustomEvent
     return self;
 }
 
-export function ChangeEnergyEvent(drone_id: number, amount: number): CustomEvent
+export function ChangeEnergyEvent(drone_id: string, amount: number): CustomEvent
 {
     var self = this;
     self = new CustomEvent(Events.CHANGE_ENERGY, {detail: {drone: drone_id, amount: amount}});

@@ -53,12 +53,12 @@
         <h1>Properties</h1>
         <div class="panel-content">
             <div class="content-group" title="Drone Stats">
-                    <h2 id="lbl_dronename" data-bind="text: drone_name">Drone Name</h2>
+                    <h2 id="lbl_dronename" data-bind="text: droneName">Drone Name</h2>
                     <h3>Energy</h3>
-                    <progress data-bind="value: drone_energy" id="prgbar_energy" max="100" value="10" title="Energy"></progress>
+                    <progress data-bind="value: droneEnergy" id="prgbar_energy" max="100" value="10" title="Energy"></progress>
                     <h3>Inventory</h3>
-                    <div data-bind="foreach: drone_inventory" id="inventory-pane" class="flex-menu">
-                        <div><span data-bind="text: m_item"></span>: <span data-bind="text: m_count"></span></div>
+                    <div data-bind="foreach: droneInventory" id="inventory-pane" class="flex-menu">
+                        <div><span data-bind="text: item"></span>: <span data-bind="text: count"></span></div>
                     </div>
             </div>
             <div class="content-group" title="All Drones">
@@ -68,11 +68,11 @@
             </div>
             <div class="content-group" title="Games">
                 <button data-bind="click: saveGame">Save Game</button>
-                <ul data-bind="foreach: games">
+                <ul data-bind="foreach: gameStates">
                     <li>
                         <button data-bind="click: () => $parent.loadGame($index())">
-                                <span data-bind="text: 'Game ' + $data.m_name"></span>
-                                <button data-bind="click: () => $parent.deleteGame($data.m_name)">X</button>
+                                <span data-bind="text: 'Game ' + $data.name"></span>
+                                <button data-bind="click: () => $parent.deleteGame($data.name)">X</button>
                         </button>
                     </li>
                 </ul>

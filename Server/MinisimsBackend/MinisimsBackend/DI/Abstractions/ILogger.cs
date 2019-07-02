@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace MinisimsBackend.DI.Abstractions
 {
-    interface ILog
+    public interface ILog
     {
         /// <summary>
         /// Write a line of text to the log

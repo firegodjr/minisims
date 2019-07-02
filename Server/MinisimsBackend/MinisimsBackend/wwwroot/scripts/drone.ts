@@ -2,6 +2,7 @@ import { Deficits, Goals, Items, Jobs } from "./constants.js";
 import { AddItemEvent, ChangeEnergyEvent } from "./event/events.js";
 import { GameState } from "./game/game.js";
 import { Job } from "./game/jobs.js";
+import { Table } from "./util/table.js";
 
 /**
  * An item/count pair for storing items in inventory
@@ -17,16 +18,25 @@ class InventoryPair
     }
 }
 
-interface DroneDTO
+export enum StatTypes
 {
-    index: number;
-    posX: number;
-    posY: number;
-    energy: number;
-    energyThreshold: number; // Inclusive threshold for when this should create a goal
-    inventory: Array<InventoryPair>;
-    job: Job;
-    goal: Goals;
+    WHEAT,
+    ORE,
+    ENERGY
+}
+
+interface DroneStatChangeDTO
+{
+    statType: number;
+    valueChange: number;
+}
+
+interface DroneUpdateDTO
+{
+    name: string;
+    x: number;
+    y: number;
+    stats: DroneStatChangeDTO[];
 }
 
 /**
@@ -34,142 +44,38 @@ interface DroneDTO
  */
 class Drone
 {
-    index: number;
+    name: string;
     posX: number;
     posY: number;
-    energy: number;
-    energyThreshold: number; // Inclusive threshold for when this should create a goal
-    inventory: Array<InventoryPair>;
-    job: Job;
-    goal: Goals;
-    moved: boolean;
+    stats: Table<number>;
+    moved: boolean = false;
 
-    constructor(index: number, pos_x: number, pos_y: number, job: Job)
+    constructor(update: DroneUpdateDTO)
     {
-        this.index = index;
-        this.posX = pos_x;
-        this.posY = pos_y;
-        this.energy = 100;
-        this.energyThreshold = 30;
-        this.inventory = [];
-        this.job = job;
-        this.goal = Goals.NONE;
+        this.name = update.name;
+        this.posX = update.x;
+        this.posY = update.y;
+        this.stats = new Table();
+
+        for (let i = 0; i < update.stats.length; ++i)
+        {
+            this.stats.set(update.stats[i].statType, update.stats[i].valueChange);
+        }
     }
 }
 
 class Dronef
 {
-    /**
-     * Checks the drone for any deficits, and returns the one with highest priority
-     */
-    get_priority_deficit(drone: Drone){
-        let energyDeficit = this.hasEnergyDeficit(drone, drone.energyThreshold);
-        let cropDeficit = this.hasCropDeficit(drone, drone.job.cropThreshold);
-
-        if(drone.job)
-        {
-            for(let i = 0; i < drone.job.deficitPriority.length; ++i)
-            {
-                if(drone.job.deficitPriority[i] === Deficits.ENERGY)
-                {
-                    // TODO there has to be a better way
-                    if(energyDeficit)
-                    {
-                        return Deficits.ENERGY;
-                    }
-                }
-                else if(drone.job.deficitPriority[i] === Deficits.LOW_CROP)
-                {
-                    // TODO there has to be a better way
-                    if(cropDeficit)
-                    {
-                        return Deficits.LOW_CROP;
-                    }
-                }
-                else if(drone.job.deficitPriority[i] === Deficits.ENOUGH_CROP)
-                {
-                    if(!cropDeficit)
-                    {
-                        return Deficits.ENOUGH_CROP;
-                    }
-                }
-            }
-        }
-
-        return Deficits.NONE;
-    }
-
-    /**
-     * Checks a drone for an energy deficit
-     * @param drone 
-     * @param threshold 
-     */
-    hasEnergyDeficit(drone: Drone, threshold: number)
-    {
-        return drone.energy <= threshold;
-    }
-
-    /**
-     * Checks a drone for a crop deficit
-     * @param drone 
-     * @param threshold 
-     */
-    hasCropDeficit(drone: Drone, threshold: number)
-    {
-        return drone.inventory
-    }
-
-    /**
-     * Sets a drone's goal based on its deficit
-     * @param drone 
-     * @param game 
-     * @param deficit 
-     * @param changeEvent 
-     */
-    setGoalFromDeficit(drone: Drone, game: GameState, deficit: Deficits, changeEvent: any)
-    {
-        let initialGoal = drone.goal;
-        if(deficit != Deficits.NONE)
-        {
-            drone.goal = drone.job.goalTable.get(deficit);
-        }
-        else
-        {
-            drone.goal = Goals.NONE;
-        }
-
-        if(drone.goal != initialGoal)
-        {
-            document.dispatchEvent(changeEvent(this.toIndex(drone, game), drone.goal));
-        }
-    }
-
-    /**
-     * Gets the index of this drone in the GameState
-     * @param drone 
-     * @param game 
-     */
-    toIndex(drone: Drone, game: GameState)
-    {
-        let comp = function(val: Drone)
-        {
-            return val == drone;
-        }
-
-        return game.drones.findIndex(comp);
-    }
 
     /**
      * Finds the index of the given item
      * @param item the item to search for
-     * @returns index of the item
+     * @returns InventoryPair of the item
      */
-    findInInventory(drone: Drone, item: Items)
+    findInInventory(drone: Drone, item: StatTypes)
     {
-        let foundInvPair = drone.inventory.findIndex(function(invPair){
-            return invPair.item == item;
-        });
-        return foundInvPair;
+        let itemCount = drone.stats[item];
+        return new InventoryPair(item, itemCount);
     }
 
     /**
@@ -178,29 +84,14 @@ class Dronef
      * @param item 
      * @param count 
      */
-    addItem(drone: Drone, item: Items, count = 1)
+    addItem(drone: Drone, item: StatTypes, count = 1)
     {
-        let index = this.findInInventory(drone, item);
-        if(index == -1)
-        {
-            // Don't allow adding negative items
-            if(count >= 0)
-            {
-                index = drone.inventory.length;
-                drone.inventory.push(new InventoryPair(item, count));
-            }
+        if (!drone.stats.keys().includes(item + "")) {
+            drone.stats.set(item, count);
         }
-        else
-        {
-            drone.inventory[index].count += count;
-        }
+        else drone.stats[item] += count;
 
-        if(index != -1 && drone.inventory[index].count == 0)
-        {
-            drone.inventory.splice(index, 1);
-        }
-
-        document.dispatchEvent(AddItemEvent(drone.index, item, count));
+        document.dispatchEvent(AddItemEvent(drone.name, item, count));
     }
 
     /**
@@ -210,34 +101,42 @@ class Dronef
      */
     changeEnergy(drone: Drone, change: number)
     {
-        drone.energy += change;
-        document.dispatchEvent(ChangeEnergyEvent(drone.index, change));
+        drone.stats[StatTypes.ENERGY] += change;
+        document.dispatchEvent(ChangeEnergyEvent(drone.name, change));
     }
 
     /**
-     * Moves a drone n units in the x and y directions
+     * Moves a drone to the given position
      * @param drone 
      * @param moveX 
      * @param moveY 
      */
     move(drone: Drone, moveX: number, moveY: number)
     {
-        drone.posX += moveX;
-        drone.posY += moveY;
-        drone.moved = true;
+        drone.posX = moveX;
+        drone.posY = moveY;
     }
 
     serialize(drone: Drone)
     {
-        let droneDTO: DroneDTO;
+        let droneDTO: DroneUpdateDTO;
 
-        droneDTO.index = drone.index;
-        droneDTO.posX = drone.posX;
-        droneDTO.posY = drone.posY;
-        droneDTO.energy = drone.energy;
-        droneDTO.energyThreshold = drone.energyThreshold;
-        droneDTO.inventory = drone.inventory;
-        droneDTO.goal = drone.goal;
+        droneDTO.name = drone.name;
+        droneDTO.x = drone.posX;
+        droneDTO.y = drone.posY;
+
+        let statChanges: DroneStatChangeDTO[] = [];
+        for (let i = 0; i < drone.stats.keys.length; ++i)
+        {
+            statChanges.push(
+                {
+                    statType: drone.stats.keys[i],
+                    valueChange: drone.stats[drone.stats.keys[i]]
+                });
+        }
+        droneDTO.stats = statChanges;
+
+        return droneDTO;
     }
 }
 

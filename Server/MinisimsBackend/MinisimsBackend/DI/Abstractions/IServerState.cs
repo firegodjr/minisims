@@ -7,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace MinisimsBackend.DI.Abstractions
 {
-    interface IServerState
+    public interface IServerState
     {
-        int GameStateID { get; }
         IGameState GameState { get; }
         IServerLog ServerLog { get; }
         void ApplyTileUpdate(TileUpdateDTO tileUpdate);

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace MinisimsBackend.Game.Map
+namespace MinisimsBackend.Game.Map.Generation
 {
     public class RandomMapGenerator : ITileGenerator
     {
