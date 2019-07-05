@@ -38,19 +38,11 @@ namespace MinisimsServer.DTO
         public int y;
         public int type;
 
-        public TileTypes GetTileType()
+        public TileUpdateDTO(int x, int y, int type)
         {
-            return (TileTypes)type;
-        }
-
-        public TileUpdate ToTileUpdate()
-        {
-            return new TileUpdate(x, y, GetTileType());
-        }
-
-        public override string ToString()
-        {
-            return $"x: {x}, y: {y}, type: {type}";
+            this.x = x;
+            this.y = y;
+            this.type = type;
         }
     }
 

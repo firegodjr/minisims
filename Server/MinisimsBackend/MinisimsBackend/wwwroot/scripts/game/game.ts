@@ -2,11 +2,11 @@ import { Drone, DroneHelper } from "../drone.js";
 import { JobCitizen } from "./jobs.js";
 import { InputManager } from "../io/input.js";
 import { TileTypes, TILE_DEGRADE_TABLE, Goals, Items, TILE_HARVEST_TABLE } from "../constants.js";
-import { ChangeSelectedEvent, AddDroneEvent, ChangeGoalEvent, TickEvent } from "../event/events.js";
+import { ChangeSelectedEvent, AddDroneEvent, TickEvent } from "../event/events.js";
 import { Table } from "../util/table.js";
 import { GenerateTiles } from './tilegenerator.js';
 import { ChangeTileEvent } from '../event/events.js';
-import { GameStateDTO } from "../network/dto.js";
+import { GameStateDTO, DroneUpdateDTO, DroneStatChangeDTO } from "../network/dto.js";
 declare var Zdog: any;
 
 /**
@@ -154,8 +154,8 @@ class GameState
 {
     name: string;
     tiles: Array<Array<Tile>>;
-    drones: Array<Drone>;
-    selectedDrone: number;
+    drones: Table<Drone>;
+    selectedDrone: string;
     zoom: number;
     pitch: number;
     rotation: number;
@@ -167,8 +167,8 @@ class GameState
     {
         this.name = name;
         this.tiles = [];
-        this.drones = [];
-        this.selectedDrone = 0;
+        this.drones = new Table<Drone>();
+        this.selectedDrone = "";
         this.zoom = 1;
         this.pitch = -Zdog.TAU / 12;
         this.rotation = Zdog.TAU * 7 / 8;
@@ -178,11 +178,7 @@ class GameState
 
         if(obj)
         {
-            GenerateTiles(this, obj.tiles.length, obj.tiles[0].length, obj.tiles);
-
-            this.name = obj.name;
-            this.drones = obj.drones;
-            this.selectedDrone = obj.selectedDrone;
+            this.deserialize(obj);
         }
     }
 
@@ -212,11 +208,17 @@ class GameState
         this.dirtyTiles.push(new Coords(x, y));
     }
 
+    updateDrone(update: DroneUpdateDTO)
+    {
+        let drone = this.drones.get(update.name);
+        drone.deserialize(update);
+    }
+
     /**
      * Selects the drone at the given index in the game's list of drones
      * @param index 
      */
-    selectDrone(index: number)
+    selectDrone(index: string)
     {
         this.selectedDrone = index;
         document.dispatchEvent(ChangeSelectedEvent(index));
@@ -249,7 +251,6 @@ class GameState
             }
         }
 
-        var droneIndex = this.drones.length;
         document.dispatchEvent(AddDroneEvent(posX, posY));
     }
 
@@ -268,12 +269,34 @@ class GameState
             }
         }
 
+        let serialDrones: DroneUpdateDTO[] = [];
+        for (let i = 0; i < this.drones.keys().length; ++i)
+        {
+            let key = this.drones.keys()[i];
+            let serialStats: DroneStatChangeDTO[] = [];
+            for (let j = 0; j < this.drones.get(key).stats.keys().length; ++j)
+            {
+                let statType = this.drones.get(key).stats.keys()[j];
+                let stat = this.drones.get(key).stats.get(statType);
+                serialStats.push({
+                    statType: parseInt(statType),
+                    valueChange: stat,
+                });
+            }
+
+            serialDrones.push({
+                name: this.drones[key].name,
+                x: this.drones[key].posX,
+                y: this.drones[key].posY,
+                stats: serialStats
+            });
+        }
+
         let serial: GameStateDTO = 
         {
             name: this.name,
             tiles: serialTiles,
-            drones: this.drones,
-            selectedDrone: this.selectedDrone
+            drones: serialDrones
         };
 
         return JSON.stringify(serial);
@@ -290,10 +313,11 @@ class GameState
 
         if(parsed.drones)
         {
-            this.drones = parsed.drones;
+            for (let i = 0; i < parsed.drones.length; ++i)
+            {
+                this.drones.set(parsed.drones[i].name, new Drone(parsed.drones[i]));
+            }
         }
-        
-        this.selectedDrone = parsed.selectedDrone | this.selectedDrone;
     }
 }
 

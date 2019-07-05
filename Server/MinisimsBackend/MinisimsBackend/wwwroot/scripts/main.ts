@@ -1,20 +1,19 @@
-import { DroneHelper } from "./drone.js";
+import { KnockoutStatic } from '../node_modules/knockout/build/output/knockout-latest.js';
+import { GoalStrings, ItemStrings } from './constants.js';
+import { DroneHelper } from './drone.js';
 import { EventPublisher, EventPublisherHelper } from './event/eventpublisher.js';
-import { Events, AddDroneEvent, TickEvent, ChangeGoalEvent } from './event/events.js';
-import { GameState, doTick } from "./game/game.js";
-import { GenerateTiles } from "./game/tilegenerator.js";
-import { drawBoard, BoardManager } from "./render/render.js";
-import { InputManager, InputManagerHelper } from "./io/input.js";
-import { KnockoutStatic } from "../node_modules/knockout/build/output/knockout-latest.js";
-import { ItemStrings, GoalStrings, TileTypes } from "./constants.js";
-import { ViewModel } from "./io/viewmodel.js";
-import { log, initLog } from "./io/output.js";
-import { ModelStore } from "./render/models.js";
-import { getElement } from "./util/docutil.js";
-import { requestUpdate, startRepeatUpdateRequests, requestFullState } from "./network/network.js";
-import { pushUpdates } from './network/sync.js';
+import { AddDroneEvent, Events, TickEvent } from './event/events.js';
+import { GameState } from './game/game.js';
+import { InputManager, InputManagerHelper } from './io/input.js';
+import { initLog, log } from './io/output.js';
+import { ViewModel } from './io/viewmodel.js';
 import { TileUpdateDTO } from './network/dto.js';
-import { resetBoard } from './render/render.js';
+import { requestFullState, startRepeatUpdateRequests } from './network/network.js';
+import { pushUpdates } from './network/sync.js';
+import { ModelStore } from './render/models.js';
+import { BoardManager, drawBoard } from './render/render.js';
+import { getElement } from './util/docutil.js';
+
 declare var ko: KnockoutStatic;
 
 (function(window: Window){
@@ -52,11 +51,6 @@ declare var ko: KnockoutStatic;
             viewport.height = viewport.parentElement.clientHeight;
         });
 
-        viewport.addEventListener(Events.ON_TICK, function(e)
-        {
-            game.dirtyTiles.push({x: 0, y: 1})
-        });
-
         viewport.addEventListener(Events.CHANGE_TILE, function(e: CustomEvent)
         {
             let tileUpdate = new TileUpdateDTO(e.detail.x, e.detail.y, e.detail.type);
@@ -84,12 +78,6 @@ declare var ko: KnockoutStatic;
             {
                 game.inputMgr.keystates.set("SHIFT", true);
             }
-
-            //DEBUG
-            let x = Math.floor(Math.random() * 16)
-            let y = Math.floor(Math.random() * 16)
-            console.log(`x: ${x}, y: ${y}`);
-            game.setTile(x, y, TileTypes.STONE);
         });
         document.addEventListener("keyup", function(e)
         {
@@ -126,21 +114,6 @@ declare var ko: KnockoutStatic;
             // update viewmodel
             viewmodel.drone.valueHasMutated();
         });
-
-        consoleArea.addEventListener(Events.CHANGE_GOAL, function(e: CustomEvent)
-        {
-            log("Drone " + e.detail.drone + " wants to " + GoalStrings[e.detail.goal] + ".");
-        });
-
-        consoleArea.addEventListener(Events.CHANGE_ENERGY, function(e: CustomEvent)
-        {
-            viewmodel.drone.valueHasMutated();
-        });
-
-        consoleArea.addEventListener(Events.CHANGE_SELECTED, function(e: CustomEvent)
-        {
-            board.selectTile(game.drones[e.detail.drone].posX, game.drones[e.detail.drone].posY);
-        });
     }
 
 
@@ -154,13 +127,12 @@ declare var ko: KnockoutStatic;
     var board = new BoardManager(game);
     var viewmodel = new ViewModel(game, board);
     let modelStore = new ModelStore();
-    viewmodel.addDrone();
-    viewmodel.selectDrone(0);
+    
     viewmodel.loadGamesFromManifest();
     viewmodel.loadGamesFromLocalStorage();
     modelStore.load_models().then(() => {
-        requestFullState(game).then(() => {
-            startRepeatUpdateRequests(game);
+        requestFullState(viewmodel).then(() => {
+            startRepeatUpdateRequests(viewmodel);
             drawBoard(game, board, modelStore);
         });
     });

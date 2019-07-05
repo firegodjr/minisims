@@ -18,7 +18,7 @@ namespace MinisimsBackend.Game.Map.Generation
             (TileTypes.WATER, 0f)
         };
 
-        const float WHEAT_MIN = 0.65f;
+        const float WHEAT_MIN = 0.60f;
 
         public PerlinMapGenerator()
         {

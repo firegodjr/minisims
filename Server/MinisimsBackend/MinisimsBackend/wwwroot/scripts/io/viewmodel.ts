@@ -1,14 +1,24 @@
-import { Observable, ObservableArray } from "../knockout.js";
-import { Items } from "../constants.js";
-import { DroneHelper, InventoryPair, StatTypes } from "../drone.js";
+import { KnockoutStatic } from '../../node_modules/knockout/build/output/knockout-latest.js';
+import { DroneHelper, InventoryPair, StatTypes } from '../drone.js';
 import { ChangeSelectedEvent } from '../event/events.js';
-import { GameState, GameStateDTO, doTick } from "../game/game.js";
-import { loadJson, loadText, Manifest, postToServer, DTOTypes } from "../network/network.js";
-import { resetBoard, BoardManager } from '../render/render.js';
+import { GameState, GameStateDTO } from '../game/game.js';
+import { Observable, ObservableArray } from '../knockout.js';
+import {
+    DTOTypes,
+    loadJson,
+    loadText,
+    Manifest,
+    PostActions,
+    postToServer,
+    requestTick,
+    requestUpdates,
+} from '../network/network.js';
+import { BoardManager, resetBoard } from '../render/render.js';
 import copy from '../util/copy.js';
-import { KnockoutStatic } from "../../node_modules/knockout/build/output/knockout-latest.js";
-import { parseJsonAs } from "../util/jsonutil.js";
-import { PostActions } from '../network/network.js';
+import { parseJsonAs } from '../util/jsonutil.js';
+import { DroneUpdateDTO, TileUpdateDTO } from '../network/dto.js';
+import { log } from './output.js';
+
 declare var ko: KnockoutStatic;
 
 const GAMES_PATH = "games/";
@@ -18,11 +28,11 @@ const LOCAL_STORAGE_KEY = "minisims_games";
 class ViewModel
 {
     droneHelper: DroneHelper;
-    drone: Observable<number>;
-    droneName: Observable<String>;
+    drone: Observable<string>;
+    droneName: Observable<string>;
     droneInventory: ObservableArray<Observable<InventoryPair>>;
-    droneEnergy: Observable<Number>;
-    drones: ObservableArray<number>;
+    droneEnergy: Observable<number>;
+    drones: ObservableArray<string>;
     gameStates: ObservableArray<GameStateDTO>;
     board: BoardManager
     game: GameState;
@@ -42,22 +52,18 @@ class ViewModel
         this.drone.subscribe(() => this.updateDroneData());
     }
 
-    private updateDroneData()
+    updateDroneData()
     {
         this.droneName("Drone " + this.drone());
 
-        //this.droneInventory.removeAll();
-        //for(var i = 0; i < this.game.drones[this.drone()].inventory.length; ++i)
-        //{
-        //    this.droneInventory.push(ko.observable(this.game.drones[this.drone()].inventory[i]))
-        //}
-
-        //this.droneEnergy(this.game.drones[this.drone()].energy);
+        this.droneEnergy(this.game.drones.get(this.drone()).stats.get(StatTypes.ENERGY));
+        log(this.drone() + " has energy " + this.droneEnergy());
     }
 
     doTick()
     {
-        doTick(this.game, this.droneHelper);
+        requestTick();
+        requestUpdates();
     }
 
     async loadGamesFromManifest()
@@ -115,6 +121,11 @@ class ViewModel
         this.gameStates.push(parseJsonAs<GameStateDTO>(this.game.serialize()));
     }
 
+    addDrone()
+    {
+        
+    }
+
     deleteGame(name: string)
     {
         let games: string[] = parseJsonAs<string[]>(localStorage.getItem(LOCAL_STORAGE_KEY));
@@ -164,11 +175,24 @@ class ViewModel
         this.addItem(StatTypes.ORE, count);
     }
 
-    addDrone()
+    updateDrone(update: DroneUpdateDTO)
     {
-        var droneIndex = this.game.drones.length;
-        this.game.addDrone(); //FIXME the drone y coordinate is undefined sometimes, why?
-        this.drones.push(droneIndex);
+        this.game.updateDrone(update);
+        if(!this.drones().includes(update.name))
+        {
+            this.drones.push(update.name);
+        }
+
+        if(this.drone() == update.name)
+        {
+            this.selectDrone(this.drone());
+            this.updateDroneData();
+        }
+    }
+
+    updateTile(update: TileUpdateDTO)
+    {
+        this.game.updateTile(update.x, update.y, update.type);
     }
 
     loadGame(index: number)
@@ -180,9 +204,11 @@ class ViewModel
         resetBoard(this.game, this.board)
     }
 
-    selectDrone(index: number)
+    selectDrone(index: string)
     {
         this.game.selectDrone(index);
+        let drone = this.game.drones.get(index);
+        this.board.selectTile(drone.posX, drone.posY);
         this.drone(index);
         document.dispatchEvent(ChangeSelectedEvent(index));
     }

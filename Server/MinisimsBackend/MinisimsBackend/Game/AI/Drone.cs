@@ -26,18 +26,26 @@ namespace MinisimsBackend.Game.AI
 
         public Drone(string name, IGameState gameState, IPathFinder pathFinder, params IGoal[] goals)
         {
+            Name = name;
+            this.goals = goals;
             _gameState = gameState;
             _pathFinder = pathFinder;
 
             Stats = new Dictionary<StatTypes, IDroneStat>();
+            Stats.Add(StatTypes.ENERGY, new DroneStat(StatTypes.ENERGY, 100));
+            Stats.Add(StatTypes.WHEAT, new DroneStat(StatTypes.WHEAT, 0));
+            Stats.Add(StatTypes.ORE, new DroneStat(StatTypes.ORE, 0));
         }
 
         public void SetPath(LinkedList<Point> newPath)
         {
-            this.path = newPath;
-            this.pathEnumerator = path.GetEnumerator();
-            pathStatus.TileDestination = _gameState.Tiles.GetTileAt(newPath.Last.Value).TileType;
-            pathStatus.PathComplete = false;
+            if(newPath.Count > 0)
+            {
+                this.path = newPath;
+                this.pathEnumerator = path.GetEnumerator();
+                pathStatus.TileDestination = _gameState.Tiles.GetTileAt(newPath.Last.Value).TileType;
+                pathStatus.PathComplete = false;
+            }
         }
 
         public LinkedList<Point> FindPath(int x, int y)
@@ -48,30 +56,46 @@ namespace MinisimsBackend.Game.AI
         public LinkedList<Point> FindPath(TileTypes endTile)
         {
             Point[] destinations = _gameState.Tiles.GetTileLocations(endTile);
-            Dictionary<float, Point> destByDist = new Dictionary<float, Point>();
-            PriorityQueue<float> approxDistances = new PriorityQueue<float>();
 
-            for (int i = 0; i < destinations.Length; ++i)
+            if (destinations.Length > 0)
             {
-                float distance = Location.Dist(destinations[i]);
-                destByDist.Add(distance, destinations[i]);
-                approxDistances.Enqueue(distance);
+                Dictionary<float, Point> destByDist = new Dictionary<float, Point>();
+                PriorityQueue<float> approxDistances = new PriorityQueue<float>();
+
+                for (int i = 0; i < destinations.Length; ++i)
+                {
+                    float distance = Location.Dist(destinations[i]);
+                    if (!destByDist.ContainsKey(distance))
+                    {
+                        destByDist.Add(distance, destinations[i]);
+                    }
+
+                    approxDistances.Enqueue(distance);
+                }
+
+                Point finalDestination = destByDist[approxDistances.Dequeue()];
+
+                return FindPath(finalDestination.x, finalDestination.y);
             }
-
-            Point finalDestination = destByDist[approxDistances.Dequeue()];
-
-            return FindPath(finalDestination.x, finalDestination.y);
+            else return new LinkedList<Point>();
         }
 
         public bool StepPath()
         {
-            if(pathEnumerator.MoveNext())
+            if (path != null)
             {
-                return MoveTo(pathEnumerator.Current.x, pathEnumerator.Current.y);
+                if (pathEnumerator.MoveNext())
+                {
+                    return MoveTo(pathEnumerator.Current.x, pathEnumerator.Current.y);
+                }
+                else
+                {
+                    pathStatus.PathComplete = true;
+                    return false;
+                }
             }
             else
             {
-                pathStatus.PathComplete = true;
                 return false;
             }
         }
@@ -83,6 +107,15 @@ namespace MinisimsBackend.Game.AI
 
         public bool MoveTo(int x, int y)
         {
+            var droneEnumerator = _gameState.Drones.GetEnumerator();
+            while(droneEnumerator.MoveNext())
+            {
+                if(droneEnumerator.Current.Value.Location == new Point(x, y))
+                {
+                    return false;
+                }
+            }
+
             Location = new Point(x, y);
             return true;
         }
@@ -103,7 +136,9 @@ namespace MinisimsBackend.Game.AI
                     return update;
                 }
             }
-
+            
+            // Drone loses energy from walking
+            update = new DroneUpdateDTO(Name, AddToStat(StatTypes.ENERGY, -1));
             return null;
         }
 

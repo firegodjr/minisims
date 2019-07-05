@@ -42,17 +42,10 @@ export function ChangeEnergyEvent(drone_id: string, amount: number): CustomEvent
     return self;
 }
 
-export function ChangeSelectedEvent(drone_id: number): CustomEvent
+export function ChangeSelectedEvent(drone_id: string): CustomEvent
 {
     var self = this;
     self = new CustomEvent(Events.CHANGE_SELECTED, {detail: {drone: drone_id}});
-    return self;
-}
-
-export function ChangeGoalEvent(drone_id: number, goal: Goals): CustomEvent
-{
-    var self = this;
-    self = new CustomEvent(Events.CHANGE_GOAL, {detail: {drone: drone_id, goal: goal}});
     return self;
 }
 

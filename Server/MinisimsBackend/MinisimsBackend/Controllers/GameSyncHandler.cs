@@ -43,5 +43,11 @@ namespace MinisimsBackend.Controllers
 
             return _serverState.ServerLog.GameStateID;
         }
+
+        public ActionResult<bool> DoTick()
+        {
+            _serverState.GameState.Tick();
+            return true;
+        }
     }
 }

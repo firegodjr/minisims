@@ -3,6 +3,7 @@ import { AddItemEvent, ChangeEnergyEvent } from "./event/events.js";
 import { GameState } from "./game/game.js";
 import { Job } from "./game/jobs.js";
 import { Table } from "./util/table.js";
+import { DroneUpdateDTO, DroneStatChangeDTO } from "./network/dto.js";
 
 /**
  * An item/count pair for storing items in inventory
@@ -23,20 +24,6 @@ export enum StatTypes
     WHEAT,
     ORE,
     ENERGY
-}
-
-interface DroneStatChangeDTO
-{
-    statType: number;
-    valueChange: number;
-}
-
-interface DroneUpdateDTO
-{
-    name: string;
-    x: number;
-    y: number;
-    stats: DroneStatChangeDTO[];
 }
 
 /**
@@ -62,11 +49,33 @@ class Drone
             this.stats.set(update.stats[i].statType, update.stats[i].valueChange);
         }
     }
+
+    deserialize(update: DroneUpdateDTO)
+    {
+
+        if(update.x != -1 && update.y != -1)
+        {
+            if(this.posX != update.x || this.posY != update.y)
+            {
+                this.moved = true;
+            }
+            
+            this.posX = update.x;
+            this.posY = update.y;
+        }
+
+        this.name = update.name;
+        this.stats = new Table();
+
+        for (let i = 0; i < update.stats.length; ++i)
+        {
+            this.stats.set(update.stats[i].statType, update.stats[i].valueChange);
+        }
+    }
 }
 
 class Dronef
 {
-
     /**
      * Finds the index of the given item
      * @param item the item to search for
@@ -99,7 +108,7 @@ class Dronef
      * @param drone 
      * @param change 
      */
-    changeEnergy(drone: Drone, change: number)
+    changeEnergy(drone: Drone, change: number) //TODO: Switch over to 'stat' system instead of hardcoded 'energy'
     {
         drone.stats[StatTypes.ENERGY] += change;
         document.dispatchEvent(ChangeEnergyEvent(drone.name, change));
@@ -126,12 +135,12 @@ class Dronef
         droneDTO.y = drone.posY;
 
         let statChanges: DroneStatChangeDTO[] = [];
-        for (let i = 0; i < drone.stats.keys.length; ++i)
+        for (let i = 0; i < drone.stats.keys().length; ++i)
         {
             statChanges.push(
                 {
-                    statType: drone.stats.keys[i],
-                    valueChange: drone.stats[drone.stats.keys[i]]
+                    statType: parseInt(drone.stats.keys()[i]),
+                    valueChange: drone.stats.get(drone.stats.keys()[i])
                 });
         }
         droneDTO.stats = statChanges;

@@ -9,6 +9,23 @@ export interface TileUpdateDTO
     type: TileTypes;
 }
 
+export interface DroneUpdateDTO {
+    name: string;
+    x: number;
+    y: number;
+    stats: DroneStatChangeDTO[];
+}
+
+export interface DroneStatChangeDTO {
+    statType: number;
+    valueChange: number;
+}
+
+export interface UpdatePackageDTO {
+    droneUpdates: DroneUpdateDTO[];
+    tileUpdates: TileUpdateDTO[];
+}
+
 export class TileUpdateDTO
 {
     x: number;
@@ -30,6 +47,5 @@ export interface GameStateDTO
 {
     name: string;
     tiles: Array<Array<SerialTile>>;
-    drones: Array<Drone>;
-    selectedDrone: number;
+    drones: Array<DroneUpdateDTO>;
 }

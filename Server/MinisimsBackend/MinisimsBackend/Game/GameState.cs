@@ -12,6 +12,7 @@ namespace MinisimsBackend.Game
     public class GameState : IGameState
     {
         public ITileMap Tiles { get => _tiles; set => _tiles = value; }
+        public Dictionary<string, Drone> Drones { get => drones; }
 
         string name;
         public IServerLog _serverLog;
@@ -22,7 +23,8 @@ namespace MinisimsBackend.Game
 
         public GameState(ITileMap tiles, IServerLog serverLog, IPathFinder pathFinder)
         {
-            this.name = "default";
+            name = "default";
+            drones = new Dictionary<string, Drone>();
             _tiles = tiles;
             _pathFinder = pathFinder;
             _serverLog = serverLog;
@@ -31,6 +33,7 @@ namespace MinisimsBackend.Game
         public void SetTile(int x, int y, TileTypes type)
         {
             this._tiles.SetTile(x, y, type);
+            _serverLog.LogUpdate(new TileUpdateDTO(x, y, (int)type));
         }
 
         public void SelectDrone(int ID)
@@ -86,7 +89,18 @@ namespace MinisimsBackend.Game
                 i++;
             }
 
+            Random random = new Random();
+            var unripeWheat = _tiles.GetTileLocations(TileTypes.WHEAT);
+            for (int w = 0; w < unripeWheat.Length; ++w)
+            {
+                if(random.Next() % 20 == 0)
+                {
+                    SetTile(unripeWheat[w].x, unripeWheat[w].y, TileTypes.WHEAT_RIPE);
+                }
+            }
+
             _serverLog.LogUpdate(droneUpdates);
+            _serverLog.GameStateID++;
         }
     }
 }

@@ -2,6 +2,9 @@ import { parseJsonAs } from "../util/jsonutil.js";
 import { GameState, GameStateDTO } from "../game/game.js";
 import { BoardManager, resetBoard } from "../render/render.js";
 import { TileUpdateDTO } from 'dto.js';
+import { UpdatePackageDTO } from './dto.js';
+import { ViewModel } from '../io/viewmodel.js';
+import { DroneUpdateDTO } from './dto.js';
 
 const OBJECTS_PATH = "objects/";
 const API_PATH = "/api/values";
@@ -149,25 +152,37 @@ function requestState(): Promise<XMLHttpRequest>
     return makeRequest("/api/gamesync/state", "GET");
 }
 
-function requestUpdates(id: number): Promise<XMLHttpRequest>
+function requestUpdates(): Promise<XMLHttpRequest>
 {
-    return makeRequest(`api/gamesync/updates/${id}/`, "GET");
+    return makeRequest(`api/gamesync/updates/${clientStateID}/`, "GET");
 }
 
-function requestUpdate(game: GameState)
+function requestTick(): Promise<XMLHttpRequest>
+{
+    return makeRequest("/api/gamesync/tick", "POST");
+}
+
+function requestUpdate(view: ViewModel)
 {
     requestID().then((req) => {
         let serverStateID = parseInt(req.responseText);
         if(serverStateID > clientStateID)
         {
-            requestUpdates(clientStateID).then((req) => {
+            requestUpdates().then((req) => {
                 if(req.responseText && req.responseText != "")
                 {
                     clientStateID = serverStateID;
-                    let updates = parseJsonAs<TileUpdateDTO[]>(req.responseText);
-                    for(let i = 0; i < updates.length; ++i)
+                    let updatePkg = parseJsonAs<UpdatePackageDTO>(req.responseText);
+                    let tileUpdates = updatePkg.tileUpdates;
+                    let droneUpdates = updatePkg.droneUpdates;
+                    for(let i = 0; i < tileUpdates.length; ++i)
                     {
-                        game.updateTile(updates[i].x, updates[i].y, updates[i].type);
+                        view.updateTile(tileUpdates[i]);
+                    }
+
+                    for(let i = 0; i < droneUpdates.length; ++i)
+                    {
+                        view.updateDrone(droneUpdates[i]);
                     }
                 }
             });
@@ -175,7 +190,7 @@ function requestUpdate(game: GameState)
     });
 }
 
-function requestFullState(game: GameState) : Promise<void[]>
+function requestFullState(view: ViewModel) : Promise<void[]>
 {
     let promises: Array<Promise<void>> = [];
     promises.push(requestID().then((req) => {
@@ -185,18 +200,23 @@ function requestFullState(game: GameState) : Promise<void[]>
         if(req.responseText && req.responseText != "")
         {
             let state = parseJsonAs<GameStateDTO>(req.responseText);
-            game.deserialize(state);
+            view.game.deserialize(state);
+            
+            for(let i = 0; i < view.game.drones.keys().length; ++i)
+            {
+                view.drones.push(view.game.drones.keys()[i]);
+            }
         }
     }));
 
     return Promise.all(promises);
 }
 
-function startRepeatUpdateRequests(game: GameState)
+function startRepeatUpdateRequests(view: ViewModel)
 {
     setInterval(() => {
-        requestUpdate(game);
-    }, 2000);
+        requestUpdate(view);
+    }, 1000);
 }
 
 /**
@@ -221,4 +241,4 @@ function postToServer(data: string, id: string, type: DTOTypes, action: PostActi
     makeRequest(SERVER_URL + API_PATH, "POST", JSON.stringify(dtf), contentType);
 }
 
-export { Manifest, loadJson, loadText, makeRequest, requestID, postToServer, requestFullState, requestUpdate, startRepeatUpdateRequests };
+export { Manifest, loadJson, loadText, makeRequest, requestID, requestTick, requestUpdates, postToServer, requestFullState, requestUpdate, startRepeatUpdateRequests };

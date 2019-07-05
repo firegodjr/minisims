@@ -20,5 +20,15 @@ namespace MinisimsBackend.Game.Map
         {
             return (float)Math.Sqrt(Math.Pow(x - p.x, 2) + Math.Pow(y - p.y, 2));
         }
+
+        public static bool operator==(Point p1, Point p2)
+        {
+            return p1.x == p2.x && p1.y == p2.y;
+        }
+
+        public static bool operator !=(Point p1, Point p2)
+        {
+            return !(p1 == p2);
+        }
     }
 }

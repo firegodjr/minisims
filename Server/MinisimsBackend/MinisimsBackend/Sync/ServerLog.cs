@@ -20,14 +20,28 @@ namespace MinisimsBackend.Sync
             GameStateID = 1;
         }
 
-        public void LogUpdate(TileUpdateDTO[] tileUpdates)
+        public void LogUpdate(params TileUpdateDTO[] tileUpdates)
         {
-            TileUpdateLog.Add(GameStateID, tileUpdates);
+            if (TileUpdateLog.ContainsKey(GameStateID))
+            {
+                TileUpdateLog[GameStateID] = TileUpdateLog[GameStateID].Concat(tileUpdates).ToArray();
+            }
+            else
+            {
+                TileUpdateLog.Add(GameStateID, tileUpdates);
+            }
         }
 
-        public void LogUpdate(DroneUpdateDTO[] droneUpdates)
+        public void LogUpdate(params DroneUpdateDTO[] droneUpdates)
         {
-            DroneUpdateLog.Add(GameStateID, droneUpdates);
+            if(DroneUpdateLog.ContainsKey(GameStateID))
+            {
+                DroneUpdateLog[GameStateID] = DroneUpdateLog[GameStateID].Concat(droneUpdates).ToArray();
+            }
+            else
+            {
+                DroneUpdateLog.Add(GameStateID, droneUpdates);
+            }
         }
 
         public UpdatePackageDTO GetUpdatesInRange(int startID, int endID)

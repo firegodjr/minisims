@@ -1,5 +1,7 @@
 ﻿using MinisimsBackend.DI.Abstractions;
 using MinisimsBackend.Game;
+using MinisimsBackend.Game.AI.Enum;
+using MinisimsBackend.Game.AI.Goals;
 using MinisimsBackend.Game.Map;
 using MinisimsBackend.Sync;
 using MinisimsServer.DTO;
@@ -22,6 +24,11 @@ namespace MinisimsBackend
         {
             this._game = _game;
             this._serverLog = _serverLog;
+
+            //DEBUG
+            _game.AddDrone("mario", new GoalEatItem(StatTypes.WHEAT), new GoalHarvestTile(StatTypes.WHEAT));
+            _game.AddDrone("luigi", new GoalEatItem(StatTypes.WHEAT), new GoalHarvestTile(StatTypes.WHEAT));
+            _game.AddDrone("sanic", new GoalEatItem(StatTypes.WHEAT), new GoalHarvestTile(StatTypes.WHEAT));
         }
 
         public int GetID()

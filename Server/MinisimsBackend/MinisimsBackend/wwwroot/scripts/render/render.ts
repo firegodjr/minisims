@@ -226,11 +226,12 @@ export function drawBoard(gameState: GameState, boardMgr: BoardManager, modelSto
 
         // Update drones
         var refreshed = false;
-        while(droneArr.length < game.drones.length)
+        while(droneArr.length < game.drones.keys().length)
         {
             let newIndex = droneArr.length;
-            let newX = game.drones[newIndex].posX;
-            let newY = game.drones[newIndex].posY;
+            let droneName = game.drones.keys()[newIndex];
+            let newX = game.drones.get(droneName).posX;
+            let newY = game.drones.get(droneName).posY;
             let newDrone = modelStore.get("drone", { translate: { x: newX, y: newY}, addTo: layers.grassArr[newX][newY]});
             newDrone.translate = {x: TILE_SIZE / 2, z: TILE_SIZE / 2}
             droneArr.push(newDrone);
@@ -238,17 +239,19 @@ export function drawBoard(gameState: GameState, boardMgr: BoardManager, modelSto
             refreshed = true;
         }
 
-        for(var i = 0; i < game.drones.length; ++i)
+        for(var i = 0; i < game.drones.keys().length; ++i)
         {
-            if(game.drones[i].moved)
+            let droneName = game.drones.keys()[i];
+            if(game.drones.get(droneName).moved)
             {
                 droneArr[i].remove(); 
-                var x = game.drones[i].posX;
-                var y = game.drones[i].posY;
+                var x = game.drones.get(droneName).posX;
+                var y = game.drones.get(droneName).posY;
     
                 layers.grassArr[x][y].addChild(droneArr[i]);
                 layers.grassArr[x][y].updateGraph();
                 refreshed = true;
+                game.drones.get(droneName).moved = false;
             }
         }
 
@@ -270,10 +273,16 @@ export function drawBoard(gameState: GameState, boardMgr: BoardManager, modelSto
             let newTile = createZdogTile(tile, pair.x, pair.y, halfBoard, layers.tiles);
             layers.tileArr[pair.x][pair.y] = newTile;
 
-            let drone = game.drones.find((drone: Drone) => 
-            { 
-                return drone.posX == pair.x && drone.posY == pair.y
-            });
+            let drone: Drone;
+            for(let i = 0; i < game.drones.keys().length; ++i)
+            {
+                let name = game.drones.keys()[i];
+                if(game.drones.get(name).posX == pair.x && game.drones.get(name).posY == pair.y)
+                {
+                    drone = game.drones.get(name);
+                    break;
+                }
+            }
 
             layers.grassArr[pair.x][pair.y] = addGrass(pair.x, pair.y, halfBoard, layers.tiles, newTile.color, tile.grassDensity, tile.grassHeight, tile.grassHeightVariation, tile.optimizeGrass);
             if(drone) drone.moved = true;

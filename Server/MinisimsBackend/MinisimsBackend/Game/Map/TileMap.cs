@@ -15,21 +15,24 @@ namespace MinisimsBackend.Game.Map
         
         public TileMap(ITileGenerator tileGenerator)
         {
-            tileLocations = new Dictionary<TileTypes, List<Point>>();
-
-            TileArray = tileGenerator.GenerateTiles(16, 16);
-            for(int x = 0; x < TileArray.Length; ++x)
+            do
             {
-                for(int y = 0; y < TileArray[x].Length; ++y)
+                tileLocations = new Dictionary<TileTypes, List<Point>>();
+                TileArray = tileGenerator.GenerateTiles(16, 16);
+                for (int x = 0; x < TileArray.Length; ++x)
                 {
-                    if(!tileLocations.ContainsKey(TileArray[x][y].TileType))
+                    for (int y = 0; y < TileArray[x].Length; ++y)
                     {
-                        tileLocations.Add(TileArray[x][y].TileType, new List<Point>());
-                    }
+                        if (!tileLocations.ContainsKey(TileArray[x][y].TileType))
+                        {
+                            tileLocations.Add(TileArray[x][y].TileType, new List<Point>());
+                        }
 
-                    tileLocations[TileArray[x][y].TileType].Add(new Point(x, y));
+                        tileLocations[TileArray[x][y].TileType].Add(new Point(x, y));
+                    }
                 }
             }
+            while (!tileLocations.ContainsKey(TileTypes.WHEAT_RIPE)); // if no wheat, try again
         }
 
         public void Init(int width, int height, TileTypes fillTile)
@@ -45,20 +48,42 @@ namespace MinisimsBackend.Game.Map
             }
         }
 
-        public void SetTile(int x, int y, TileTypes type, float height)
+        public void SetTile(int x, int y, TileTypes newTile, float height)
         {
-            TileArray[x][y].TileType = type;
+            TileTypes oldTile = TileArray[x][y].TileType;
+            TileArray[x][y].TileType = newTile;
             TileArray[x][y].Height = height;
+
+            tileLocations[oldTile].Remove(new Point(x, y));
+            if (!tileLocations.TryAdd(newTile, new List<Point>(new Point[]{ new Point(x, y) })))
+            {
+                tileLocations[newTile].Add(new Point(x, y));
+            }
         }
 
         public void SetTile(int x, int y, Tile tile)
         {
+            TileTypes oldTile = TileArray[x][y].TileType;
+            TileTypes newTile = tile.TileType;
             TileArray[x][y] = tile;
+
+            tileLocations[oldTile].Remove(new Point(x, y));
+            if (!tileLocations.TryAdd(newTile, new List<Point>(new Point[] { new Point(x, y) })))
+            {
+                tileLocations[newTile].Add(new Point(x, y));
+            }
         }
 
-        public void SetTile(int x, int y, TileTypes type)
+        public void SetTile(int x, int y, TileTypes newTile)
         {
-            TileArray[x][y].TileType = type;
+            TileTypes oldTile = TileArray[x][y].TileType;
+            TileArray[x][y].TileType = newTile;
+
+            tileLocations[oldTile].Remove(new Point(x, y));
+            if (!tileLocations.TryAdd(newTile, new List<Point>(new Point[] { new Point(x, y) })))
+            {
+                tileLocations[newTile].Add(new Point(x, y));
+            }
         }
 
         public Tile GetTileAt(Point point)
@@ -83,7 +108,14 @@ namespace MinisimsBackend.Game.Map
 
         public Point[] GetTileLocations(TileTypes type)
         {
-            return tileLocations[type].ToArray();
+            if(tileLocations.ContainsKey(type))
+            {
+                return tileLocations[type].ToArray();
+            }
+            else
+            {
+                return new Point[0];
+            }
         }
     }
 }

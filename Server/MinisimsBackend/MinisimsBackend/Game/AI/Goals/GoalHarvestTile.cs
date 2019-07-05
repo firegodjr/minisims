@@ -13,11 +13,13 @@ namespace MinisimsBackend.Game.AI.Goals
     {
         private readonly Dictionary<StatTypes, TileTypes> TILE_LOOT = new Dictionary<StatTypes, TileTypes>();
         private readonly Dictionary<TileTypes, TileTypes> TILE_DECAY = new Dictionary<TileTypes, TileTypes>();
-        private const int ITEM_THRESHOLD = 10;
+        private const int ITEM_THRESHOLD = 1000;
         public StatTypes Item { get; set; }
 
-        public GoalHarvestTile()
+        public GoalHarvestTile(StatTypes item)
         {
+            Item = item;
+
             TILE_LOOT.Add(StatTypes.WHEAT, TileTypes.WHEAT_RIPE);
             TILE_LOOT.Add(StatTypes.ORE, TileTypes.ORE_RIPE);
             TILE_DECAY.Add(TileTypes.WHEAT_RIPE, TileTypes.WHEAT);
@@ -38,20 +40,23 @@ namespace MinisimsBackend.Game.AI.Goals
                 // Either we're standing on the tile, we're en route to the tile, or we path to the tile.
                 if (gameState.Tiles.GetTileAt(drone.Location).TileType == tile)
                 {
-                    gameState.Tiles.SetTile(drone.Location.x, drone.Location.y, TILE_DECAY[tile]);
+                    gameState.SetTile(drone.Location.x, drone.Location.y, TILE_DECAY[tile]);
                     statChange = drone.AddToStat(Item, 5);
-                }
-                else if (pathStatus.TileDestination == tile && !pathStatus.PathComplete)
-                {
                     drone.StepPath();
-                    update.x = drone.Location.x;
-                    update.y = drone.Location.y;
                 }
-                else
+                else // Decide on a new path, and start walking
                 {
                     drone.SetPath(drone.FindPath(tile));
+                    drone.StepPath(); // Initial step is the same as current location
+
+                    if(drone.Stats[StatTypes.ENERGY].TrySubtract(5))
+                    {
+                        takeStep(drone, update);
+                        statChange = drone.AddToStat(StatTypes.ENERGY, 0);
+                    }
                 }
 
+                update.stats = new DroneStatChangeDTO[] { statChange };
                 return true;
             }
             // Only returns if we don't need the item right now
@@ -60,6 +65,13 @@ namespace MinisimsBackend.Game.AI.Goals
                 update = null;
                 return false;
             }
+        }
+
+        private void takeStep(IDrone drone, DroneUpdateDTO update)
+        {
+                drone.StepPath(); // Do first step of path
+                update.x = drone.Location.x;
+                update.y = drone.Location.y;
         }
     }
 }

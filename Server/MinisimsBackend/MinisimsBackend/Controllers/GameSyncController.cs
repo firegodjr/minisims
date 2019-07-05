@@ -37,5 +37,11 @@ namespace MinisimsBackend.Controllers
         {
             return _gameSyncHandler.Post(tileUpdates);
         }
+
+        [HttpPost("tick")]
+        public ActionResult<bool> DoTick()
+        {
+            return _gameSyncHandler.DoTick();
+        }
     }
 }
